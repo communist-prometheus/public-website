@@ -3,9 +3,20 @@ dist/
 
 # generated types
 .astro/
+.astro-cache/
+.vite-cache/
 
 # dependencies
 node_modules/
+
+# Yarn PnP
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
 
 # logs
 npm-debug.log*
