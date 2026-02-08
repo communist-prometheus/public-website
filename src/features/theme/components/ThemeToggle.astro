@@ -20,14 +20,10 @@
   const button = document.getElementById('theme-toggle');
   const html = document.documentElement;
 
-  const getTheme = () => localStorage.getItem('theme') ?? 'light';
-
   const setTheme = (theme: string) => {
     html.dataset['theme'] = theme;
     localStorage.setItem('theme', theme);
   };
-
-  setTheme(getTheme());
 
   button?.addEventListener('click', () => {
     const newTheme = html.dataset['theme'] === 'dark' ? 'light' : 'dark';
