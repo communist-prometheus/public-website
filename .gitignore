@@ -25,3 +25,9 @@ bun-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# IDE
+.vscode/
+*.swp
+*.swo
+*~
