@@ -6,11 +6,6 @@ dist/
 .astro-cache/
 .vite-cache/
 
-# Cloudflare
-.dev.vars
-.wrangler/
-wrangler.toml
-
 # dependencies
 node_modules/
 

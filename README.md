@@ -1,6 +1,10 @@
-# Prometheus Public Website
+# Astro Starter Kit: Basics
 
-Static website built with Astro and deployed on Cloudflare Pages with automatic rebuild capabilities.
+```sh
+yarn create astro@latest -- --template basics
+```
+
+> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
 
 ## 🚀 Project Structure
 
@@ -26,24 +30,16 @@ To learn more about the folder structure of an Astro project, refer to [our guid
 
 ## 🧞 Commands
 
-| Command              | Action                                              |
-| :------------------- | :-------------------------------------------------- |
-| `bun install`        | Installs dependencies                               |
-| `bun run dev`        | Starts local dev server at `localhost:4321`         |
-| `bun run build`      | Build production site to `./dist/`                  |
-| `bun run preview`    | Preview build locally                               |
-| `bun run pages:dev`  | Preview with Cloudflare Pages environment           |
-| `bun run pages:deploy` | Deploy to Cloudflare Pages                        |
-| `bun run test:webhook` | Test webhook endpoint                             |
+All commands are run from the root of the project, from a terminal:
 
-## 🔄 Auto-Rebuild System
-
-The site supports automatic rebuilds when content is updated via webhook. See [`documentation/user/auto-rebuild-setup.md`](documentation/user/auto-rebuild-setup.md) for detailed setup instructions.
-
-**Quick Start:**
-1. Deploy to Cloudflare Pages
-2. Configure `GITHUB_TOKEN` and `WEBHOOK_SECRET` environment variables
-3. Send POST requests to `/api/webhook` to trigger content updates and rebuilds
+| Command                   | Action                                           |
+| :------------------------ | :----------------------------------------------- |
+| `yarn install`             | Installs dependencies                            |
+| `yarn dev`             | Starts local dev server at `localhost:4321`      |
+| `yarn build`           | Build your production site to `./dist/`          |
+| `yarn preview`         | Preview your build locally, before deploying     |
+| `yarn astro ...`       | Run CLI commands like `astro add`, `astro check` |
+| `yarn astro -- --help` | Get help using the Astro CLI                     |
 
 ## 👀 Want to learn more?
 
