@@ -5,6 +5,9 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "pages:dev": "wrangler pages dev dist --compatibility-flag=nodejs_compat",
+    "pages:deploy": "bun run build && wrangler pages deploy dist",
+    "test:webhook": "bun run scripts/test-webhook.ts",
     "astro": "astro"
   },
   "dependencies": {
@@ -12,6 +15,9 @@
   },
   "packageManager": "bun@latest",
   "devDependencies": {
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "wrangler": "^3.91.0",
+    "@cloudflare/workers-types": "^4.20250110.0",
+    "@types/bun": "latest"
   }
 }
