@@ -1,0 +1,72 @@
+---
+import { getCollection } from 'astro:content';
+import { SUPPORTED_LANGUAGES } from '@/config/i18n';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+
+export const getStaticPaths = () => SUPPORTED_LANGUAGES.map((lang) => ({ params: { lang } }));
+
+const { lang } = Astro.params;
+
+const manifestPage = await getCollection('pages', ({ data }) => data.lang === lang);
+const page = manifestPage[0];
+
+if (!page) {
+  return Astro.redirect(`/${lang}`);
+}
+
+const { Content } = await page.render();
+---
+
+<BaseLayout title={`${page.data.title} - Prometheus`} lang={lang}>
+  <article class="section">
+    <div class="container">
+      <div class="manifest-header">
+        <h1>{page.data.title}</h1>
+      </div>
+      <div class="prose">
+        <Content />
+      </div>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .manifest-header {
+    max-width: 800px;
+    margin-inline: auto;
+    text-align: center;
+    margin-bottom: var(--spacing-2xl);
+  }
+
+  h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .prose {
+    max-width: 800px;
+    margin-inline: auto;
+  }
+
+  .prose :global(h2) {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin-top: var(--spacing-xl);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .prose :global(p) {
+    margin-bottom: var(--spacing-md);
+    line-height: 1.8;
+  }
+
+  .prose :global(ul) {
+    margin-bottom: var(--spacing-md);
+    padding-left: var(--spacing-lg);
+  }
+
+  .prose :global(li) {
+    margin-bottom: var(--spacing-xs);
+  }
+</style>

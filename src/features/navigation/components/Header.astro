@@ -1,0 +1,59 @@
+---
+import type { Language } from '@/config/i18n';
+import ThemeToggle from '@/features/theme/components/ThemeToggle.astro';
+import Nav from './Nav.astro';
+
+interface Props {
+  lang: Language;
+}
+
+const { lang } = Astro.props;
+---
+
+<header>
+  <div class="container">
+    <div class="header-content">
+      <a href={`/${lang}`} class="logo">Prometheus</a>
+      <div class="header-actions">
+        <Nav lang={lang} />
+        <ThemeToggle />
+      </div>
+    </div>
+  </div>
+</header>
+
+<style>
+  header {
+    position: sticky;
+    top: 0;
+    background: var(--color-surface-elevated);
+    border-bottom: 1px solid var(--color-border);
+    z-index: 100;
+    backdrop-filter: blur(10px);
+  }
+
+  .header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-block: var(--spacing-md);
+  }
+
+  .logo {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+  }
+
+  .logo:hover {
+    color: var(--color-accent);
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+  }
+</style>

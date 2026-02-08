@@ -1,0 +1,52 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import type { Language } from '@/config/i18n';
+import PostCard from '@/features/blog/components/PostCard.astro';
+
+interface Props {
+  posts: CollectionEntry<'blog'>[];
+  lang: Language;
+}
+
+const { posts, lang } = Astro.props;
+
+const title = lang === 'en' ? 'Latest News' : 'Последние новости';
+const viewAll = lang === 'en' ? 'View all posts' : 'Все посты';
+---
+
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <h2>{title}</h2>
+      <a href={`/${lang}/blog`} class="button">{viewAll}</a>
+    </div>
+    <div class="grid grid-3">
+      {
+        posts.map((post) => (
+          <PostCard
+            title={post.data.title}
+            description={post.data.description}
+            category={post.data.category}
+            slug={post.slug}
+            image={post.data.image}
+            lang={lang}
+          />
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-xl);
+  }
+
+  h2 {
+    font-size: 2rem;
+    font-weight: 600;
+  }
+</style>

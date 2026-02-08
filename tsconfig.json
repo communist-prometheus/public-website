@@ -9,7 +9,11 @@
     "noUnusedParameters": true,
     "exactOptionalPropertyTypes": true,
     "allowUnusedLabels": false,
-    "allowUnreachableCode": false
+    "allowUnreachableCode": false,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
   },
   "include": [".astro/types.d.ts", "**/*"],
   "exclude": ["dist", ".astro-cache", ".vite-cache", "node_modules"]

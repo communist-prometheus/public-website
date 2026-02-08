@@ -1,0 +1,50 @@
+---
+import type { Language } from '@/config/i18n';
+
+interface Props {
+  lang: Language;
+}
+
+const { lang } = Astro.props;
+
+const nav = {
+  en: [
+    { href: `/${lang}`, label: 'Home' },
+    { href: `/${lang}/blog`, label: 'Blog' },
+    { href: `/${lang}/manifest`, label: 'Manifest' },
+  ],
+  ru: [
+    { href: `/${lang}`, label: 'Главная' },
+    { href: `/${lang}/blog`, label: 'Блог' },
+    { href: `/${lang}/manifest`, label: 'Манифест' },
+  ],
+};
+
+const links = nav[lang];
+---
+
+<nav>
+  <ul>
+    {links.map(({ href, label }) => <li><a href={href}>{label}</a></li>)}
+  </ul>
+</nav>
+
+<style>
+  ul {
+    display: flex;
+    gap: var(--spacing-md);
+    list-style: none;
+    padding: 0;
+  }
+
+  a {
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+  }
+
+  a:hover,
+  a:focus-visible {
+    color: var(--color-text-primary);
+  }
+</style>

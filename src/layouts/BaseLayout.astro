@@ -1,0 +1,43 @@
+---
+import type { Language } from '@/config/i18n';
+import Footer from '@/features/navigation/components/Footer.astro';
+import Header from '@/features/navigation/components/Header.astro';
+import '@/styles/theme.css';
+import '@/styles/utilities.css';
+
+interface Props {
+  title: string;
+  lang: Language;
+}
+
+const { title, lang } = Astro.props;
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <Header lang={lang} />
+    <main>
+      <slot />
+    </main>
+    <Footer lang={lang} />
+  </body>
+</html>
+
+<style>
+  body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  main {
+    flex: 1;
+  }
+</style>

@@ -1,0 +1,70 @@
+---
+import type { Language } from '@/config/i18n';
+
+interface Props {
+  categories: string[];
+  lang: Language;
+}
+
+const { categories, lang } = Astro.props;
+
+const allLabel = lang === 'en' ? 'All' : 'Все';
+---
+
+<div class="category-filter">
+  <button class="category-btn active" data-category="all">{allLabel}</button>
+  {categories.map((category) => <button class="category-btn" data-category={category}>{category}</button>)}
+</div>
+
+<script>
+  const buttons = document.querySelectorAll('.category-btn');
+  const posts = document.querySelectorAll('.post-card');
+
+  buttons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const category = button.getAttribute('data-category');
+
+      buttons.forEach((btn) => btn.classList.remove('active'));
+      button.classList.add('active');
+
+      posts.forEach((post) => {
+        const postCategory = post.getAttribute('data-category');
+        if (category === 'all' || postCategory === category) {
+          (post as HTMLElement).style.display = 'flex';
+        } else {
+          (post as HTMLElement).style.display = 'none';
+        }
+      });
+    });
+  });
+</script>
+
+<style>
+  .category-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-xl);
+  }
+
+  .category-btn {
+    padding: 0.5rem 1rem;
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  .category-btn:hover {
+    background: var(--color-surface-elevated);
+    color: var(--color-text-primary);
+  }
+
+  .category-btn.active {
+    background: var(--color-accent);
+    color: white;
+    border-color: var(--color-accent);
+  }
+</style>

@@ -1,0 +1,57 @@
+---
+import { SUPPORTED_LANGUAGES } from '@/config/i18n';
+import CategoryFilter from '@/features/blog/components/CategoryFilter.astro';
+import PostCard from '@/features/blog/components/PostCard.astro';
+import { getBlogPosts, getUniqueCategories } from '@/features/blog/helpers/getBlogPosts';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+
+export const getStaticPaths = () => SUPPORTED_LANGUAGES.map((lang) => ({ params: { lang } }));
+
+const { lang } = Astro.params;
+
+const posts = await getBlogPosts(lang);
+const categories = getUniqueCategories(posts);
+
+const pageTitle = {
+  en: 'Blog - Prometheus',
+  ru: 'Блог - Prometheus',
+};
+
+const heading = {
+  en: 'Blog',
+  ru: 'Блог',
+};
+---
+
+<BaseLayout title={pageTitle[lang]} lang={lang}>
+  <div class="section">
+    <div class="container">
+      <h1>{heading[lang]}</h1>
+      <CategoryFilter categories={categories} lang={lang} />
+      <div class="grid grid-3">
+        {
+          posts.map((post) => (
+            <div data-category={post.data.category}>
+              <PostCard
+                title={post.data.title}
+                description={post.data.description}
+                category={post.data.category}
+                slug={post.slug}
+                image={post.data.image}
+                lang={lang}
+              />
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: var(--spacing-xl);
+  }
+</style>
