@@ -26,7 +26,7 @@ const { title, lang } = Astro.props;
 
   initTheme();
 
-  document.addEventListener('astro:page-load', initTheme);
+  document.addEventListener('astro:after-swap', initTheme);
 </script>
 
 <!doctype html>

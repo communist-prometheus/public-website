@@ -63,18 +63,26 @@
   color-scheme: dark;
 }
 
+html {
+  view-transition-name: none;
+}
+
+html.theme-transition {
+  view-transition-name: theme-root;
+}
+
 @supports (view-transition-name: none) {
-  ::view-transition-old(root),
-  ::view-transition-new(root) {
+  ::view-transition-old(theme-root),
+  ::view-transition-new(theme-root) {
     animation: none;
     mix-blend-mode: normal;
   }
 
-  ::view-transition-old(root) {
+  ::view-transition-old(theme-root) {
     z-index: 1;
   }
 
-  ::view-transition-new(root) {
+  ::view-transition-new(theme-root) {
     animation: reveal 0.5s ease-in-out;
     z-index: 2;
   }

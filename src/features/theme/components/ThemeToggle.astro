@@ -43,8 +43,14 @@
     html.style.setProperty('--y', `${y}px`);
     html.style.setProperty('--r', `${endRadius}px`);
 
-    document.startViewTransition(() => {
+    html.classList.add('theme-transition');
+
+    const transition = document.startViewTransition(() => {
       setTheme(newTheme);
+    });
+
+    transition.finished.finally(() => {
+      html.classList.remove('theme-transition');
     });
   };
 
