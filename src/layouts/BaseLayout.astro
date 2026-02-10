@@ -16,6 +16,17 @@ const { title, lang } = Astro.props;
 
 <script>
   import '@/scripts/init-components';
+
+  function initTheme() {
+    const theme =
+      localStorage.getItem('theme') ||
+      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.dataset['theme'] = theme;
+  }
+
+  initTheme();
+
+  document.addEventListener('astro:page-load', initTheme);
 </script>
 
 <!doctype html>
@@ -26,18 +37,10 @@ const { title, lang } = Astro.props;
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{title}</title>
     <ClientRouter />
-    <script is:inline>
-      (function () {
-        const theme =
-          localStorage.getItem('theme') ||
-          (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        document.documentElement.dataset['theme'] = theme;
-      })();
-    </script>
   </head>
   <body>
     <Header lang={lang} />
-    <main>
+    <main transition:animate="slide">
       <slot />
     </main>
     <Footer lang={lang} />
