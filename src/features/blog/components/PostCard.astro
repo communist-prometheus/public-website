@@ -17,7 +17,7 @@ const readMore = lang === 'en' ? 'Read more' : 'Читать далее';
 ---
 
 <cp-card hoverable elevated>
-  {image && <img src={image.src} alt={title} class="post-image" transition:name={`post-${slug}`} />}
+  {image && <img src={image.src} alt={title} class="post-image" />}
   <div class="post-content">
     <span class="category">{category}</span>
     <h3>{title}</h3>

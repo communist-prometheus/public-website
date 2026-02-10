@@ -1,5 +1,4 @@
 ---
-import { ClientRouter } from 'astro:transitions';
 import type { Language } from '@/config/i18n';
 import Footer from '@/features/navigation/components/Footer.astro';
 import Header from '@/features/navigation/components/Header.astro';
@@ -16,17 +15,6 @@ const { title, lang } = Astro.props;
 
 <script>
   import '@/scripts/init-components';
-
-  function initTheme() {
-    const theme =
-      localStorage.getItem('theme') ||
-      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-    document.documentElement.dataset['theme'] = theme;
-  }
-
-  initTheme();
-
-  document.addEventListener('astro:after-swap', initTheme);
 </script>
 
 <!doctype html>
@@ -36,7 +24,14 @@ const { title, lang } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{title}</title>
-    <ClientRouter />
+    <script is:inline>
+      (function () {
+        const theme =
+          localStorage.getItem('theme') ||
+          (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.dataset['theme'] = theme;
+      })();
+    </script>
   </head>
   <body>
     <Header lang={lang} />

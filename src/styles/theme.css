@@ -63,6 +63,10 @@
   color-scheme: dark;
 }
 
+@view-transition {
+  navigation: auto;
+}
+
 html {
   view-transition-name: none;
 }
