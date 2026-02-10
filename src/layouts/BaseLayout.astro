@@ -40,7 +40,7 @@ const { title, lang } = Astro.props;
   </head>
   <body>
     <Header lang={lang} />
-    <main transition:animate="slide">
+    <main>
       <slot />
     </main>
     <Footer lang={lang} />
@@ -56,5 +56,10 @@ const { title, lang } = Astro.props;
 
   main {
     flex: 1;
+    view-transition-name: main-content;
+  }
+
+  :global(html.theme-transition) main {
+    view-transition-name: none;
   }
 </style>
