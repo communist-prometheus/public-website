@@ -72,8 +72,8 @@
   navigation: auto;
 }
 
-html {
-  view-transition-name: none;
+html:not(.theme-transition) {
+  view-transition-name: root;
 }
 
 html.theme-transition {
@@ -151,6 +151,7 @@ html {
   transition:
     background var(--transition-base),
     color var(--transition-base);
+  font-display: optional;
 }
 
 body {

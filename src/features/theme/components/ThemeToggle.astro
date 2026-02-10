@@ -1,7 +1,7 @@
 ---
 ---
 
-<cp-button id="theme-toggle" variant="ghost" aria-label="Toggle theme">
+<button id="theme-toggle" class="theme-button" aria-label="Toggle theme">
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
     <circle class="sun" cx="12" cy="12" r="5"></circle>
     <line class="sun" x1="12" y1="1" x2="12" y2="3"></line>
@@ -14,7 +14,7 @@
     <line class="sun" x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
     <path class="moon" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
   </svg>
-</cp-button>
+</button>
 
 <script>
   const html = document.documentElement;
@@ -24,7 +24,8 @@
     localStorage.setItem('theme', theme);
   };
 
-  const toggleThemeWithAnimation = (event: MouseEvent) => {
+  const toggleThemeWithAnimation = (event: MouseEvent | Event) => {
+    const mouseEvent = event as MouseEvent;
     const newTheme = html.dataset['theme'] === 'dark' ? 'light' : 'dark';
 
     if (!document.startViewTransition) {
@@ -32,8 +33,8 @@
       return;
     }
 
-    const x = event.clientX;
-    const y = event.clientY;
+    const x = mouseEvent.clientX;
+    const y = mouseEvent.clientY;
     const endRadius = Math.hypot(
       Math.max(x, innerWidth - x),
       Math.max(y, innerHeight - y)
@@ -72,23 +73,29 @@
     });
   };
 
-  customElements.whenDefined('cp-button').then(() => {
-    const button = document.getElementById('theme-toggle');
-    
-    button?.addEventListener('cp-click', ((e: CustomEvent<{ originalEvent: MouseEvent }>) => {
-      toggleThemeWithAnimation(e.detail.originalEvent);
-    }) as EventListener);
-  });
+  const button = document.getElementById('theme-toggle');
+  button?.addEventListener('click', toggleThemeWithAnimation);
 </script>
 
 <style>
-  cp-button::part(button) {
+  .theme-button {
     width: 40px;
     height: 40px;
     padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-primary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  .theme-button:hover {
+    background: var(--color-surface);
+    transform: translateY(-1px);
   }
 
   svg {
