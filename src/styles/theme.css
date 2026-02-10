@@ -75,7 +75,17 @@
   }
 
   ::view-transition-new(root) {
+    animation: reveal 0.5s ease-in-out;
     z-index: 2;
+  }
+}
+
+@keyframes reveal {
+  from {
+    clip-path: circle(0 at var(--x, 50%) var(--y, 50%));
+  }
+  to {
+    clip-path: circle(var(--r, 100vmax) at var(--x, 50%) var(--y, 50%));
   }
 }
 
