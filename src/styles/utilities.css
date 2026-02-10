@@ -80,6 +80,10 @@
   color: var(--color-text-secondary);
 }
 
+a {
+  text-decoration: none;
+}
+
 .text-sm {
   font-size: 0.875rem;
 }

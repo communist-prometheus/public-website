@@ -16,22 +16,23 @@ const { title, description, category, slug, image, lang } = Astro.props;
 const readMore = lang === 'en' ? 'Read more' : 'Читать далее';
 ---
 
-<article class="card post-card">
+<cp-card hoverable elevated>
   {image && <img src={image.src} alt={title} class="post-image" />}
   <div class="post-content">
     <span class="category">{category}</span>
     <h3>{title}</h3>
     <p class="text-secondary">{description}</p>
-    <a href={`/${lang}/blog/${slug}`} class="button">{readMore}</a>
+    <a href={`/${lang}/blog/${slug}`}>
+      <cp-button variant="primary">{readMore}</cp-button>
+    </a>
   </div>
-</article>
+</cp-card>
 
 <style>
-  .post-card {
+  cp-card {
     display: flex;
     flex-direction: column;
     height: 100%;
-    padding: 0;
     overflow: hidden;
   }
 
@@ -71,7 +72,7 @@ const readMore = lang === 'en' ? 'Read more' : 'Читать далее';
     flex: 1;
   }
 
-  .button {
+  a {
     margin-top: var(--spacing-sm);
     width: fit-content;
   }

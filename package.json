@@ -14,7 +14,8 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "astro": "^5.17.1"
+    "astro": "^5.17.1",
+    "@communist-prometheus/cp-components": "github:communist-prometheus/cp-components#v0.1.7"
   },
   "packageManager": "bun@latest",
   "devDependencies": {

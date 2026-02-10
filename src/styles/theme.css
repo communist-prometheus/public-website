@@ -29,6 +29,24 @@
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
 
+  /* CP Components variables */
+  --cp-color-background: var(--color-background);
+  --cp-color-surface: var(--color-surface);
+  --cp-color-text-primary: var(--color-text-primary);
+  --cp-color-text-secondary: var(--color-text-secondary);
+  --cp-color-border: var(--color-border);
+  --cp-color-accent: var(--color-accent);
+  --cp-color-accent-hover: var(--color-accent-hover);
+  --cp-spacing-xs: var(--spacing-xs);
+  --cp-spacing-sm: var(--spacing-sm);
+  --cp-spacing-md: var(--spacing-md);
+  --cp-spacing-lg: var(--spacing-lg);
+  --cp-radius-sm: var(--radius-sm);
+  --cp-radius-md: var(--radius-md);
+  --cp-shadow-sm: var(--shadow-sm);
+  --cp-shadow-md: var(--shadow-md);
+  --cp-transition-fast: var(--transition-fast);
+
   color-scheme: light;
 }
 
