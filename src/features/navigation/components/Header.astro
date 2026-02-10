@@ -10,7 +10,7 @@ interface Props {
 const { lang } = Astro.props;
 ---
 
-<header>
+<header transition:persist>
   <div class="container">
     <div class="header-content">
       <a href={`/${lang}`} class="logo">Prometheus</a>
