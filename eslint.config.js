@@ -1,6 +1,5 @@
 import tsPlugin from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
-import astroPlugin from 'eslint-plugin-astro';
 import jsdocPlugin from 'eslint-plugin-jsdoc';
 
 export default [
