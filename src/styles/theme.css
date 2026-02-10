@@ -63,6 +63,11 @@
   color-scheme: dark;
 }
 
+:root {
+  --nav-old-animation: fade-out 0.3s ease-out;
+  --nav-new-animation: fade-in-scale 0.4s ease-out;
+}
+
 @view-transition {
   navigation: auto;
 }
@@ -76,6 +81,14 @@ html.theme-transition {
 }
 
 @supports (view-transition-name: none) {
+  ::view-transition-old(root) {
+    animation: var(--nav-old-animation);
+  }
+
+  ::view-transition-new(root) {
+    animation: var(--nav-new-animation);
+  }
+
   ::view-transition-old(theme-root),
   ::view-transition-new(theme-root) {
     animation: none;
@@ -98,6 +111,26 @@ html.theme-transition {
   }
   to {
     clip-path: circle(var(--r, 100vmax) at var(--x, 50%) var(--y, 50%));
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-in-scale {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 

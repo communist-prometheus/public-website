@@ -43,6 +43,12 @@
     html.style.setProperty('--y', `${y}px`);
     html.style.setProperty('--r', `${endRadius}px`);
 
+    const previousNavOldAnimation = html.style.getPropertyValue('--nav-old-animation');
+    const previousNavNewAnimation = html.style.getPropertyValue('--nav-new-animation');
+
+    html.style.setProperty('--nav-old-animation', 'none');
+    html.style.setProperty('--nav-new-animation', 'none');
+
     html.classList.add('theme-transition');
 
     const transition = document.startViewTransition(() => {
@@ -51,6 +57,18 @@
 
     transition.finished.finally(() => {
       html.classList.remove('theme-transition');
+
+      if (previousNavOldAnimation.length > 0) {
+        html.style.setProperty('--nav-old-animation', previousNavOldAnimation);
+      } else {
+        html.style.removeProperty('--nav-old-animation');
+      }
+
+      if (previousNavNewAnimation.length > 0) {
+        html.style.setProperty('--nav-new-animation', previousNavNewAnimation);
+      } else {
+        html.style.removeProperty('--nav-new-animation');
+      }
     });
   };
 
