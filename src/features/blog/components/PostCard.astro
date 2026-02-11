@@ -1,5 +1,4 @@
 ---
-import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import type { Language } from '@/config/i18n';
 
@@ -17,40 +16,30 @@ const { title, description, category, slug, image, lang } = Astro.props;
 const readMore = lang === 'en' ? 'Read more' : 'Читать далее';
 ---
 
-<article class="card">
-  {image && <Image src={image} alt={title} class="post-image" width={800} height={450} />}
+<cp-card hoverable elevated>
+  {image && <img src={image.src} alt={title} class="post-image" />}
   <div class="post-content">
     <span class="category">{category}</span>
     <h3>{title}</h3>
     <p class="text-secondary">{description}</p>
-    <a href={`/${lang}/blog/${slug}`} class="button button-primary">{readMore}</a>
+    <a href={`/${lang}/blog/${slug}`}>
+      <cp-button variant="primary">{readMore}</cp-button>
+    </a>
   </div>
-</article>
+</cp-card>
 
 <style>
-  .card {
+  cp-card {
     display: flex;
     flex-direction: column;
     height: 100%;
     overflow: hidden;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    transition: 
-      box-shadow var(--transition-fast),
-      transform var(--transition-fast);
-  }
-
-  .card:hover {
-    box-shadow: var(--shadow-lg);
-    transform: translateY(-2px);
   }
 
   .post-image {
     width: 100%;
     height: 200px;
     object-fit: cover;
-    aspect-ratio: 16 / 9;
   }
 
   .post-content {
@@ -83,27 +72,8 @@ const readMore = lang === 'en' ? 'Read more' : 'Читать далее';
     flex: 1;
   }
 
-  .button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--spacing-sm) var(--spacing-md);
+  a {
     margin-top: var(--spacing-sm);
     width: fit-content;
-    text-decoration: none;
-    border-radius: var(--radius-sm);
-    font-weight: 500;
-    transition: all var(--transition-fast);
-  }
-
-  .button-primary {
-    background: var(--color-accent);
-    color: white;
-  }
-
-  .button-primary:hover {
-    background: var(--color-accent-hover);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
   }
 </style>
