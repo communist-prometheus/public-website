@@ -13,10 +13,6 @@ interface Props {
 const { title, lang } = Astro.props;
 ---
 
-<script>
-  import '@/scripts/init-components';
-</script>
-
 <!doctype html>
 <html lang={lang}>
   <head>
@@ -34,6 +30,9 @@ const { title, lang } = Astro.props;
     </script>
   </head>
   <body>
+    <script>
+      import '@/scripts/init-components';
+    </script>
     <Header lang={lang} />
     <main>
       <slot />
@@ -51,5 +50,6 @@ const { title, lang } = Astro.props;
 
   main {
     flex: 1;
+    view-transition-name: main-content;
   }
 </style>

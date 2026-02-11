@@ -63,45 +63,50 @@
   color-scheme: dark;
 }
 
-:root {
-  --nav-old-animation: fade-out 0.3s ease-out;
-  --nav-new-animation: fade-in-scale 0.4s ease-out;
-}
-
 @view-transition {
   navigation: auto;
 }
 
-html {
-  view-transition-name: none;
-}
-
-html.theme-transition {
-  view-transition-name: theme-root;
-}
-
 @supports (view-transition-name: none) {
-  ::view-transition-old(root) {
-    animation: var(--nav-old-animation);
+  /* Default: no view-transition-name on root */
+  :root {
+    view-transition-name: none;
   }
 
-  ::view-transition-new(root) {
-    animation: var(--nav-new-animation);
+  /* For theme transitions: animate entire page with circular reveal */
+  html:active-view-transition-type(theme) {
+    :root {
+      view-transition-name: root;
+    }
+
+    &::view-transition-group(root),
+    &::view-transition-image-pair(root) {
+      isolation: isolate;
+    }
+
+    &::view-transition-old(root),
+    &::view-transition-new(root) {
+      animation: none;
+      mix-blend-mode: normal;
+    }
+
+    ::view-transition-old(theme-root) {
+      z-index: 1;
+    }
+
+    &::view-transition-new(root) {
+      animation: reveal 0.5s ease-in-out forwards;
+      z-index: 2;
+    }
   }
 
-  ::view-transition-old(theme-root),
-  ::view-transition-new(theme-root) {
-    animation: none;
-    mix-blend-mode: normal;
+  /* For navigation transitions: animate only main content with slide */
+  ::view-transition-old(main-content) {
+    animation: slide-out 0.3s ease-out forwards;
   }
 
-  ::view-transition-old(theme-root) {
-    z-index: 1;
-  }
-
-  ::view-transition-new(theme-root) {
-    animation: reveal 0.5s ease-in-out;
-    z-index: 2;
+  ::view-transition-new(main-content) {
+    animation: slide-in 0.3s ease-out forwards;
   }
 }
 
@@ -114,23 +119,25 @@ html.theme-transition {
   }
 }
 
-@keyframes fade-out {
+@keyframes slide-out {
   from {
+    transform: translateX(0);
     opacity: 1;
   }
   to {
+    transform: translateX(-30px);
     opacity: 0;
   }
 }
 
-@keyframes fade-in-scale {
+@keyframes slide-in {
   from {
+    transform: translateX(30px);
     opacity: 0;
-    transform: scale(0.98);
   }
   to {
+    transform: translateX(0);
     opacity: 1;
-    transform: scale(1);
   }
 }
 
@@ -182,4 +189,25 @@ h4,
 h5,
 h6 {
   overflow-wrap: break-word;
+}
+
+cp-button:not(:defined) {
+  display: inline-block;
+  min-width: 40px;
+  min-height: 40px;
+  contain: layout style paint;
+}
+
+cp-card:not(:defined) {
+  display: block;
+  min-height: 400px;
+  contain: layout style paint;
+}
+
+cp-button {
+  contain: layout style;
+}
+
+cp-card {
+  contain: layout style;
 }
