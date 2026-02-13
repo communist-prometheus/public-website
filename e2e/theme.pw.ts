@@ -15,9 +15,7 @@ import { expect, type Page, test } from '@playwright/test';
 
 const BASE = '/en';
 
-/* ------------------------------------------------------------------ */
-/*  Helpers                                                           */
-/* ------------------------------------------------------------------ */
+/* Helpers */
 
 const getTheme = (page: Page) => page.evaluate(() => document.documentElement.dataset['theme']);
 
@@ -25,9 +23,7 @@ const getLocalStorageTheme = (page: Page) => page.evaluate(() => localStorage.ge
 
 const clickThemeToggle = (page: Page) => page.locator('#theme-toggle').click();
 
-/* ------------------------------------------------------------------ */
-/*  1. Basic toggle                                                   */
-/* ------------------------------------------------------------------ */
+/* 1. Basic toggle */
 
 test.describe('Theme toggle', () => {
   test.beforeEach(async ({ page }) => {
@@ -64,9 +60,7 @@ test.describe('Theme toggle', () => {
   });
 });
 
-/* ------------------------------------------------------------------ */
-/*  2. Theme persistence across SPA navigation                        */
-/* ------------------------------------------------------------------ */
+/* 2. Theme persistence across SPA navigation */
 
 test.describe('Theme persistence', () => {
   test('survives SPA navigation', async ({ page }) => {
@@ -106,9 +100,7 @@ test.describe('Theme persistence', () => {
   });
 });
 
-/* ------------------------------------------------------------------ */
-/*  3. Circular reveal animation on theme toggle                      */
-/* ------------------------------------------------------------------ */
+/* 3. Circular reveal animation on theme toggle */
 
 test.describe('Theme toggle animation', () => {
   test('circular reveal fires — mid-animation differs from before/after', async ({ page }) => {
@@ -311,9 +303,7 @@ test.describe('Theme toggle animation', () => {
   });
 });
 
-/* ------------------------------------------------------------------ */
-/*  4. Navigation does NOT trigger on theme toggle                    */
-/* ------------------------------------------------------------------ */
+/* 4. Navigation does NOT trigger on theme toggle */
 
 test.describe('Animation isolation', () => {
   test('theme toggle does not move main content', async ({ page }) => {
@@ -361,9 +351,7 @@ test.describe('Animation isolation', () => {
   });
 });
 
-/* ------------------------------------------------------------------ */
-/*  5. No color flash on SPA navigation in dark theme                 */
-/* ------------------------------------------------------------------ */
+/* 5. No color flash on SPA navigation in dark theme */
 
 test.describe('SPA navigation color flash', () => {
   test('category buttons do not flash white when navigating to blog in dark theme (CPU throttled)', async ({
@@ -378,9 +366,11 @@ test.describe('SPA navigation color flash', () => {
     });
     await page.waitForTimeout(300);
 
-    /* Inject observer BEFORE navigation: it will record computed styles
-       of .category-btn elements the instant they appear in the DOM,
-       and also capture data-theme on <html> at that moment. */
+    /**
+     * Inject observer BEFORE navigation: it will record computed styles
+     * of .category-btn elements the instant they appear in the DOM,
+     * and also capture data-theme on <html> at that moment.
+     */
     await page.evaluate(() => {
       const log: Array<{
         event: string;
@@ -407,7 +397,7 @@ test.describe('SPA navigation color flash', () => {
         });
       };
 
-      /* MutationObserver on <body> to catch new DOM insertion */
+      // MutationObserver on <body> to catch new DOM insertion
       const observer = new MutationObserver(() => {
         if (document.querySelector('.category-btn')) {
           capture('mutation-observer');
@@ -416,7 +406,7 @@ test.describe('SPA navigation color flash', () => {
       });
       observer.observe(document.body, { childList: true, subtree: true });
 
-      /* Also listen to astro lifecycle events */
+      // Also listen to astro lifecycle events
       document.addEventListener('astro:before-swap', () => capture('before-swap'), { once: true });
       document.addEventListener('astro:after-swap', () => capture('after-swap'), { once: true });
       document.addEventListener('astro:page-load', () => capture('page-load'), { once: true });
@@ -467,9 +457,7 @@ test.describe('SPA navigation color flash', () => {
   });
 });
 
-/* ------------------------------------------------------------------ */
-/*  6. Visual regression: theme colors on key elements                */
-/* ------------------------------------------------------------------ */
+/* 6. Visual regression: theme colors on key elements */
 
 test.describe('Theme visual consistency', () => {
   test('light theme colors are correct', async ({ page }) => {
