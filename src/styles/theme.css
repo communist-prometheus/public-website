@@ -75,8 +75,11 @@
 
   /* For theme transitions: animate entire page with circular reveal */
   html:active-view-transition-type(theme) {
-    :root {
-      view-transition-name: root;
+    view-transition-name: root;
+
+    /* Disable main-content animation during theme toggle */
+    main {
+      view-transition-name: none;
     }
 
     &::view-transition-group(root),
@@ -84,18 +87,15 @@
       isolation: isolate;
     }
 
-    &::view-transition-old(root),
-    &::view-transition-new(root) {
+    &::view-transition-old(root) {
       animation: none;
       mix-blend-mode: normal;
-    }
-
-    ::view-transition-old(theme-root) {
       z-index: 1;
     }
 
     &::view-transition-new(root) {
       animation: reveal 0.5s ease-in-out forwards;
+      mix-blend-mode: normal;
       z-index: 2;
     }
   }
