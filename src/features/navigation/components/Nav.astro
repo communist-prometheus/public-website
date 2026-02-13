@@ -29,6 +29,28 @@ const links = nav[lang];
   </ul>
 </nav>
 
+<script>
+  const updateActiveNav = () => {
+    const path = globalThis.location.pathname.replace(/\/$/, '') || '/';
+    const allNavLinks = document.querySelectorAll<HTMLAnchorElement>('nav a[href]');
+
+    allNavLinks.forEach((link) => {
+      const href = link.getAttribute('href')?.replace(/\/$/, '') || '/';
+      const isHome = /^\/[a-z]{2}$/.test(href);
+      const isActive = isHome ? path === href : path.startsWith(href);
+
+      if (isActive) {
+        link.setAttribute('aria-current', 'page');
+      } else {
+        link.removeAttribute('aria-current');
+      }
+    });
+  };
+
+  updateActiveNav();
+  document.addEventListener('astro:after-swap', updateActiveNav);
+</script>
+
 <style>
   ul {
     display: flex;
@@ -46,5 +68,10 @@ const links = nav[lang];
   a:hover,
   a:focus-visible {
     color: var(--color-text-primary);
+  }
+
+  a[aria-current="page"] {
+    color: var(--color-accent);
+    font-weight: 600;
   }
 </style>
