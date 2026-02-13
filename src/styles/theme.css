@@ -190,24 +190,3 @@ h5,
 h6 {
   overflow-wrap: break-word;
 }
-
-cp-button:not(:defined) {
-  display: inline-block;
-  min-width: 40px;
-  min-height: 40px;
-  contain: layout style paint;
-}
-
-cp-card:not(:defined) {
-  display: block;
-  min-height: 400px;
-  contain: layout style paint;
-}
-
-cp-button {
-  contain: layout style;
-}
-
-cp-card {
-  contain: layout style;
-}

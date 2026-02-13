@@ -1,0 +1,19 @@
+---
+import { renderCpButton } from '@/lib/lit-ssr/render-component';
+
+interface Props {
+  variant?: 'primary' | 'secondary' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+  disabled?: boolean;
+  type?: 'button' | 'submit' | 'reset';
+  id?: string;
+  ariaLabel?: string;
+}
+
+const props = Astro.props;
+const slotContent = await Astro.slots.render('default');
+
+const html = await renderCpButton(props, slotContent);
+---
+
+<Fragment set:html={html} />

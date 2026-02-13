@@ -1,0 +1,15 @@
+---
+import { renderCpCard } from '@/lib/lit-ssr/render-component';
+
+interface Props {
+  hoverable?: boolean;
+  elevated?: boolean;
+}
+
+const props = Astro.props;
+const slotContent = await Astro.slots.render('default');
+
+const html = await renderCpCard(props, slotContent);
+---
+
+<Fragment set:html={html} />

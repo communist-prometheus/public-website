@@ -1,5 +1,7 @@
 ---
 import type { ImageMetadata } from 'astro';
+import CpButton from '@/components/cp/CpButton.astro';
+import CpCard from '@/components/cp/CpCard.astro';
 import type { Language } from '@/config/i18n';
 
 interface Props {
@@ -16,17 +18,17 @@ const { title, description, category, slug, image, lang } = Astro.props;
 const readMore = lang === 'en' ? 'Read more' : 'Читать далее';
 ---
 
-<cp-card hoverable elevated>
+<CpCard hoverable elevated>
   {image && <img src={image.src} alt={title} class="post-image" />}
   <div class="post-content">
     <span class="category">{category}</span>
     <h3>{title}</h3>
     <p class="text-secondary">{description}</p>
     <a href={`/${lang}/blog/${slug}`}>
-      <cp-button variant="primary">{readMore}</cp-button>
+      <CpButton variant="primary">{readMore}</CpButton>
     </a>
   </div>
-</cp-card>
+</CpCard>
 
 <style>
   cp-card {
