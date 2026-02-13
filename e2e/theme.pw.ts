@@ -362,7 +362,54 @@ test.describe('Animation isolation', () => {
 });
 
 /* ------------------------------------------------------------------ */
-/*  5. Visual regression: theme colors on key elements                */
+/*  5. No color flash on SPA navigation in dark theme                 */
+/* ------------------------------------------------------------------ */
+
+test.describe('SPA navigation color flash', () => {
+  test('interactive elements must not use transition:all (causes flash on SPA navigation)', async ({
+    page,
+  }) => {
+    await page.goto(`${BASE}/blog`);
+    await page.waitForLoadState('networkidle');
+
+    const violations = await page.evaluate(() => {
+      const seen = new Set<Element>();
+      const results: Array<{ el: string; property: string; transition: string }> = [];
+
+      document.querySelectorAll('button, a, [class*="btn"], [role="button"]').forEach((el) => {
+        if (seen.has(el)) return;
+        seen.add(el);
+        const cs = getComputedStyle(el);
+        const prop = cs.transitionProperty;
+        const dur = cs.transitionDuration;
+        if ((prop === 'all' || prop.includes('all')) && dur !== '0s') {
+          const tag = el.tagName.toLowerCase();
+          const cls = el.className ? `.${String(el.className).split(' ').join('.')}` : '';
+          results.push({
+            el: `${tag}${cls}`,
+            property: prop,
+            transition: cs.transition,
+          });
+        }
+      });
+      return results;
+    });
+
+    console.log('\n=== transition:all violations ===');
+    for (const v of violations) {
+      console.log(`  ${v.el}: transitionProperty=${v.property}`);
+    }
+    console.log('=================================\n');
+
+    expect(
+      violations,
+      `Elements with transition:all (causes white flash on SPA nav in dark theme):\n${violations.map((v) => `  ${v.el}`).join('\n')}`,
+    ).toHaveLength(0);
+  });
+});
+
+/* ------------------------------------------------------------------ */
+/*  6. Visual regression: theme colors on key elements                */
 /* ------------------------------------------------------------------ */
 
 test.describe('Theme visual consistency', () => {
