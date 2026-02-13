@@ -117,6 +117,27 @@ test.describe('Mobile menu interaction', () => {
     const themeToggle = page.locator('[data-testid="mobile-menu-panel"] #theme-toggle');
     await expect(themeToggle).toBeVisible();
   });
+
+  test('menu works after SPA navigation', async ({ page }) => {
+    await openMobileMenu(page);
+
+    const blogLink = page.locator('[data-testid="mobile-menu-panel"] a:has-text("Blog")');
+    await blogLink.click();
+    await page.waitForURL('**/blog');
+
+    const panel = page.locator('[data-testid="mobile-menu-panel"]');
+    await expect(panel).not.toBeVisible({ timeout: 2000 });
+
+    await openMobileMenu(page);
+    await expect(panel).toBeVisible();
+
+    const links = panel.locator('a');
+    const count = await links.count();
+    expect(count).toBeGreaterThanOrEqual(3);
+
+    await closeMobileMenu(page);
+    await expect(panel).not.toBeVisible({ timeout: 2000 });
+  });
 });
 
 test.describe('Mobile menu accessibility', () => {

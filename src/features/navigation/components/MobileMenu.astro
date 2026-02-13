@@ -85,44 +85,40 @@ const links = nav[lang];
 
 <script>
   const setupMobileMenu = () => {
-    const toggle = document.querySelector<HTMLButtonElement>('[data-testid="mobile-menu-toggle"]');
-    const closeBtn = document.querySelector<HTMLButtonElement>('[data-testid="mobile-menu-close"]');
-    const overlay = document.querySelector<HTMLElement>('[data-testid="mobile-menu-overlay"]');
-    const panel = document.querySelector<HTMLElement>('[data-testid="mobile-menu-panel"]');
     const wrapper = document.querySelector<HTMLElement>('[data-testid="mobile-menu-wrapper"]');
+    if (!wrapper) return;
 
-    if (!toggle || !closeBtn || !overlay || !panel || !wrapper) return;
+    const toggle = wrapper.querySelector<HTMLButtonElement>('[data-testid="mobile-menu-toggle"]');
+    const closeBtn = wrapper.querySelector<HTMLButtonElement>('[data-testid="mobile-menu-close"]');
+    const overlay = wrapper.querySelector<HTMLElement>('[data-testid="mobile-menu-overlay"]');
+    const panel = wrapper.querySelector<HTMLElement>('[data-testid="mobile-menu-panel"]');
 
-    // Portal overlay and panel to body to escape header's backdrop-filter containing block
-    if (overlay.parentElement !== document.body) document.body.appendChild(overlay);
-    if (panel.parentElement !== document.body) document.body.appendChild(panel);
+    if (!toggle || !closeBtn || !overlay || !panel) return;
 
-    let isOpen = false;
-    let isClosing = false;
+    // Prevent duplicate listeners on persisted header
+    if (wrapper.dataset['menuInit'] === 'true') return;
+    wrapper.dataset['menuInit'] = 'true';
+
+    let closeId = 0;
 
     const openMenu = () => {
-      if (isOpen) return;
-      isOpen = true;
+      if (wrapper.classList.contains('open') && !wrapper.classList.contains('closing')) return;
+      closeId += 1;
+      wrapper.classList.remove('closing');
       wrapper.classList.add('open');
-      overlay.classList.add('open');
-      panel.classList.add('open');
       toggle.setAttribute('aria-expanded', 'true');
       panel.querySelector('a')?.focus();
     };
 
     const closeMenu = () => {
-      if (!isOpen || isClosing) return;
-      isClosing = true;
-      overlay.classList.add('closing');
-      panel.classList.add('closing');
+      if (!wrapper.classList.contains('open') || wrapper.classList.contains('closing')) return;
+      wrapper.classList.add('closing');
       toggle.setAttribute('aria-expanded', 'false');
+      const id = ++closeId;
 
       const onEnd = () => {
-        isOpen = false;
-        isClosing = false;
-        wrapper.classList.remove('open');
-        overlay.classList.remove('open', 'closing');
-        panel.classList.remove('open', 'closing');
+        if (id !== closeId) return;
+        wrapper.classList.remove('open', 'closing');
         toggle.focus();
       };
 
@@ -198,13 +194,13 @@ const links = nav[lang];
     transition: opacity var(--transition-base), visibility var(--transition-base);
   }
 
-  :global(.overlay.open) {
+  :global(.open) .overlay {
     opacity: 1;
     pointer-events: auto;
     visibility: visible;
   }
 
-  :global(.overlay.closing) {
+  :global(.closing) .overlay {
     opacity: 0;
     pointer-events: none;
   }
@@ -222,7 +218,7 @@ const links = nav[lang];
     box-shadow: var(--shadow-lg);
   }
 
-  :global(.panel.open) {
+  :global(.open) .panel {
     display: flex;
     animation: slide-in var(--transition-base) forwards;
   }
@@ -236,7 +232,7 @@ const links = nav[lang];
     }
   }
 
-  :global(.panel.closing) {
+  :global(.closing) .panel {
     animation: slide-out var(--transition-base) forwards;
   }
 
