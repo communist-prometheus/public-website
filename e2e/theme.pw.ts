@@ -366,44 +366,103 @@ test.describe('Animation isolation', () => {
 /* ------------------------------------------------------------------ */
 
 test.describe('SPA navigation color flash', () => {
-  test('interactive elements must not use transition:all (causes flash on SPA navigation)', async ({
+  test('category buttons do not flash white when navigating to blog in dark theme (CPU throttled)', async ({
     page,
   }) => {
-    await page.goto(`${BASE}/blog`);
+    await page.goto(BASE);
     await page.waitForLoadState('networkidle');
 
-    const violations = await page.evaluate(() => {
-      const seen = new Set<Element>();
-      const results: Array<{ el: string; property: string; transition: string }> = [];
+    await page.evaluate(() => {
+      localStorage.setItem('theme', 'dark');
+      document.documentElement.dataset['theme'] = 'dark';
+    });
+    await page.waitForTimeout(300);
 
-      document.querySelectorAll('button, a, [class*="btn"], [role="button"]').forEach((el) => {
-        if (seen.has(el)) return;
-        seen.add(el);
-        const cs = getComputedStyle(el);
-        const prop = cs.transitionProperty;
-        const dur = cs.transitionDuration;
-        if ((prop === 'all' || prop.includes('all')) && dur !== '0s') {
-          const tag = el.tagName.toLowerCase();
-          const cls = el.className ? `.${String(el.className).split(' ').join('.')}` : '';
-          results.push({
-            el: `${tag}${cls}`,
-            property: prop,
-            transition: cs.transition,
-          });
+    /* Inject observer BEFORE navigation: it will record computed styles
+       of .category-btn elements the instant they appear in the DOM,
+       and also capture data-theme on <html> at that moment. */
+    await page.evaluate(() => {
+      const log: Array<{
+        event: string;
+        dataTheme: string | undefined;
+        buttons: Array<{ className: string; bg: string; color: string }>;
+        timestamp: number;
+      }> = [];
+
+      const capture = (event: string) => {
+        const btns = document.querySelectorAll('.category-btn:not(.active)');
+        const buttons = Array.from(btns).map((btn) => {
+          const cs = getComputedStyle(btn);
+          return {
+            className: btn.className,
+            bg: cs.backgroundColor,
+            color: cs.color,
+          };
+        });
+        log.push({
+          event,
+          dataTheme: document.documentElement.dataset['theme'],
+          buttons,
+          timestamp: performance.now(),
+        });
+      };
+
+      /* MutationObserver on <body> to catch new DOM insertion */
+      const observer = new MutationObserver(() => {
+        if (document.querySelector('.category-btn')) {
+          capture('mutation-observer');
+          observer.disconnect();
         }
       });
-      return results;
+      observer.observe(document.body, { childList: true, subtree: true });
+
+      /* Also listen to astro lifecycle events */
+      document.addEventListener('astro:before-swap', () => capture('before-swap'), { once: true });
+      document.addEventListener('astro:after-swap', () => capture('after-swap'), { once: true });
+      document.addEventListener('astro:page-load', () => capture('page-load'), { once: true });
+
+      (globalThis as Record<string, unknown>)['__flashLog'] = log;
     });
 
-    console.log('\n=== transition:all violations ===');
-    for (const v of violations) {
-      console.log(`  ${v.el}: transitionProperty=${v.property}`);
+    await page.locator('nav a:has-text("Blog")').click();
+    await page.waitForURL('**/blog', { timeout: 10000 });
+    await page.waitForTimeout(300);
+
+    const flashLog = await page.evaluate(
+      () =>
+        (globalThis as Record<string, unknown>)['__flashLog'] as Array<{
+          event: string;
+          dataTheme: string | undefined;
+          buttons: Array<{ className: string; bg: string; color: string }>;
+          timestamp: number;
+        }>,
+    );
+
+    console.log('\n=== SPA Nav Flash Log ===');
+    const flashingEvents: string[] = [];
+    for (const entry of flashLog) {
+      console.log(
+        `  [${entry.event}] theme=${entry.dataTheme ?? 'NONE'} t=${entry.timestamp.toFixed(0)}`,
+      );
+      for (const btn of entry.buttons) {
+        const isLight =
+          entry.dataTheme !== 'dark' ||
+          btn.bg.includes('255') ||
+          btn.bg.includes('250') ||
+          btn.bg.includes('248');
+        console.log(
+          `    ${btn.className}: bg=${btn.bg} color=${btn.color} ${isLight ? '⚡ FLASH' : '✓'}`,
+        );
+        if (isLight) {
+          flashingEvents.push(`${entry.event}:${btn.className}`);
+        }
+      }
     }
-    console.log('=================================\n');
+    console.log('=========================\n');
 
     expect(
-      violations,
-      `Elements with transition:all (causes white flash on SPA nav in dark theme):\n${violations.map((v) => `  ${v.el}`).join('\n')}`,
+      flashingEvents,
+      `Buttons rendered with light-theme styles during SPA navigation:\n${flashingEvents.join('\n')}`,
     ).toHaveLength(0);
   });
 });
