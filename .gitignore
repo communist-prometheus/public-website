@@ -31,3 +31,8 @@ bun-debug.log*
 *.swp
 *.swo
 *~
+
+# Playwright
+e2e/screenshots/
+test-results/
+playwright-report/

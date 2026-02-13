@@ -12,7 +12,9 @@
     "lint:comments": "eslint .",
     "format": "biome format --write .",
     "format:check": "biome format .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "astro": "^5.17.1"
@@ -21,6 +23,7 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.6",
     "@biomejs/biome": "^2.3.14",
+    "@playwright/test": "^1.58.2",
     "@types/node": "^25.2.3",
     "@typescript-eslint/eslint-plugin": "^8.55.0",
     "@typescript-eslint/parser": "^8.55.0",
