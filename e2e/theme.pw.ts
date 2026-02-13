@@ -21,7 +21,7 @@ const getTheme = (page: Page) => page.evaluate(() => document.documentElement.da
 
 const getLocalStorageTheme = (page: Page) => page.evaluate(() => localStorage.getItem('theme'));
 
-const clickThemeToggle = (page: Page) => page.locator('#theme-toggle').click();
+const clickThemeToggle = (page: Page) => page.locator('#theme-toggle').first().click();
 
 /* 1. Basic toggle */
 
@@ -73,7 +73,7 @@ test.describe('Theme persistence', () => {
     });
     await page.screenshot({ path: 'e2e/screenshots/theme-04-dark-before-nav.png' });
 
-    await page.locator('nav a:has-text("Blog")').click();
+    await page.locator('[data-testid="desktop-nav"] a:has-text("Blog")').click();
     await page.waitForURL('**/blog');
     await page.waitForTimeout(400);
 
@@ -109,7 +109,7 @@ test.describe('Theme toggle animation', () => {
 
     const beforeBuf = await page.screenshot();
 
-    const toggleBtn = page.locator('#theme-toggle');
+    const toggleBtn = page.locator('#theme-toggle').first();
     const box = await toggleBtn.boundingBox();
     expect(box).toBeTruthy();
     const { x, y, width, height } = box as { x: number; y: number; width: number; height: number };
@@ -194,7 +194,7 @@ test.describe('Theme toggle animation', () => {
       path: 'e2e/screenshots/theme-14-elements-before.png',
     });
 
-    const toggleBtn = page.locator('#theme-toggle');
+    const toggleBtn = page.locator('#theme-toggle').first();
     const btnBox = await toggleBtn.boundingBox();
     expect(btnBox).toBeTruthy();
     const { x, y, width, height } = btnBox as {
@@ -335,7 +335,7 @@ test.describe('Animation isolation', () => {
 
     const beforeBuf = await page.screenshot();
 
-    await page.locator('nav a:has-text("Blog")').click();
+    await page.locator('[data-testid="desktop-nav"] a:has-text("Blog")').click();
 
     await page.waitForTimeout(100);
     await page.screenshot({ path: 'e2e/screenshots/theme-10-nav-mid-slide.png' });
@@ -414,7 +414,7 @@ test.describe('SPA navigation color flash', () => {
       (globalThis as Record<string, unknown>)['__flashLog'] = log;
     });
 
-    await page.locator('nav a:has-text("Blog")').click();
+    await page.locator('[data-testid="desktop-nav"] a:has-text("Blog")').click();
     await page.waitForURL('**/blog', { timeout: 10000 });
     await page.waitForTimeout(300);
 

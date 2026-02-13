@@ -1,0 +1,329 @@
+---
+import type { Language } from '@/config/i18n';
+import ThemeToggle from '@/features/theme/components/ThemeToggle.astro';
+
+interface Props {
+  lang: Language;
+}
+
+const { lang } = Astro.props;
+
+const nav = {
+  en: [
+    { href: `/${lang}`, label: 'Home' },
+    { href: `/${lang}/blog`, label: 'Blog' },
+    { href: `/${lang}/manifest`, label: 'Manifest' },
+  ],
+  ru: [
+    { href: `/${lang}`, label: 'Главная' },
+    { href: `/${lang}/blog`, label: 'Блог' },
+    { href: `/${lang}/manifest`, label: 'Манифест' },
+  ],
+};
+
+const links = nav[lang];
+---
+
+<div class="mobile-menu-wrapper" data-testid="mobile-menu-wrapper">
+  <button
+    class="hamburger"
+    data-testid="mobile-menu-toggle"
+    aria-label="Open menu"
+    aria-expanded="false"
+    aria-controls="mobile-menu-panel"
+    type="button"
+  >
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </button>
+
+  <div
+    class="overlay"
+    data-testid="mobile-menu-overlay"
+    aria-hidden="true"
+  ></div>
+
+  <div
+    id="mobile-menu-panel"
+    class="panel"
+    data-testid="mobile-menu-panel"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Navigation menu"
+  >
+    <div class="panel-header">
+      <span class="panel-title">Menu</span>
+      <button
+        class="close-btn"
+        data-testid="mobile-menu-close"
+        aria-label="Close menu"
+        type="button"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <nav class="panel-nav">
+      <ul>
+        {links.map(({ href, label }) => (
+          <li><a href={href}>{label}</a></li>
+        ))}
+      </ul>
+    </nav>
+
+    <div class="panel-footer">
+      <ThemeToggle />
+    </div>
+  </div>
+</div>
+
+<script>
+  const setupMobileMenu = () => {
+    const toggle = document.querySelector<HTMLButtonElement>('[data-testid="mobile-menu-toggle"]');
+    const closeBtn = document.querySelector<HTMLButtonElement>('[data-testid="mobile-menu-close"]');
+    const overlay = document.querySelector<HTMLElement>('[data-testid="mobile-menu-overlay"]');
+    const panel = document.querySelector<HTMLElement>('[data-testid="mobile-menu-panel"]');
+    const wrapper = document.querySelector<HTMLElement>('[data-testid="mobile-menu-wrapper"]');
+
+    if (!toggle || !closeBtn || !overlay || !panel || !wrapper) return;
+
+    // Portal overlay and panel to body to escape header's backdrop-filter containing block
+    if (overlay.parentElement !== document.body) document.body.appendChild(overlay);
+    if (panel.parentElement !== document.body) document.body.appendChild(panel);
+
+    let isOpen = false;
+    let isClosing = false;
+
+    const openMenu = () => {
+      if (isOpen) return;
+      isOpen = true;
+      wrapper.classList.add('open');
+      overlay.classList.add('open');
+      panel.classList.add('open');
+      toggle.setAttribute('aria-expanded', 'true');
+      panel.querySelector('a')?.focus();
+    };
+
+    const closeMenu = () => {
+      if (!isOpen || isClosing) return;
+      isClosing = true;
+      overlay.classList.add('closing');
+      panel.classList.add('closing');
+      toggle.setAttribute('aria-expanded', 'false');
+
+      const onEnd = () => {
+        isOpen = false;
+        isClosing = false;
+        wrapper.classList.remove('open');
+        overlay.classList.remove('open', 'closing');
+        panel.classList.remove('open', 'closing');
+        toggle.focus();
+      };
+
+      panel.addEventListener('animationend', onEnd, { once: true });
+      setTimeout(onEnd, 300);
+    };
+
+    toggle.addEventListener('click', openMenu);
+    closeBtn.addEventListener('click', closeMenu);
+    overlay.addEventListener('click', closeMenu);
+
+    document.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && wrapper.classList.contains('open')) {
+        closeMenu();
+      }
+    });
+
+    panel.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', () => {
+        closeMenu();
+      });
+    });
+  };
+
+  setupMobileMenu();
+  document.addEventListener('astro:after-swap', setupMobileMenu);
+</script>
+
+<style>
+  .mobile-menu-wrapper {
+    display: flex;
+    align-items: center;
+  }
+
+  @media (min-width: 768px) {
+    .mobile-menu-wrapper {
+      display: none;
+    }
+  }
+
+  .hamburger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: background-color var(--transition-fast);
+  }
+
+  .hamburger:hover,
+  .hamburger:focus-visible {
+    background: var(--color-surface);
+  }
+
+  .hamburger svg {
+    pointer-events: none;
+  }
+
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgb(0 0 0 / 0.5);
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+    transition: opacity var(--transition-base), visibility var(--transition-base);
+  }
+
+  :global(.overlay.open) {
+    opacity: 1;
+    pointer-events: auto;
+    visibility: visible;
+  }
+
+  :global(.overlay.closing) {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(300px, 80vw);
+    background: var(--color-surface-elevated);
+    z-index: 201;
+    display: none;
+    flex-direction: column;
+    box-shadow: var(--shadow-lg);
+  }
+
+  :global(.panel.open) {
+    display: flex;
+    animation: slide-in var(--transition-base) forwards;
+  }
+
+  @keyframes slide-in {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  :global(.panel.closing) {
+    animation: slide-out var(--transition-base) forwards;
+  }
+
+  @keyframes slide-out {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(100%);
+    }
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .panel-title {
+    font-weight: 600;
+    font-size: 1.125rem;
+    color: var(--color-text-primary);
+  }
+
+  .close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: background-color var(--transition-fast);
+  }
+
+  .close-btn:hover,
+  .close-btn:focus-visible {
+    background: var(--color-surface);
+  }
+
+  .close-btn svg {
+    pointer-events: none;
+  }
+
+  .panel-nav {
+    flex: 1;
+    padding: var(--spacing-md);
+    overflow-y: auto;
+  }
+
+  .panel-nav ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .panel-nav a {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: var(--spacing-sm) var(--spacing-md);
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+  }
+
+  .panel-nav a:hover,
+  .panel-nav a:focus-visible {
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+  }
+
+  .panel-footer {
+    padding: var(--spacing-md);
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+</style>

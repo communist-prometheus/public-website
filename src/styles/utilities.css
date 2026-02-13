@@ -1,7 +1,13 @@
 .container {
   max-width: 1200px;
   margin-inline: auto;
-  padding-inline: var(--spacing-md);
+  padding-inline: var(--spacing-sm);
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding-inline: var(--spacing-md);
+  }
 }
 
 .section {

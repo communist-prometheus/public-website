@@ -34,5 +34,6 @@ bun-debug.log*
 
 # Playwright
 e2e/screenshots/
+e2e/lighthouse-reports/
 test-results/
 playwright-report/
