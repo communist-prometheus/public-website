@@ -64,4 +64,22 @@ console.log('6. Theme toggle button present');
 assert.ok(enHtml.includes('id="theme-toggle"'), 'Theme toggle button must exist');
 console.log('   ✓ Theme toggle found\n');
 
+console.log('7. Service Worker present and configured');
+const swPath = join(DIST, 'sw.js');
+assert.ok(existsSync(swPath), 'sw.js must exist in dist');
+const swContent = readFileSync(swPath, 'utf-8');
+assert.ok(
+  !swContent.includes("'__PRECACHE_URLS__'"),
+  'PRECACHE_URLS must be replaced at build time',
+);
+assert.ok(!swContent.includes('__CACHE_VERSION__'), 'CACHE_VERSION must be replaced at build time');
+assert.ok(swContent.includes('/en/'), 'SW must precache /en/ route');
+assert.ok(swContent.includes('/en/blog/'), 'SW must precache /en/blog/ route');
+console.log('   ✓ Service Worker configured with precache routes\n');
+
+console.log('8. SW registration script in HTML');
+assert.ok(enHtml.includes('serviceWorker'), 'HTML must contain SW registration');
+assert.ok(enHtml.includes('/sw.js'), 'HTML must reference /sw.js');
+console.log('   ✓ SW registration found\n');
+
 console.log('=== All tests passed ===\n');

@@ -35,6 +35,11 @@ const { title, lang } = Astro.props;
       <slot />
     </main>
     <Footer lang={lang} />
+    <script is:inline>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js');
+      }
+    </script>
   </body>
 </html>
 
