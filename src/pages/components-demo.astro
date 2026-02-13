@@ -1,195 +1,170 @@
+---
+import CpButton from '@/components/cp/CpButton.astro';
+import CpCard from '@/components/cp/CpCard.astro';
+import '@/styles/theme.css';
+---
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Components Demo</title>
-    <script>
-      import '@communist-prometheus/cp-components';
-    </script>
-    <style>
-      :root {
-        --cp-color-accent: hsl(250, 84%, 54%);
-        --cp-color-accent-hover: hsl(250, 84%, 48%);
-        --cp-color-background: hsl(0, 0%, 100%);
-        --cp-color-surface: hsl(0, 0%, 98%);
-        --cp-color-text-primary: hsl(0, 0%, 13%);
-        --cp-color-text-secondary: hsl(0, 0%, 40%);
-        --cp-color-border: hsl(0, 0%, 90%);
-        --cp-spacing-xs: 0.5rem;
-        --cp-spacing-sm: 1rem;
-        --cp-spacing-md: 1.5rem;
-        --cp-spacing-lg: 2rem;
-        --cp-radius-sm: 0.5rem;
-        --cp-radius-md: 0.75rem;
-        --cp-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-        --cp-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-        --cp-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-      }
-
-      body {
-        font-family: system-ui, -apple-system, sans-serif;
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 2rem;
-        background: var(--cp-color-background);
-        color: var(--cp-color-text-primary);
-      }
-
-      h1 {
-        margin-bottom: 2rem;
-      }
-
-      section {
-        margin-bottom: 3rem;
-      }
-
-      h2 {
-        margin-bottom: 1rem;
-        color: var(--cp-color-text-secondary);
-        font-size: 1.25rem;
-        font-weight: 500;
-      }
-
-      .demo-grid {
-        display: grid;
-        gap: 1rem;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      }
-
-      .button-group {
-        display: flex;
-        gap: 1rem;
-        flex-wrap: wrap;
-        align-items: center;
-      }
-
-      .card-content {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-      }
-
-      .card-title {
-        font-size: 1.125rem;
-        font-weight: 600;
-        margin: 0;
-      }
-
-      .card-description {
-        color: var(--cp-color-text-secondary);
-        margin: 0;
-      }
-    </style>
   </head>
   <body>
     <h1>Component Library Demo</h1>
 
     <section>
       <h2>Buttons</h2>
-      
+
       <h3>Variants</h3>
       <div class="button-group">
-        <cp-button variant="primary">Primary Button</cp-button>
-        <cp-button variant="secondary">Secondary Button</cp-button>
-        <cp-button variant="ghost">Ghost Button</cp-button>
+        <CpButton variant="primary">Primary Button</CpButton>
+        <CpButton variant="secondary">Secondary Button</CpButton>
+        <CpButton variant="ghost">Ghost Button</CpButton>
       </div>
 
       <h3>Sizes</h3>
       <div class="button-group">
-        <cp-button size="sm">Small</cp-button>
-        <cp-button size="md">Medium</cp-button>
-        <cp-button size="lg">Large</cp-button>
+        <CpButton size="sm">Small</CpButton>
+        <CpButton size="md">Medium</CpButton>
+        <CpButton size="lg">Large</CpButton>
       </div>
 
       <h3>States</h3>
       <div class="button-group">
-        <cp-button>Enabled</cp-button>
-        <cp-button disabled>Disabled</cp-button>
+        <CpButton>Enabled</CpButton>
+        <CpButton disabled>Disabled</CpButton>
       </div>
     </section>
 
     <section>
       <h2>Cards</h2>
-      
+
       <div class="demo-grid">
-        <cp-card>
+        <CpCard>
           <div class="card-content">
             <h3 class="card-title">Basic Card</h3>
             <p class="card-description">This is a simple card component with default styling.</p>
           </div>
-        </cp-card>
+        </CpCard>
 
-        <cp-card elevated>
+        <CpCard elevated>
           <div class="card-content">
             <h3 class="card-title">Elevated Card</h3>
             <p class="card-description">This card has a shadow for elevation effect.</p>
           </div>
-        </cp-card>
+        </CpCard>
 
-        <cp-card hoverable>
+        <CpCard hoverable>
           <div class="card-content">
             <h3 class="card-title">Hoverable Card</h3>
             <p class="card-description">Hover over this card to see the effect.</p>
           </div>
-        </cp-card>
+        </CpCard>
 
-        <cp-card hoverable elevated>
+        <CpCard hoverable elevated>
           <div class="card-content">
             <h3 class="card-title">Interactive Card</h3>
             <p class="card-description">This card is both hoverable and elevated.</p>
           </div>
-        </cp-card>
+        </CpCard>
       </div>
     </section>
 
     <section>
       <h2>Combined Example</h2>
       <div class="demo-grid">
-        <cp-card hoverable elevated>
+        <CpCard hoverable elevated>
           <div class="card-content">
             <h3 class="card-title">Sign Up</h3>
             <p class="card-description">Create an account to get started with our platform.</p>
-            <cp-button variant="primary" style="margin-top: 1rem;">Get Started</cp-button>
+            <div class="card-action">
+              <CpButton variant="primary">Get Started</CpButton>
+            </div>
           </div>
-        </cp-card>
+        </CpCard>
 
-        <cp-card hoverable elevated>
+        <CpCard hoverable elevated>
           <div class="card-content">
             <h3 class="card-title">Documentation</h3>
             <p class="card-description">Learn how to use our component library effectively.</p>
-            <cp-button variant="secondary" style="margin-top: 1rem;">Read Docs</cp-button>
+            <div class="card-action">
+              <CpButton variant="secondary">Read Docs</CpButton>
+            </div>
           </div>
-        </cp-card>
+        </CpCard>
 
-        <cp-card hoverable elevated>
+        <CpCard hoverable elevated>
           <div class="card-content">
             <h3 class="card-title">Contact</h3>
             <p class="card-description">Have questions? Get in touch with our team.</p>
-            <cp-button variant="ghost" style="margin-top: 1rem;">Contact Us</cp-button>
+            <div class="card-action">
+              <CpButton variant="ghost">Contact Us</CpButton>
+            </div>
           </div>
-        </cp-card>
+        </CpCard>
       </div>
     </section>
-
-    <script is:inline>
-      window.addEventListener('DOMContentLoaded', () => {
-        customElements.whenDefined('cp-button').then(() => {
-          document.querySelectorAll('cp-button').forEach((button) => {
-            button.addEventListener('cp-click', (e) => {
-              console.log('Button clicked:', e.detail);
-            });
-          });
-        });
-
-        customElements.whenDefined('cp-card').then(() => {
-          document.querySelectorAll('cp-card[hoverable]').forEach((card) => {
-            card.addEventListener('cp-card-click', (e) => {
-              console.log('Card clicked:', e.detail);
-            });
-          });
-        });
-      });
-    </script>
   </body>
 </html>
+
+<style>
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: var(--color-background);
+    color: var(--color-text-primary);
+  }
+
+  h1 {
+    margin-bottom: 2rem;
+  }
+
+  section {
+    margin-bottom: 3rem;
+  }
+
+  h2 {
+    margin-bottom: 1rem;
+    color: var(--color-text-secondary);
+    font-size: 1.25rem;
+    font-weight: 500;
+  }
+
+  .demo-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+
+  .button-group {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .card-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .card-description {
+    color: var(--color-text-secondary);
+    margin: 0;
+  }
+
+  .card-action {
+    margin-top: 1rem;
+  }
+</style>

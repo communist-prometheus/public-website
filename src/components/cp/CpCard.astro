@@ -1,15 +1,43 @@
 ---
-import { renderCpCard } from '@/lib/lit-ssr/render-component';
-
 interface Props {
   hoverable?: boolean;
   elevated?: boolean;
+  class?: string;
 }
 
-const props = Astro.props;
-const slotContent = await Astro.slots.render('default');
+const { hoverable = false, elevated = false, class: className } = Astro.props;
 
-const html = await renderCpCard(props, slotContent);
+const classes = ['card', hoverable ? 'hoverable' : '', elevated ? 'elevated' : '', className ?? '']
+  .filter(Boolean)
+  .join(' ');
+
+const role = hoverable ? 'button' : 'article';
+const tabindex = hoverable ? '0' : undefined;
 ---
 
-<Fragment set:html={html} />
+<div class={classes} role={role} tabindex={tabindex}>
+  <slot />
+</div>
+
+<style>
+  .card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    transition: box-shadow var(--transition-fast);
+  }
+
+  .card.hoverable:hover {
+    box-shadow: var(--shadow-md);
+    cursor: pointer;
+  }
+
+  .card.elevated {
+    box-shadow: var(--shadow-sm);
+  }
+
+  .card.elevated.hoverable:hover {
+    box-shadow: var(--shadow-lg);
+  }
+</style>

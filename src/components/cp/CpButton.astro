@@ -1,6 +1,4 @@
 ---
-import { renderCpButton } from '@/lib/lit-ssr/render-component';
-
 interface Props {
   variant?: 'primary' | 'secondary' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
@@ -8,12 +6,87 @@ interface Props {
   type?: 'button' | 'submit' | 'reset';
   id?: string;
   ariaLabel?: string;
+  class?: string;
 }
 
-const props = Astro.props;
-const slotContent = await Astro.slots.render('default');
+const {
+  variant = 'primary',
+  size = 'md',
+  disabled = false,
+  type = 'button',
+  id,
+  ariaLabel,
+  class: className,
+} = Astro.props;
 
-const html = await renderCpButton(props, slotContent);
+const classes = [variant, size, className].filter(Boolean).join(' ');
 ---
 
-<Fragment set:html={html} />
+<button
+  class={classes}
+  disabled={disabled}
+  type={type}
+  id={id}
+  aria-label={ariaLabel}
+>
+  <slot />
+</button>
+
+<style>
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: inherit;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-decoration: none;
+  }
+
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .primary {
+    background: var(--color-accent);
+    color: white;
+  }
+
+  .primary:hover:not(:disabled) {
+    background: var(--color-accent-hover);
+  }
+
+  .secondary {
+    background: transparent;
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+  }
+
+  .secondary:hover:not(:disabled) {
+    background: var(--color-surface);
+  }
+
+  .ghost {
+    background: transparent;
+    color: var(--color-text-primary);
+  }
+
+  .ghost:hover:not(:disabled) {
+    background: var(--color-surface);
+  }
+
+  .sm {
+    padding: calc(var(--spacing-xs) * 0.75) var(--spacing-sm);
+    font-size: 0.875rem;
+  }
+
+  .lg {
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: 1.125rem;
+  }
+</style>

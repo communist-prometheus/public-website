@@ -2,7 +2,7 @@
 import CpButton from '@/components/cp/CpButton.astro';
 ---
 
-<CpButton id="theme-toggle" variant="ghost" ariaLabel="Toggle theme">
+<CpButton id="theme-toggle" variant="ghost" ariaLabel="Toggle theme" class="theme-btn">
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
     <circle class="sun" cx="12" cy="12" r="5"></circle>
     <line class="sun" x1="12" y1="1" x2="12" y2="3"></line>
@@ -50,17 +50,11 @@ import CpButton from '@/components/cp/CpButton.astro';
     });
   };
 
-  customElements.whenDefined('cp-button').then(() => {
-    const button = document.getElementById('theme-toggle');
-    
-    button?.addEventListener('cp-click', ((e: CustomEvent<{ originalEvent: MouseEvent }>) => {
-      toggleThemeWithAnimation(e.detail.originalEvent);
-    }) as EventListener);
-  });
+  document.getElementById('theme-toggle')?.addEventListener('click', toggleThemeWithAnimation);
 </script>
 
 <style>
-  cp-button::part(button) {
+  .theme-btn {
     width: 40px;
     height: 40px;
     padding: 0;

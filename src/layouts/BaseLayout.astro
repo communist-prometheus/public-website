@@ -28,14 +28,8 @@ const { title, lang } = Astro.props;
         document.documentElement.dataset['theme'] = theme;
       })();
     </script>
-    <script is:inline>
-      (function(){var E=["click","keydown"],R=[];function r(e){var t=e.target;if(t instanceof HTMLElement&&t.closest("[defer-hydration]"))R.push({target:t,event:e})}for(var i=0;i<E.length;i++)document.addEventListener(E[i],r,{capture:true});globalThis.__cpEventReplay={replay:function(){for(var i=0;i<E.length;i++)document.removeEventListener(E[i],r,{capture:true});for(var j=0;j<R.length;j++)R[j].target.dispatchEvent(new R[j].event.constructor(R[j].event.type,R[j].event));R.length=0}}})();
-    </script>
   </head>
   <body>
-    <script>
-      import '@/scripts/hydrate-components';
-    </script>
     <Header lang={lang} />
     <main>
       <slot />

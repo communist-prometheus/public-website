@@ -18,7 +18,7 @@ const { title, description, category, slug, image, lang } = Astro.props;
 const readMore = lang === 'en' ? 'Read more' : 'Читать далее';
 ---
 
-<CpCard hoverable elevated>
+<CpCard hoverable elevated class="post-card">
   {image && <img src={image.src} alt={title} class="post-image" />}
   <div class="post-content">
     <span class="category">{category}</span>
@@ -31,11 +31,12 @@ const readMore = lang === 'en' ? 'Read more' : 'Читать далее';
 </CpCard>
 
 <style>
-  cp-card {
+  .post-card {
     display: flex;
     flex-direction: column;
     height: 100%;
     overflow: hidden;
+    padding: 0;
   }
 
   .post-image {
