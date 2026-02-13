@@ -44,7 +44,7 @@ const { title, lang } = Astro.props;
     </main>
     <Footer lang={lang} />
     <script is:inline>
-      if ('serviceWorker' in navigator) {
+      if ('serviceWorker' in navigator && location.hostname !== 'localhost') {
         navigator.serviceWorker.register('/sw.js');
       }
     </script>
