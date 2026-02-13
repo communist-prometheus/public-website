@@ -1,5 +1,3 @@
-/// <reference lib="webworker" />
-
 /**
  * Service Worker for Prometheus SSG site.
  *
@@ -9,25 +7,31 @@
  * - All known routes are precached on install for instant navigation
  *
  * Cache versioning: CACHE_VERSION is replaced at build time by the
- * generate-sw-manifest integration. Changing it busts the old cache.
+ * sw-manifest integration. Changing it busts the old cache.
+ *
+ * NOTE: This file is compiled by esbuild at build time (not by tsc).
+ * The root tsconfig excludes src/sw/ to avoid DOM/WebWorker lib conflicts.
  */
+
+export type {};
+
+const sw = globalThis as unknown as ServiceWorkerGlobalScope;
 
 const CACHE_VERSION = '__CACHE_VERSION__';
 const CACHE_NAME = `prometheus-v${CACHE_VERSION}`;
 
-/** @type {string[]} Populated at build time */
-const PRECACHE_URLS = '__PRECACHE_URLS__';
+const PRECACHE_URLS: readonly string[] = '__PRECACHE_URLS__' as unknown as readonly string[];
 
 /* ------------------------------------------------------------------ */
 /*  Install — precache all known routes                               */
 /* ------------------------------------------------------------------ */
 
-self.addEventListener('install', (event) => {
+sw.addEventListener('install', (event) => {
   event.waitUntil(
     caches
       .open(CACHE_NAME)
-      .then((cache) => cache.addAll(PRECACHE_URLS))
-      .then(() => self.skipWaiting()),
+      .then((cache) => cache.addAll([...PRECACHE_URLS]))
+      .then(() => sw.skipWaiting()),
   );
 });
 
@@ -35,7 +39,7 @@ self.addEventListener('install', (event) => {
 /*  Activate — purge old caches                                       */
 /* ------------------------------------------------------------------ */
 
-self.addEventListener('activate', (event) => {
+sw.addEventListener('activate', (event) => {
   event.waitUntil(
     caches
       .keys()
@@ -46,7 +50,7 @@ self.addEventListener('activate', (event) => {
             .map((key) => caches.delete(key)),
         ),
       )
-      .then(() => self.clients.claim()),
+      .then(() => sw.clients.claim()),
   );
 });
 
@@ -54,16 +58,16 @@ self.addEventListener('activate', (event) => {
 /*  Fetch — strategy per request type                                 */
 /* ------------------------------------------------------------------ */
 
-self.addEventListener('fetch', (event) => {
+sw.addEventListener('fetch', (event) => {
   const { request } = event;
 
   if (request.method !== 'GET') return;
 
   const url = new URL(request.url);
 
-  if (url.origin !== self.location.origin) return;
+  if (url.origin !== sw.location.origin) return;
 
-  const accept = request.headers.get('accept') || '';
+  const accept = request.headers.get('accept') ?? '';
   const isNavigate = request.mode === 'navigate' || accept.includes('text/html');
 
   event.respondWith(isNavigate ? staleWhileRevalidate(request) : cacheFirst(request));
@@ -73,7 +77,7 @@ self.addEventListener('fetch', (event) => {
 /*  Stale-while-revalidate: return cache immediately, refresh behind  */
 /* ------------------------------------------------------------------ */
 
-async function staleWhileRevalidate(request) {
+const staleWhileRevalidate = async (request: Request): Promise<Response> => {
   const cache = await caches.open(CACHE_NAME);
   const cached = await cache.match(request);
 
@@ -84,14 +88,14 @@ async function staleWhileRevalidate(request) {
     return response;
   });
 
-  return cached || networkFetch;
-}
+  return cached ?? networkFetch;
+};
 
 /* ------------------------------------------------------------------ */
 /*  Cache-first: use cache, fall back to network                      */
 /* ------------------------------------------------------------------ */
 
-async function cacheFirst(request) {
+const cacheFirst = async (request: Request): Promise<Response> => {
   const cached = await caches.match(request);
   if (cached) return cached;
 
@@ -103,4 +107,4 @@ async function cacheFirst(request) {
   }
 
   return response;
-}
+};

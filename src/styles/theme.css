@@ -45,51 +45,35 @@
   color-scheme: dark;
 }
 
-@view-transition {
-  navigation: auto;
+/* Theme toggle: circular reveal via document.startViewTransition() */
+html:active-view-transition-type(theme) {
+  view-transition-name: root;
+
+  &::view-transition-group(root),
+  &::view-transition-image-pair(root) {
+    isolation: isolate;
+  }
+
+  &::view-transition-old(root) {
+    animation: none;
+    mix-blend-mode: normal;
+    z-index: 1;
+  }
+
+  &::view-transition-new(root) {
+    animation: reveal 0.5s ease-in-out forwards;
+    mix-blend-mode: normal;
+    z-index: 2;
+  }
 }
 
-@supports (view-transition-name: none) {
-  /* Default: no view-transition-name on root */
-  :root {
-    view-transition-name: none;
-  }
+/* Navigation transitions: animate only main content with slide */
+::view-transition-old(main-content) {
+  animation: slide-out 0.3s ease-out forwards;
+}
 
-  /* For theme transitions: animate entire page with circular reveal */
-  html:active-view-transition-type(theme) {
-    view-transition-name: root;
-
-    /* Disable main-content animation during theme toggle */
-    main {
-      view-transition-name: none;
-    }
-
-    &::view-transition-group(root),
-    &::view-transition-image-pair(root) {
-      isolation: isolate;
-    }
-
-    &::view-transition-old(root) {
-      animation: none;
-      mix-blend-mode: normal;
-      z-index: 1;
-    }
-
-    &::view-transition-new(root) {
-      animation: reveal 0.5s ease-in-out forwards;
-      mix-blend-mode: normal;
-      z-index: 2;
-    }
-  }
-
-  /* For navigation transitions: animate only main content with slide */
-  ::view-transition-old(main-content) {
-    animation: slide-out 0.3s ease-out forwards;
-  }
-
-  ::view-transition-new(main-content) {
-    animation: slide-in 0.3s ease-out forwards;
-  }
+::view-transition-new(main-content) {
+  animation: slide-in 0.3s ease-out forwards;
 }
 
 @keyframes reveal {
