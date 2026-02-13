@@ -1,16 +1,24 @@
-<!doctype html>
-<html>
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="refresh" content="0;url=/en" />
-    <link rel="canonical" href="/en" />
-    <meta name="robots" content="noindex" />
-    <title>Redirecting…</title>
-    <script is:inline>
-      location.replace('/en');
-    </script>
-    <style is:inline>
-      html { background: hsl(0, 0%, 10%); }
-    </style>
-  </head>
-</html>
+---
+import { getBlogPosts } from '@/features/blog/helpers/getBlogPosts';
+import Hero from '@/features/home/components/Hero.astro';
+import NewsSection from '@/features/home/components/NewsSection.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+
+const lang = 'en';
+const posts = await getBlogPosts(lang);
+const latestPosts = posts.slice(0, 3);
+---
+
+<BaseLayout title="Prometheus - Modern Web Platform" lang={lang}>
+  <Hero
+    title="Welcome to Prometheus"
+    description="A modern platform for sharing knowledge, ideas, and innovations. Built with cutting-edge web technologies to deliver the best experience."
+  />
+  <NewsSection posts={latestPosts} lang={lang} />
+</BaseLayout>
+
+<script is:inline>
+  if (location.pathname === '/') {
+    history.replaceState(null, '', '/en');
+  }
+</script>
