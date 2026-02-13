@@ -67,12 +67,12 @@ html:active-view-transition-type(theme) {
   }
 }
 
-/* Navigation transitions: animate only main content with slide */
-::view-transition-old(main-content) {
+/* Navigation transitions: animate only main content with slide (not during theme toggle) */
+html:not(:active-view-transition-type(theme))::view-transition-old(main-content) {
   animation: slide-out 0.3s ease-out forwards;
 }
 
-::view-transition-new(main-content) {
+html:not(:active-view-transition-type(theme))::view-transition-new(main-content) {
   animation: slide-in 0.3s ease-out forwards;
 }
 

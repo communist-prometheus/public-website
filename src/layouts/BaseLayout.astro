@@ -24,10 +24,14 @@ const { title, lang } = Astro.props;
     <ClientRouter />
     <script is:inline>
       (function () {
-        const theme =
-          localStorage.getItem('theme') ||
-          (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        document.documentElement.dataset['theme'] = theme;
+        var applyTheme = function () {
+          var theme =
+            localStorage.getItem('theme') ||
+            (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          document.documentElement.dataset['theme'] = theme;
+        };
+        applyTheme();
+        document.addEventListener('astro:after-swap', applyTheme);
       })();
     </script>
   </head>
