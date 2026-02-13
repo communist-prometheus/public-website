@@ -49,6 +49,11 @@
 html:active-view-transition-type(theme) {
   view-transition-name: root;
 
+  /* Remove main-content from its own group so it falls into root snapshot */
+  main {
+    view-transition-name: none;
+  }
+
   &::view-transition-group(root),
   &::view-transition-image-pair(root) {
     isolation: isolate;

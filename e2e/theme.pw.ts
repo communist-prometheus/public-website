@@ -134,6 +134,181 @@ test.describe('Theme toggle animation', () => {
     expect(Buffer.compare(midBuf, afterBuf)).not.toBe(0);
     expect(Buffer.compare(beforeBuf, afterBuf)).not.toBe(0);
   });
+
+  test('circular reveal covers ALL elements — no instant color changes (CDP animation control)', async ({
+    page,
+  }) => {
+    await page.goto(BASE);
+    await page.waitForLoadState('networkidle');
+
+    await page.evaluate(() => {
+      localStorage.setItem('theme', 'light');
+      document.documentElement.dataset['theme'] = 'light';
+    });
+    await page.waitForTimeout(200);
+
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send('Animation.enable');
+
+    const animationIds: string[] = [];
+    cdp.on('Animation.animationStarted', (evt: { animation: { id: string } }) => {
+      animationIds.push(evt.animation.id);
+    });
+
+    const regions = await page.evaluate(() => {
+      const collect = (name: string, sel: string, corner = false) => {
+        const el = document.querySelector(sel);
+        if (!el) return undefined;
+        const r = el.getBoundingClientRect();
+        return {
+          name,
+          cx: corner ? Math.round(r.x + 12) : Math.round(r.x + r.width / 2),
+          cy: corner ? Math.round(r.y + 12) : Math.round(r.y + 12),
+        };
+      };
+      return [
+        collect('header', 'header'),
+        collect('main', 'main'),
+        collect('card-1', '.card:nth-child(1)', true),
+        collect('card-2', '.card:nth-child(2)', true),
+      ].filter(Boolean) as Array<{ name: string; cx: number; cy: number }>;
+    });
+
+    const samplePixel = (buf: Buffer, px: number, py: number) =>
+      page.evaluate(
+        ({ b64, sx, sy }) => {
+          const img = new Image();
+          return new Promise<{ r: number; g: number; b: number }>((resolve) => {
+            img.onload = () => {
+              const canvas = document.createElement('canvas');
+              canvas.width = img.width;
+              canvas.height = img.height;
+              const ctx = canvas.getContext('2d');
+              if (!ctx) {
+                resolve({ r: 0, g: 0, b: 0 });
+                return;
+              }
+              ctx.drawImage(img, 0, 0);
+              const d = ctx.getImageData(sx, sy, 1, 1).data;
+              resolve({ r: d[0] ?? 0, g: d[1] ?? 0, b: d[2] ?? 0 });
+            };
+            img.src = `data:image/png;base64,${b64}`;
+          });
+        },
+        { b64: buf.toString('base64'), sx: px, sy: py },
+      );
+
+    const beforeFull = await page.screenshot({
+      path: 'e2e/screenshots/theme-14-elements-before.png',
+    });
+
+    const toggleBtn = page.locator('#theme-toggle');
+    const btnBox = await toggleBtn.boundingBox();
+    expect(btnBox).toBeTruthy();
+    const { x, y, width, height } = btnBox as {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    };
+    await page.mouse.click(x + width / 2, y + height / 2);
+
+    await page.waitForTimeout(50);
+
+    if (animationIds.length > 0) {
+      await cdp.send('Animation.setPaused', { animations: animationIds, paused: true });
+    }
+
+    await page.waitForTimeout(50);
+    const pausedFull = await page.screenshot({
+      path: 'e2e/screenshots/theme-15-elements-paused.png',
+    });
+
+    if (animationIds.length > 0) {
+      await cdp.send('Animation.setPaused', { animations: animationIds, paused: false });
+    }
+    await page.waitForTimeout(700);
+    const afterFull = await page.screenshot({
+      path: 'e2e/screenshots/theme-16-elements-after.png',
+    });
+
+    await cdp.send('Animation.disable');
+    await cdp.detach();
+
+    const colorDist = (
+      a: { r: number; g: number; b: number },
+      b: { r: number; g: number; b: number },
+    ) => Math.sqrt((a.r - b.r) ** 2 + (a.g - b.g) ** 2 + (a.b - b.b) ** 2);
+
+    const THRESHOLD = 20;
+
+    type Diag = {
+      name: string;
+      before: { r: number; g: number; b: number };
+      paused: { r: number; g: number; b: number };
+      after: { r: number; g: number; b: number };
+      distBA: number;
+      distPB: number;
+      distPA: number;
+      status: string;
+    };
+    const diagnostics: Diag[] = [];
+
+    for (const region of regions) {
+      const bPx = await samplePixel(beforeFull, region.cx, region.cy);
+      const pPx = await samplePixel(pausedFull, region.cx, region.cy);
+      const aPx = await samplePixel(afterFull, region.cx, region.cy);
+
+      const distBA = colorDist(bPx, aPx);
+      const distPB = colorDist(pPx, bPx);
+      const distPA = colorDist(pPx, aPx);
+
+      const themeChanged = distBA > THRESHOLD;
+      const stillOld = themeChanged && distPB < THRESHOLD;
+      const alreadyNew = themeChanged && distPA < THRESHOLD;
+      const crossFading = themeChanged && !stillOld && !alreadyNew;
+
+      diagnostics.push({
+        name: region.name,
+        before: bPx,
+        paused: pPx,
+        after: aPx,
+        distBA,
+        distPB,
+        distPA,
+        status: !themeChanged
+          ? 'NO_CHANGE'
+          : stillOld
+            ? 'OK_REVEAL'
+            : alreadyNew
+              ? 'BUG_INSTANT'
+              : crossFading
+                ? 'BUG_CROSSFADE'
+                : 'UNKNOWN',
+      });
+    }
+
+    console.log(
+      `\n=== Theme Reveal Diagnostics (CDP paused, ${animationIds.length} animations captured) ===`,
+    );
+    for (const d of diagnostics) {
+      const fmt = (c: { r: number; g: number; b: number }) => `rgb(${c.r},${c.g},${c.b})`;
+      console.log(
+        `  ${d.name.padEnd(10)} ${d.status.padEnd(16)} | ` +
+          `before=${fmt(d.before)} paused=${fmt(d.paused)} after=${fmt(d.after)} | ` +
+          `Δ(b↔a)=${d.distBA.toFixed(1)} Δ(p↔b)=${d.distPB.toFixed(1)} Δ(p↔a)=${d.distPA.toFixed(1)}`,
+      );
+    }
+    console.log(`${'='.repeat(90)}\n`);
+
+    const bugs = diagnostics.filter(
+      (d) => d.status === 'BUG_INSTANT' || d.status === 'BUG_CROSSFADE',
+    );
+    if (bugs.length > 0) {
+      const details = bugs.map((b) => `${b.name} (${b.status})`).join(', ');
+      expect(bugs, `Elements NOT covered by circular reveal: ${details}`).toHaveLength(0);
+    }
+  });
 });
 
 /* ------------------------------------------------------------------ */
