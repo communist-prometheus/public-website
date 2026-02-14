@@ -7,6 +7,7 @@ const defineSection = <T extends Readonly<Record<string, Entry>>>(section: T): T
 const nav = defineSection({
   home: { en: 'Home', ru: 'Главная' },
   blog: { en: 'Blog', ru: 'Блог' },
+  positions: { en: 'Positions', ru: 'Позиции' },
   manifest: { en: 'Manifest', ru: 'Манифест' },
   menu: { en: 'Menu', ru: 'Меню' },
 });
@@ -36,6 +37,14 @@ const home = defineSection({
   viewAllPosts: { en: 'View all posts', ru: 'Все посты' },
 });
 
+const positions = defineSection({
+  pageTitle: { en: 'Positions - Prometheus', ru: 'Позиции - Prometheus' },
+  heading: { en: 'Positions', ru: 'Позиции' },
+  viewAll: { en: 'View all positions', ru: 'Все позиции' },
+  readMore: { en: 'Read more', ru: 'Подробнее' },
+  backToList: { en: '← Back to positions', ru: '← Назад к позициям' },
+});
+
 const lookup =
   (lang: Language) =>
   (entry: Entry): string =>
@@ -48,6 +57,7 @@ export const t = (lang: Language) => {
     footer: (key: keyof typeof footer): string => resolve(footer[key]),
     blog: (key: keyof typeof blog): string => resolve(blog[key]),
     home: (key: keyof typeof home): string => resolve(home[key]),
+    positions: (key: keyof typeof positions): string => resolve(positions[key]),
   };
 };
 
@@ -56,6 +66,7 @@ export const getNavLinks = (lang: Language) => {
   return [
     { href: `/${lang}`, label: tr.nav('home') },
     { href: `/${lang}/blog`, label: tr.nav('blog') },
+    { href: `/${lang}/positions`, label: tr.nav('positions') },
     { href: `/${lang}/manifest`, label: tr.nav('manifest') },
   ];
 };

@@ -1,5 +1,6 @@
 ---
 import type { Language } from '@/config/i18n';
+import { getNavLinks } from '@/config/translations';
 
 interface Props {
   lang: Language;
@@ -7,20 +8,7 @@ interface Props {
 
 const { lang } = Astro.props;
 
-const nav = {
-  en: [
-    { href: `/${lang}`, label: 'Home' },
-    { href: `/${lang}/blog`, label: 'Blog' },
-    { href: `/${lang}/manifest`, label: 'Manifest' },
-  ],
-  ru: [
-    { href: `/${lang}`, label: 'Главная' },
-    { href: `/${lang}/blog`, label: 'Блог' },
-    { href: `/${lang}/manifest`, label: 'Манифест' },
-  ],
-};
-
-const links = nav[lang];
+const links = getNavLinks(lang);
 ---
 
 <nav>
