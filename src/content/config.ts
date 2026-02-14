@@ -9,7 +9,7 @@ const blogCollection = defineCollection({
       category: z.string(),
       pubDate: z.date(),
       image: image().optional(),
-      lang: z.enum(['en', 'ru']),
+      lang: z.enum(['en', 'ru', 'it', 'es']),
     }),
 });
 
@@ -17,7 +17,7 @@ const pagesCollection = defineCollection({
   type: 'content',
   schema: z.object({
     title: z.string(),
-    lang: z.enum(['en', 'ru']),
+    lang: z.enum(['en', 'ru', 'it', 'es']),
   }),
 });
 
