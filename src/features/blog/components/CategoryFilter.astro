@@ -17,26 +17,33 @@ const allLabel = lang === 'en' ? 'All' : 'Все';
 </div>
 
 <script>
-  const buttons = document.querySelectorAll('.category-btn');
-  const posts = document.querySelectorAll('.post-card');
+  const setupCategoryFilter = () => {
+    const buttons = document.querySelectorAll<HTMLButtonElement>('.category-btn');
+    const posts = document.querySelectorAll<HTMLElement>('.grid [data-category]');
 
-  buttons.forEach((button) => {
-    button.addEventListener('click', () => {
-      const category = button.getAttribute('data-category');
+    if (buttons.length === 0 || posts.length === 0) return;
 
-      buttons.forEach((btn) => btn.classList.remove('active'));
-      button.classList.add('active');
-
+    const filterByCategory = (category: string) => {
       posts.forEach((post) => {
         const postCategory = post.getAttribute('data-category');
-        if (category === 'all' || postCategory === category) {
-          (post as HTMLElement).style.display = 'flex';
-        } else {
-          (post as HTMLElement).style.display = 'none';
-        }
+        post.style.display = category === 'all' || postCategory === category ? '' : 'none';
+      });
+    };
+
+    buttons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const category = button.getAttribute('data-category') ?? 'all';
+
+        buttons.forEach((btn) => btn.classList.remove('active'));
+        button.classList.add('active');
+
+        filterByCategory(category);
       });
     });
-  });
+  };
+
+  setupCategoryFilter();
+  document.addEventListener('astro:after-swap', setupCategoryFilter);
 </script>
 
 <style>
