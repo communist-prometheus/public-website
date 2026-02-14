@@ -1,5 +1,6 @@
 ---
 import type { Language } from '@/config/i18n';
+import { t } from '@/config/translations';
 
 interface Props {
   categories: string[];
@@ -8,7 +9,7 @@ interface Props {
 
 const { categories, lang } = Astro.props;
 
-const allLabel = lang === 'en' ? 'All' : 'Все';
+const allLabel = t(lang).blog('allCategory');
 ---
 
 <div class="category-filter">

@@ -1,5 +1,6 @@
 ---
 import { SUPPORTED_LANGUAGES } from '@/config/i18n';
+import { t } from '@/config/translations';
 import CategoryFilter from '@/features/blog/components/CategoryFilter.astro';
 import PostCard from '@/features/blog/components/PostCard.astro';
 import { getBlogPosts, getUniqueCategories } from '@/features/blog/helpers/getBlogPosts';
@@ -12,21 +13,15 @@ const { lang } = Astro.params;
 const posts = await getBlogPosts(lang);
 const categories = getUniqueCategories(posts);
 
-const pageTitle = {
-  en: 'Blog - Prometheus',
-  ru: 'Блог - Prometheus',
-};
-
-const heading = {
-  en: 'Blog',
-  ru: 'Блог',
-};
+const tr = t(lang);
+const pageTitle = tr.blog('pageTitle');
+const heading = tr.blog('heading');
 ---
 
-<BaseLayout title={pageTitle[lang]} lang={lang}>
+<BaseLayout title={pageTitle} lang={lang}>
   <div class="section">
     <div class="container">
-      <h1>{heading[lang]}</h1>
+      <h1>{heading}</h1>
       <CategoryFilter categories={categories} lang={lang} />
       <div class="grid grid-3">
         {

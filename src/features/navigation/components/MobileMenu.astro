@@ -1,5 +1,6 @@
 ---
 import type { Language } from '@/config/i18n';
+import { getNavLinks, t } from '@/config/translations';
 import ThemeToggle from '@/features/theme/components/ThemeToggle.astro';
 
 interface Props {
@@ -8,20 +9,8 @@ interface Props {
 
 const { lang } = Astro.props;
 
-const nav = {
-  en: [
-    { href: `/${lang}`, label: 'Home' },
-    { href: `/${lang}/blog`, label: 'Blog' },
-    { href: `/${lang}/manifest`, label: 'Manifest' },
-  ],
-  ru: [
-    { href: `/${lang}`, label: 'Главная' },
-    { href: `/${lang}/blog`, label: 'Блог' },
-    { href: `/${lang}/manifest`, label: 'Манифест' },
-  ],
-};
-
-const links = nav[lang];
+const links = getNavLinks(lang);
+const tr = t(lang);
 ---
 
 <div class="mobile-menu-wrapper" data-testid="mobile-menu-wrapper">
@@ -55,7 +44,7 @@ const links = nav[lang];
     aria-label="Navigation menu"
   >
     <div class="panel-header">
-      <span class="panel-title">Menu</span>
+      <span class="panel-title">{tr.nav('menu')}</span>
       <button
         class="close-btn"
         data-testid="mobile-menu-close"

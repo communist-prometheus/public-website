@@ -1,5 +1,6 @@
 ---
 import type { Language } from '@/config/i18n';
+import { t } from '@/config/translations';
 
 interface Props {
   lang: Language;
@@ -8,7 +9,7 @@ interface Props {
 const { lang } = Astro.props;
 
 const currentYear = new Date().getFullYear();
-const copyright = lang === 'en' ? '© All rights reserved' : '© Все права защищены';
+const copyright = t(lang).footer('copyright');
 ---
 
 <footer transition:persist="footer">
