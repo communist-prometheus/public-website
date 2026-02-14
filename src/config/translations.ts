@@ -32,6 +32,7 @@ const home = defineSection({
     en: 'A modern platform for sharing knowledge, ideas, and innovations. Built with cutting-edge web technologies to deliver the best experience.',
     ru: 'Современная платформа для обмена знаниями, идеями и инновациями. Построена с использованием передовых веб-технологий для лучшего опыта.',
   },
+  aboutUs: { en: 'About Us', ru: 'О нас' },
   latestNews: { en: 'Latest News', ru: 'Последние новости' },
   viewAllPosts: { en: 'View all posts', ru: 'Все посты' },
 });

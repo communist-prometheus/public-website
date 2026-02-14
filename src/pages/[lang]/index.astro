@@ -1,6 +1,7 @@
 ---
 import { SUPPORTED_LANGUAGES } from '@/config/i18n';
 import { t } from '@/config/translations';
+import AboutSection from '@/features/about/components/AboutSection.astro';
 import { getBlogPosts } from '@/features/blog/helpers/getBlogPosts';
 import Hero from '@/features/home/components/Hero.astro';
 import NewsSection from '@/features/home/components/NewsSection.astro';
@@ -21,5 +22,6 @@ const heroDescription = tr.home('heroDescription');
 
 <BaseLayout title={title} lang={lang}>
   <Hero title={heroTitle} description={heroDescription} />
+  <AboutSection lang={lang} />
   <NewsSection posts={latestPosts} lang={lang} />
 </BaseLayout>

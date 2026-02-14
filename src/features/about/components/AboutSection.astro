@@ -1,0 +1,52 @@
+---
+import type { Language } from '@/config/i18n';
+import { t } from '@/config/translations';
+import { getAboutEntries } from '../helpers/getAboutEntries';
+import AboutCard from './AboutCard.astro';
+
+interface Props {
+  readonly lang: Language;
+}
+
+const { lang } = Astro.props;
+
+const entries = await getAboutEntries(lang);
+const tr = t(lang);
+const heading = tr.home('aboutUs');
+---
+
+<section class="about-section" data-testid="about-section">
+  <div class="container">
+    <h2>{heading}</h2>
+    <div class="about-grid">
+      {entries.map((entry) => (
+        <AboutCard title={entry.data.title} body={entry.body} />
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .about-section {
+    padding-block: var(--spacing-2xl);
+    background: var(--color-surface);
+  }
+
+  h2 {
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    font-weight: 600;
+    margin-bottom: var(--spacing-xl);
+  }
+
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+
+  @media (min-width: 768px) {
+    .about-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>
