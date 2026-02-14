@@ -2,6 +2,7 @@
 import type { Language } from '@/config/i18n';
 import { getNavLinks, t } from '@/config/translations';
 import ThemeToggle from '@/features/theme/components/ThemeToggle.astro';
+import LanguageSwitcher from './LanguageSwitcher.astro';
 
 interface Props {
   lang: Language;
@@ -67,6 +68,7 @@ const tr = t(lang);
     </nav>
 
     <div class="panel-footer">
+      <LanguageSwitcher lang={lang} />
       <ThemeToggle />
     </div>
   </div>

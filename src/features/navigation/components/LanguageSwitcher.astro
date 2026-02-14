@@ -1,0 +1,215 @@
+---
+import type { Language } from '@/config/i18n';
+import { LANGUAGE_LABELS, SUPPORTED_LANGUAGES } from '@/config/i18n';
+
+interface Props {
+  lang: Language;
+}
+
+const { lang } = Astro.props;
+---
+
+<div class="lang-switcher" data-testid="language-switcher">
+  <button
+    class="lang-trigger"
+    type="button"
+    aria-expanded="false"
+    aria-haspopup="listbox"
+    aria-label="Select language"
+  >
+    <span class="lang-current">{lang.toUpperCase()}</span>
+    <svg class="lang-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="3 5 6 8 9 5"></polyline>
+    </svg>
+  </button>
+  <ul
+    class="lang-dropdown"
+    role="listbox"
+    aria-label="Available languages"
+    data-testid="language-dropdown"
+  >
+    {SUPPORTED_LANGUAGES.map((code) => (
+      <li role="option" aria-selected={code === lang}>
+        <a
+          href={`/${code}`}
+          data-lang={code}
+          data-testid={`lang-option-${code}`}
+          class:list={['lang-option', { active: code === lang }]}
+        >
+          {LANGUAGE_LABELS[code]}
+        </a>
+      </li>
+    ))}
+  </ul>
+</div>
+
+<script>
+  const setupLanguageSwitcher = () => {
+    const switcher = document.querySelector<HTMLElement>('[data-testid="language-switcher"]');
+    if (!switcher) return;
+
+    const trigger = switcher.querySelector<HTMLButtonElement>('.lang-trigger');
+    const dropdown = switcher.querySelector<HTMLElement>('.lang-dropdown');
+    const currentLabel = switcher.querySelector<HTMLElement>('.lang-current');
+
+    if (!trigger || !dropdown || !currentLabel) return;
+
+    if (switcher.dataset['switcherInit'] === 'true') {
+      updateCurrentLang();
+      return;
+    }
+    switcher.dataset['switcherInit'] = 'true';
+
+    const open = () => {
+      trigger.setAttribute('aria-expanded', 'true');
+      dropdown.classList.add('open');
+    };
+
+    const close = () => {
+      trigger.setAttribute('aria-expanded', 'false');
+      dropdown.classList.remove('open');
+    };
+
+    const toggle = () => {
+      const isOpen = trigger.getAttribute('aria-expanded') === 'true';
+      if (isOpen) close();
+      else open();
+    };
+
+    trigger.addEventListener('click', toggle);
+
+    document.addEventListener('click', (e: MouseEvent) => {
+      if (!switcher.contains(e.target instanceof Node ? e.target : null)) {
+        close();
+      }
+    });
+
+    document.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && trigger.getAttribute('aria-expanded') === 'true') {
+        close();
+        trigger.focus();
+      }
+    });
+
+    dropdown?.querySelectorAll<HTMLAnchorElement>('.lang-option').forEach((option) => {
+      option.addEventListener('click', (e: MouseEvent) => {
+        e.preventDefault();
+        const targetLang = option.dataset['lang'];
+        if (!targetLang) return;
+
+        const path = globalThis.location.pathname;
+        const newPath = path.replace(/^\/[a-z]{2}/, `/${targetLang}`);
+
+        close();
+        globalThis.location.href = newPath;
+      });
+    });
+
+    updateCurrentLang();
+
+    function updateCurrentLang() {
+      const path = globalThis.location.pathname;
+      const match = path.match(/^\/([a-z]{2})/);
+      const activeLang = match?.[1] ?? 'en';
+
+      if (currentLabel) {
+        currentLabel.textContent = activeLang.toUpperCase();
+      }
+
+      dropdown?.querySelectorAll<HTMLAnchorElement>('.lang-option').forEach((option) => {
+        const optionLang = option.dataset['lang'];
+        option.classList.toggle('active', optionLang === activeLang);
+        option.closest('li')?.setAttribute('aria-selected', String(optionLang === activeLang));
+      });
+    }
+  };
+
+  setupLanguageSwitcher();
+  document.addEventListener('astro:after-swap', setupLanguageSwitcher);
+</script>
+
+<style>
+  .lang-switcher {
+    position: relative;
+  }
+
+  .lang-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    min-height: 44px;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+  }
+
+  .lang-trigger:hover,
+  .lang-trigger:focus-visible {
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    border-color: var(--color-text-secondary);
+  }
+
+  .lang-chevron {
+    transition: transform var(--transition-fast);
+    pointer-events: none;
+  }
+
+  .lang-trigger[aria-expanded='true'] .lang-chevron {
+    transform: rotate(180deg);
+  }
+
+  .lang-dropdown {
+    position: absolute;
+    top: calc(100% + var(--spacing-xs));
+    right: 0;
+    min-width: 140px;
+    padding: var(--spacing-xs);
+    margin: 0;
+    list-style: none;
+    background: var(--color-surface-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-md);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-4px);
+    transition: opacity var(--transition-fast), visibility var(--transition-fast), transform var(--transition-fast);
+    z-index: 300;
+  }
+
+  .lang-dropdown.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .lang-option {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    min-height: 36px;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+  }
+
+  .lang-option:hover,
+  .lang-option:focus-visible {
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+  }
+
+  .lang-option.active {
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+</style>
