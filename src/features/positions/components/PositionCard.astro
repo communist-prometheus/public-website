@@ -1,0 +1,57 @@
+---
+import CpButton from '@/components/cp/CpButton.astro';
+import type { Language } from '@/config/i18n';
+import { t } from '@/config/translations';
+
+interface Props {
+  readonly title: string;
+  readonly description: string;
+  readonly slug: string;
+  readonly lang: Language;
+}
+
+const { title, description, slug, lang } = Astro.props;
+const readMore = t(lang).positions('readMore');
+---
+
+<article class="position-card" data-testid="position-card">
+  <h3>{title}</h3>
+  <p>{description}</p>
+  <a href={`/${lang}/positions/${slug}`}>
+    <CpButton variant="ghost">{readMore} →</CpButton>
+  </a>
+</article>
+
+<style>
+  .position-card {
+    padding: var(--spacing-lg);
+    background: var(--color-surface-elevated);
+    border-left: 3px solid var(--color-accent);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
+  }
+
+  .position-card:hover {
+    box-shadow: var(--shadow-md);
+  }
+
+  h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: var(--spacing-xs);
+  }
+
+  p {
+    font-size: 0.9375rem;
+    color: var(--color-text-secondary);
+    line-height: 1.7;
+    margin-bottom: var(--spacing-md);
+  }
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    text-decoration: none;
+  }
+</style>

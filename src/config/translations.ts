@@ -7,6 +7,7 @@ const defineSection = <T extends Readonly<Record<string, Entry>>>(section: T): T
 const nav = defineSection({
   home: { en: 'Home', ru: 'Главная', it: 'Home', es: 'Inicio' },
   blog: { en: 'Blog', ru: 'Блог', it: 'Blog', es: 'Blog' },
+  positions: { en: 'Positions', ru: 'Позиции', it: 'Posizioni', es: 'Posiciones' },
   manifest: { en: 'Manifest', ru: 'Манифест', it: 'Manifesto', es: 'Manifiesto' },
   menu: { en: 'Menu', ru: 'Меню', it: 'Menu', es: 'Menú' },
 });
@@ -65,6 +66,29 @@ const home = defineSection({
   },
 });
 
+const positions = defineSection({
+  pageTitle: {
+    en: 'Positions - Prometheus',
+    ru: 'Позиции - Prometheus',
+    it: 'Posizioni - Prometheus',
+    es: 'Posiciones - Prometheus',
+  },
+  heading: { en: 'Positions', ru: 'Позиции', it: 'Posizioni', es: 'Posiciones' },
+  viewAll: {
+    en: 'View all positions',
+    ru: 'Все позиции',
+    it: 'Tutte le posizioni',
+    es: 'Ver todas las posiciones',
+  },
+  readMore: { en: 'Read more', ru: 'Подробнее', it: 'Leggi di più', es: 'Leer más' },
+  backToList: {
+    en: '← Back to positions',
+    ru: '← Назад к позициям',
+    it: '← Torna alle posizioni',
+    es: '← Volver a posiciones',
+  },
+});
+
 const lookup =
   (lang: Language) =>
   (entry: Entry): string =>
@@ -77,6 +101,7 @@ export const t = (lang: Language) => {
     footer: (key: keyof typeof footer): string => resolve(footer[key]),
     blog: (key: keyof typeof blog): string => resolve(blog[key]),
     home: (key: keyof typeof home): string => resolve(home[key]),
+    positions: (key: keyof typeof positions): string => resolve(positions[key]),
   };
 };
 
@@ -85,6 +110,7 @@ export const getNavLinks = (lang: Language) => {
   return [
     { href: `/${lang}`, label: tr.nav('home') },
     { href: `/${lang}/blog`, label: tr.nav('blog') },
+    { href: `/${lang}/positions`, label: tr.nav('positions') },
     { href: `/${lang}/manifest`, label: tr.nav('manifest') },
   ];
 };

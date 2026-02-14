@@ -7,8 +7,16 @@ import { expect, test } from '@playwright/test';
  */
 
 const languages = [
-  { code: 'it', label: 'Italiano', nav: { home: 'Home', blog: 'Blog', manifest: 'Manifesto' } },
-  { code: 'es', label: 'Español', nav: { home: 'Inicio', blog: 'Blog', manifest: 'Manifiesto' } },
+  {
+    code: 'it',
+    label: 'Italiano',
+    nav: { home: 'Home', blog: 'Blog', positions: 'Posizioni', manifest: 'Manifesto' },
+  },
+  {
+    code: 'es',
+    label: 'Español',
+    nav: { home: 'Inicio', blog: 'Blog', positions: 'Posiciones', manifest: 'Manifiesto' },
+  },
 ] as const;
 
 for (const lang of languages) {
@@ -31,6 +39,16 @@ for (const lang of languages) {
       expect(count).toBeGreaterThanOrEqual(1);
     });
 
+    test('positions page renders translated heading', async ({ page }) => {
+      await page.goto(`/${lang.code}/positions`);
+      await page.waitForLoadState('networkidle');
+
+      await expect(page.locator('h1')).toBeVisible();
+      const cards = page.locator('[data-testid="position-card"]');
+      const count = await cards.count();
+      expect(count).toBeGreaterThanOrEqual(2);
+    });
+
     test('manifest page renders content', async ({ page }) => {
       await page.goto(`/${lang.code}/manifest`);
       await page.waitForLoadState('networkidle');
@@ -45,6 +63,7 @@ for (const lang of languages) {
       const nav = page.locator('[data-testid="desktop-nav"]');
       await expect(nav.locator(`a[href="/${lang.code}"]`)).toHaveText(lang.nav.home);
       await expect(nav.locator(`a[href="/${lang.code}/blog"]`)).toHaveText(lang.nav.blog);
+      await expect(nav.locator(`a[href="/${lang.code}/positions"]`)).toHaveText(lang.nav.positions);
       await expect(nav.locator(`a[href="/${lang.code}/manifest"]`)).toHaveText(lang.nav.manifest);
     });
 

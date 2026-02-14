@@ -1,0 +1,75 @@
+---
+import CpButton from '@/components/cp/CpButton.astro';
+import type { Language } from '@/config/i18n';
+import { t } from '@/config/translations';
+import { getPositions } from '../helpers/getPositions';
+import PositionCard from './PositionCard.astro';
+
+interface Props {
+  readonly lang: Language;
+}
+
+const { lang } = Astro.props;
+
+const positions = await getPositions(lang);
+const tr = t(lang);
+const heading = tr.positions('heading');
+const viewAll = tr.positions('viewAll');
+---
+
+<section class="positions-widget" data-testid="positions-widget">
+  <div class="container">
+    <div class="widget-header">
+      <h2>{heading}</h2>
+      <a href={`/${lang}/positions`}>
+        <CpButton variant="secondary">{viewAll}</CpButton>
+      </a>
+    </div>
+    <div class="positions-list">
+      {positions.map((pos) => (
+        <PositionCard
+          title={pos.data.title}
+          description={pos.data.description}
+          slug={pos.slug}
+          lang={lang}
+        />
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .positions-widget {
+    padding-block: var(--spacing-2xl);
+  }
+
+  .widget-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-xl);
+  }
+
+  h2 {
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    font-weight: 600;
+  }
+
+  .positions-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+
+  @media (min-width: 768px) {
+    .positions-list {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  a {
+    text-decoration: none;
+  }
+</style>

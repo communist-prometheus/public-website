@@ -1,0 +1,87 @@
+---
+import { getCollection } from 'astro:content';
+import { SUPPORTED_LANGUAGES } from '@/config/i18n';
+import { t } from '@/config/translations';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+
+export const getStaticPaths = async () => {
+  const entries = await getCollection('positions');
+  return entries.map((entry) => ({
+    params: { lang: entry.data.lang, slug: entry.slug },
+    props: { entry },
+  }));
+};
+
+const { entry } = Astro.props;
+const { lang } = Astro.params;
+const { Content } = await entry.render();
+const tr = t(lang);
+const backLabel = tr.positions('backToList');
+---
+
+<BaseLayout title={`${entry.data.title} - Prometheus`} lang={lang}>
+  <div class="section">
+    <div class="container">
+      <a href={`/${lang}/positions`} class="back-link">{backLabel}</a>
+      <article>
+        <h1>{entry.data.title}</h1>
+        <div class="content">
+          <Content />
+        </div>
+      </article>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .back-link {
+    display: inline-block;
+    margin-bottom: var(--spacing-lg);
+    color: var(--color-accent);
+    text-decoration: none;
+    font-size: 0.9375rem;
+    transition: color var(--transition-fast);
+  }
+
+  .back-link:hover {
+    color: var(--color-accent-hover);
+  }
+
+  h1 {
+    font-size: clamp(1.75rem, 5vw, 2.5rem);
+    font-weight: 700;
+    margin-bottom: var(--spacing-xl);
+  }
+
+  .content {
+    max-width: 720px;
+    line-height: 1.8;
+  }
+
+  .content :global(h2) {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-top: var(--spacing-xl);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .content :global(p) {
+    margin-bottom: var(--spacing-md);
+    color: var(--color-text-secondary);
+  }
+
+  .content :global(ul),
+  .content :global(ol) {
+    margin-bottom: var(--spacing-md);
+    padding-left: var(--spacing-lg);
+    color: var(--color-text-secondary);
+  }
+
+  .content :global(li) {
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .content :global(strong) {
+    color: var(--color-text-primary);
+  }
+</style>

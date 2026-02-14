@@ -12,7 +12,8 @@ test.describe('Translations - English', () => {
     await page.waitForLoadState('networkidle');
 
     await expect(page.locator('h1')).toHaveText('Welcome to Prometheus');
-    await expect(page.locator('h2')).toHaveText('Latest News');
+    await expect(page.locator('[data-testid="positions-widget"] h2')).toHaveText('Positions');
+    await expect(page.locator('text=Latest News')).toBeVisible();
     await expect(page.locator('text=View all posts')).toBeVisible();
     await expect(page.locator('footer')).toContainText('© All rights reserved');
   });
@@ -43,7 +44,8 @@ test.describe('Translations - Russian', () => {
     await page.waitForLoadState('networkidle');
 
     await expect(page.locator('h1')).toHaveText('Добро пожаловать в Prometheus');
-    await expect(page.locator('h2')).toHaveText('Последние новости');
+    await expect(page.locator('[data-testid="positions-widget"] h2')).toHaveText('Позиции');
+    await expect(page.locator('text=Последние новости')).toBeVisible();
     await expect(page.locator('text=Все посты')).toBeVisible();
     await expect(page.locator('footer')).toContainText('© Все права защищены');
   });
