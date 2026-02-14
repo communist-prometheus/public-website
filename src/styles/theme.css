@@ -5,8 +5,8 @@
   --color-text-primary: hsl(0, 0%, 13%);
   --color-text-secondary: hsl(0, 0%, 40%);
   --color-border: hsl(0, 0%, 90%);
-  --color-accent: hsl(250, 84%, 54%);
-  --color-accent-hover: hsl(250, 84%, 48%);
+  --color-accent: hsl(12, 80%, 45%);
+  --color-accent-hover: hsl(12, 80%, 38%);
 
   --spacing-xs: 0.5rem;
   --spacing-sm: 1rem;
@@ -39,8 +39,8 @@
   --color-text-primary: hsl(0, 0%, 95%);
   --color-text-secondary: hsl(0, 0%, 65%);
   --color-border: hsl(0, 0%, 25%);
-  --color-accent: hsl(250, 84%, 60%);
-  --color-accent-hover: hsl(250, 84%, 70%);
+  --color-accent: hsl(14, 85%, 60%);
+  --color-accent-hover: hsl(14, 85%, 68%);
 
   color-scheme: dark;
 }
