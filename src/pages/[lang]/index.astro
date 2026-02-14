@@ -1,5 +1,6 @@
 ---
 import { SUPPORTED_LANGUAGES } from '@/config/i18n';
+import { t } from '@/config/translations';
 import { getBlogPosts } from '@/features/blog/helpers/getBlogPosts';
 import Hero from '@/features/home/components/Hero.astro';
 import NewsSection from '@/features/home/components/NewsSection.astro';
@@ -12,22 +13,10 @@ const { lang } = Astro.params;
 const posts = await getBlogPosts(lang);
 const latestPosts = posts.slice(0, 3);
 
-const content = {
-  en: {
-    title: 'Prometheus - Modern Web Platform',
-    heroTitle: 'Welcome to Prometheus',
-    heroDescription:
-      'A modern platform for sharing knowledge, ideas, and innovations. Built with cutting-edge web technologies to deliver the best experience.',
-  },
-  ru: {
-    title: 'Prometheus - Современная веб-платформа',
-    heroTitle: 'Добро пожаловать в Prometheus',
-    heroDescription:
-      'Современная платформа для обмена знаниями, идеями и инновациями. Построена с использованием передовых веб-технологий для лучшего опыта.',
-  },
-};
-
-const { title, heroTitle, heroDescription } = content[lang];
+const tr = t(lang);
+const title = tr.home('pageTitle');
+const heroTitle = tr.home('heroTitle');
+const heroDescription = tr.home('heroDescription');
 ---
 
 <BaseLayout title={title} lang={lang}>
