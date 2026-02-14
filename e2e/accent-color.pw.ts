@@ -10,7 +10,9 @@ import { expect, test } from '@playwright/test';
 const isOrangeRed = (rgb: string): boolean => {
   const match = rgb.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
   if (!match) return false;
-  const [, r, g, b] = match.map(Number);
+  const r = Number(match[1]);
+  const g = Number(match[2]);
+  const b = Number(match[3]);
   return r > 150 && g < 120 && b < 80;
 };
 
@@ -76,7 +78,7 @@ test.describe('Accent color', () => {
   });
 
   test('primary buttons use accent color as background', async ({ page }) => {
-    await page.goto('/en');
+    await page.goto('/components-demo');
     await page.waitForLoadState('networkidle');
 
     const btn = page.locator('.primary').first();
