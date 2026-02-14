@@ -126,6 +126,7 @@ html {
   font-family: var(--font-sans);
   color: var(--color-text-primary);
   background: var(--color-background);
+  scrollbar-gutter: stable;
 }
 
 body {
