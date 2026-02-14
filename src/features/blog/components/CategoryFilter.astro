@@ -20,12 +20,12 @@ const allLabel = t(lang).blog('allCategory');
 <script>
   const setupCategoryFilter = () => {
     const buttons = document.querySelectorAll<HTMLButtonElement>('.category-btn');
-    const posts = document.querySelectorAll<HTMLElement>('.grid [data-category]');
+    if (buttons.length === 0) return;
 
-    if (buttons.length === 0 || posts.length === 0) return;
+    const getPosts = () => document.querySelectorAll<HTMLElement>('.grid [data-category]');
 
     const filterByCategory = (category: string) => {
-      posts.forEach((post) => {
+      getPosts().forEach((post) => {
         const postCategory = post.getAttribute('data-category');
         post.style.display = category === 'all' || postCategory === category ? '' : 'none';
       });
