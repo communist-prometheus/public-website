@@ -12,7 +12,7 @@ const { lang } = Astro.props;
 ---
 
 <header transition:persist="header">
-  <div class="container">
+  <div class="header-container">
     <div class="header-content">
       <a href={`/${lang}`} class="logo">Prometheus</a>
       <div class="header-actions">
@@ -40,6 +40,16 @@ const { lang } = Astro.props;
   @media (min-width: 768px) {
     header {
       backdrop-filter: blur(10px);
+    }
+  }
+
+  .header-container {
+    padding-inline: var(--spacing-sm);
+  }
+
+  @media (min-width: 768px) {
+    .header-container {
+      padding-inline: var(--spacing-md);
     }
   }
 
