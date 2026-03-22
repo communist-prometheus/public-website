@@ -38,6 +38,30 @@ test.describe('Translations - English', () => {
   });
 });
 
+test.describe('Translations - Common Labels', () => {
+  test('positions page uses common readMore label', async ({ page }) => {
+    await page.goto('/en/positions');
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.locator('h1')).toHaveText('Positions');
+    await expect(page.locator('text=Read more').first()).toBeVisible();
+  });
+
+  test('position detail uses common backToList label', async ({ page }) => {
+    await page.goto('/en/positions/digital-sovereignty');
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.locator('.back-link')).toContainText('Back');
+  });
+
+  test('home page positions widget uses common viewAll label', async ({ page }) => {
+    await page.goto('/en');
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.locator('[data-testid="positions-widget"]')).toContainText('View all');
+  });
+});
+
 test.describe('Translations - Russian', () => {
   test('home page renders Russian content', async ({ page }) => {
     await page.goto('/ru');
