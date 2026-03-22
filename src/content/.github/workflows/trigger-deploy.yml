@@ -1,0 +1,22 @@
+name: Trigger website deploy
+
+on:
+  push:
+    branches: [master, develop]
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.DEPLOY_TOKEN }}
+          repository: communist-prometheus/public-website
+          event-type: content-updated
+          client-payload: >-
+            {
+              "branch": "${{ github.ref_name }}",
+              "author_name": "${{ github.event.head_commit.author.name }}",
+              "author_email": "${{ github.event.head_commit.author.email }}",
+              "commit_message": "${{ github.event.head_commit.message }}"
+            }
