@@ -45,6 +45,7 @@ const positionsCollection = defineCollection({
 const navCollection = defineCollection({
   type: 'content',
   schema: z.object({
+    title: z.string(),
     home: z.string(),
     blog: z.string(),
     positions: z.string(),

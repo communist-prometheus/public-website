@@ -1,4 +1,5 @@
 ---
+title: Navigation
 home: Inicio
 blog: Blog
 positions: Posiciones

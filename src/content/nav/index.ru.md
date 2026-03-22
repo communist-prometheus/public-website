@@ -1,4 +1,5 @@
 ---
+title: Navigation
 home: Главная
 blog: Блог
 positions: Позиции
