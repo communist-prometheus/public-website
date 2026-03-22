@@ -1,11 +1,17 @@
-export const SUPPORTED_LANGUAGES = ['en', 'ru', 'it', 'es'] as const;
-export type Language = (typeof SUPPORTED_LANGUAGES)[number];
+import languagesData from '@/content/settings/languages.json';
 
-export const DEFAULT_LANGUAGE: Language = 'en';
+interface LanguageEntry {
+  readonly code: string;
+  readonly label: string;
+}
 
-export const LANGUAGE_LABELS: Record<Language, string> = {
-  en: 'English',
-  ru: 'Русский',
-  it: 'Italiano',
-  es: 'Español',
-};
+const languages: readonly LanguageEntry[] = languagesData;
+
+export const SUPPORTED_LANGUAGES = languages.map((l) => l.code);
+export type Language = string;
+
+export const DEFAULT_LANGUAGE = SUPPORTED_LANGUAGES[0] ?? 'en';
+
+export const LANGUAGE_LABELS: Readonly<Record<string, string>> = Object.fromEntries(
+  languages.map((l) => [l.code, l.label]),
+);

@@ -1,6 +1,7 @@
 import { defineCollection, z } from 'astro:content';
+import { SUPPORTED_LANGUAGES } from '@/config/i18n';
 
-const langEnum = z.enum(['en', 'ru', 'it', 'es']);
+const langEnum = z.string().refine((v) => SUPPORTED_LANGUAGES.includes(v));
 
 const blogCollection = defineCollection({
   type: 'content',
