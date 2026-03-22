@@ -4,6 +4,9 @@ on:
   repository_dispatch:
     types: [content-updated]
 
+permissions:
+  contents: write
+
 jobs:
   sync:
     runs-on: ubuntu-latest
