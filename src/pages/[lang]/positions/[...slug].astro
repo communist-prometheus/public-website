@@ -1,6 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
-import { getPageData } from '@/config/translations';
+import { getLabelsData } from '@/config/translations';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 
 export const getStaticPaths = async () => {
@@ -14,8 +14,8 @@ export const getStaticPaths = async () => {
 const { entry } = Astro.props;
 const { lang } = Astro.params;
 const { Content } = await entry.render();
-const page = await getPageData('positions-listing', lang);
-const backLabel = page?.data.backToList ?? '← Back';
+const labels = await getLabelsData(lang);
+const backLabel = labels?.data.backToList ?? '← Back';
 ---
 
 <BaseLayout title={`${entry.data.title} - Prometheus`} description={entry.data.description} lang={lang}>

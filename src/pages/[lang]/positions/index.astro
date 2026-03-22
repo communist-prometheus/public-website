@@ -1,6 +1,6 @@
 ---
 import { SUPPORTED_LANGUAGES } from '@/config/i18n';
-import { getPageData } from '@/config/translations';
+import { getLabelsData, getPageData } from '@/config/translations';
 import PositionCard from '@/features/positions/components/PositionCard.astro';
 import { getPositions } from '@/features/positions/helpers/getPositions';
 import BaseLayout from '@/layouts/BaseLayout.astro';
@@ -14,7 +14,8 @@ const page = await getPageData('positions-listing', lang);
 const pageTitle = page?.data.title ?? 'Positions';
 const pageDescription = page?.data.description;
 const heading = page?.data.heading ?? 'Positions';
-const readMore = page?.data.readMore ?? 'Read more';
+const labels = await getLabelsData(lang);
+const readMore = labels?.data.readMore ?? 'Read more';
 ---
 
 <BaseLayout title={pageTitle} {...(pageDescription ? { description: pageDescription } : {})} lang={lang}>

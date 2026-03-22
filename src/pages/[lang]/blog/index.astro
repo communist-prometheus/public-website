@@ -1,6 +1,6 @@
 ---
 import { SUPPORTED_LANGUAGES } from '@/config/i18n';
-import { getPageData } from '@/config/translations';
+import { getLabelsData, getPageData } from '@/config/translations';
 import CategoryFilter from '@/features/blog/components/CategoryFilter.astro';
 import PostCard from '@/features/blog/components/PostCard.astro';
 import {
@@ -22,7 +22,8 @@ const pageTitle = page?.data.title ?? 'Blog';
 const pageDescription = page?.data.description;
 const heading = page?.data.heading ?? 'Blog';
 const allCategory = page?.data.allCategory ?? 'All';
-const readMore = page?.data.readMore ?? 'Read more';
+const labels = await getLabelsData(lang);
+const readMore = labels?.data.readMore ?? 'Read more';
 ---
 
 <BaseLayout title={pageTitle} {...(pageDescription ? { description: pageDescription } : {})} lang={lang}>

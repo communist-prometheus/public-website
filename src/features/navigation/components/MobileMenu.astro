@@ -1,6 +1,6 @@
 ---
 import type { Language } from '@/config/i18n';
-import { getNavData, getNavLinks } from '@/config/translations';
+import { getMenuData, getNavLinks } from '@/config/translations';
 import ThemeToggle from '@/features/theme/components/ThemeToggle.astro';
 import LanguageSwitcher from './LanguageSwitcher.astro';
 
@@ -11,7 +11,7 @@ interface Props {
 const { lang } = Astro.props;
 
 const links = await getNavLinks(lang);
-const nav = await getNavData(lang);
+const nav = await getMenuData(lang);
 const menuLabel = nav?.data.menu ?? 'Menu';
 ---
 

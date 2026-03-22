@@ -1,7 +1,7 @@
 ---
 import CpButton from '@/components/cp/CpButton.astro';
 import type { Language } from '@/config/i18n';
-import { getPageData } from '@/config/translations';
+import { getLabelsData, getPageData } from '@/config/translations';
 import { getPositions } from '../helpers/getPositions';
 import PositionCard from './PositionCard.astro';
 
@@ -14,8 +14,9 @@ const { lang } = Astro.props;
 const positions = await getPositions(lang);
 const page = await getPageData('positions-listing', lang);
 const heading = page?.data.heading ?? 'Positions';
-const viewAll = page?.data.viewAll ?? 'View all';
-const readMore = page?.data.readMore ?? 'Read more';
+const labels = await getLabelsData(lang);
+const viewAll = labels?.data.viewAll ?? 'View all';
+const readMore = labels?.data.readMore ?? 'Read more';
 ---
 
 <section class="positions-widget" data-testid="positions-widget">

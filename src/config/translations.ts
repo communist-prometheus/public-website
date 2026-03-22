@@ -10,18 +10,25 @@ export const getPageData = async (
   return pages.find((p) => p.id.startsWith(`${slug}/`));
 };
 
-export const getNavData = async (lang: Language): Promise<CollectionEntry<'nav'> | undefined> => {
-  const entries = await getCollection('nav', ({ data }) => data.lang === lang);
-  return entries.at(0);
+export const getCommonData = async (
+  slug: string,
+  lang: Language,
+): Promise<CollectionEntry<'common'> | undefined> => {
+  const entries = await getCollection('common', ({ data }) => data.lang === lang);
+  return entries.find((e) => e.id.startsWith(`${slug}/`));
 };
 
+export const getMenuData = async (lang: Language) => getCommonData('menu', lang);
+
+export const getLabelsData = async (lang: Language) => getCommonData('labels', lang);
+
 export const getNavLinks = async (lang: Language) => {
-  const nav = await getNavData(lang);
-  if (!nav) return [];
+  const menu = await getMenuData(lang);
+  if (!menu) return [];
   return [
-    { href: `/${lang}`, label: nav.data.home },
-    { href: `/${lang}/blog`, label: nav.data.blog },
-    { href: `/${lang}/positions`, label: nav.data.positions },
-    { href: `/${lang}/manifest`, label: nav.data.manifest },
+    { href: `/${lang}`, label: menu.data.home ?? 'Home' },
+    { href: `/${lang}/blog`, label: menu.data.blog ?? 'Blog' },
+    { href: `/${lang}/positions`, label: menu.data.positions ?? 'Positions' },
+    { href: `/${lang}/manifest`, label: menu.data.manifest ?? 'Manifest' },
   ];
 };

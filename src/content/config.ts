@@ -26,9 +26,6 @@ const pagesCollection = defineCollection({
     viewAllPosts: z.string().optional(),
     heading: z.string().optional(),
     allCategory: z.string().optional(),
-    readMore: z.string().optional(),
-    viewAll: z.string().optional(),
-    backToList: z.string().optional(),
   }),
 });
 
@@ -42,17 +39,20 @@ const positionsCollection = defineCollection({
   }),
 });
 
-const navCollection = defineCollection({
+const commonCollection = defineCollection({
   type: 'content',
   schema: z.object({
     title: z.string(),
-    home: z.string(),
-    blog: z.string(),
-    positions: z.string(),
-    manifest: z.string(),
-    menu: z.string(),
-    copyright: z.string(),
     lang: langEnum,
+    home: z.string().optional(),
+    blog: z.string().optional(),
+    positions: z.string().optional(),
+    manifest: z.string().optional(),
+    menu: z.string().optional(),
+    copyright: z.string().optional(),
+    readMore: z.string().optional(),
+    viewAll: z.string().optional(),
+    backToList: z.string().optional(),
   }),
 });
 
@@ -60,5 +60,5 @@ export const collections = {
   blog: blogCollection,
   pages: pagesCollection,
   positions: positionsCollection,
-  nav: navCollection,
+  common: commonCollection,
 };

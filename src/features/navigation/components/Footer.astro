@@ -1,6 +1,6 @@
 ---
 import type { Language } from '@/config/i18n';
-import { getNavData } from '@/config/translations';
+import { getMenuData } from '@/config/translations';
 
 interface Props {
   lang: Language;
@@ -9,7 +9,7 @@ interface Props {
 const { lang } = Astro.props;
 
 const currentYear = new Date().getFullYear();
-const nav = await getNavData(lang);
+const nav = await getMenuData(lang);
 const copyright = nav?.data.copyright ?? '© All rights reserved';
 ---
 
