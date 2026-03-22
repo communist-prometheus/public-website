@@ -1,6 +1,6 @@
 ---
 import { SUPPORTED_LANGUAGES } from '@/config/i18n';
-import { t } from '@/config/translations';
+import { getPageData } from '@/config/translations';
 import { getBlogPosts } from '@/features/blog/helpers/getBlogPosts';
 import Hero from '@/features/home/components/Hero.astro';
 import NewsSection from '@/features/home/components/NewsSection.astro';
@@ -14,14 +14,17 @@ const { lang } = Astro.params;
 const posts = await getBlogPosts(lang);
 const latestPosts = posts.slice(0, 3);
 
-const tr = t(lang);
-const title = tr.home('pageTitle');
-const heroTitle = tr.home('heroTitle');
-const heroDescription = tr.home('heroDescription');
+const homePage = await getPageData('home', lang);
+if (!homePage) return Astro.redirect(`/${lang}`);
+
+const { Content } = await homePage.render();
+const { title, description, heroTitle, latestNews, viewAllPosts } = homePage.data;
 ---
 
-<BaseLayout title={title} description={heroDescription} lang={lang}>
-  <Hero title={heroTitle} description={heroDescription} />
+<BaseLayout title={title} {...(description ? { description } : {})} lang={lang}>
+  <Hero title={heroTitle ?? ''}>
+    <Content />
+  </Hero>
   <PositionsWidget lang={lang} />
-  <NewsSection posts={latestPosts} lang={lang} />
+  <NewsSection posts={latestPosts} lang={lang} latestNewsLabel={latestNews ?? ''} viewAllLabel={viewAllPosts ?? ''} />
 </BaseLayout>

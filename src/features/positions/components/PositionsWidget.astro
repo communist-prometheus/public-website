@@ -1,7 +1,7 @@
 ---
 import CpButton from '@/components/cp/CpButton.astro';
 import type { Language } from '@/config/i18n';
-import { t } from '@/config/translations';
+import { getPageData } from '@/config/translations';
 import { getPositions } from '../helpers/getPositions';
 import PositionCard from './PositionCard.astro';
 
@@ -12,9 +12,10 @@ interface Props {
 const { lang } = Astro.props;
 
 const positions = await getPositions(lang);
-const tr = t(lang);
-const heading = tr.positions('heading');
-const viewAll = tr.positions('viewAll');
+const page = await getPageData('positions-listing', lang);
+const heading = page?.data.heading ?? 'Positions';
+const viewAll = page?.data.viewAll ?? 'View all';
+const readMore = page?.data.readMore ?? 'Read more';
 ---
 
 <section class="positions-widget" data-testid="positions-widget">
@@ -30,8 +31,9 @@ const viewAll = tr.positions('viewAll');
         <PositionCard
           title={pos.data.title}
           description={pos.data.description}
-          slug={pos.slug}
+          slug={pos.id.split('/').at(0) ?? pos.id}
           lang={lang}
+          readMoreLabel={readMore}
         />
       ))}
     </div>

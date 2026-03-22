@@ -1,7 +1,6 @@
 ---
 import CpButton from '@/components/cp/CpButton.astro';
 import type { Language } from '@/config/i18n';
-import { t } from '@/config/translations';
 
 interface Props {
   readonly title: string;
@@ -9,17 +8,24 @@ interface Props {
   readonly slug: string;
   readonly lang: Language;
   readonly headingLevel?: 2 | 3;
+  readonly readMoreLabel?: string;
 }
 
-const { title, description, slug, lang, headingLevel = 3 } = Astro.props;
-const readMore = t(lang).positions('readMore');
+const {
+  title,
+  description,
+  slug,
+  lang,
+  headingLevel = 3,
+  readMoreLabel = 'Read more',
+} = Astro.props;
 ---
 
 <article class="position-card" data-testid="position-card">
   {headingLevel === 2 ? <h2>{title}</h2> : <h3>{title}</h3>}
   <p>{description}</p>
   <a href={`/${lang}/positions/${slug}`}>
-    <CpButton variant="ghost">{readMore} →</CpButton>
+    <CpButton variant="ghost">{readMoreLabel} →</CpButton>
   </a>
 </article>
 

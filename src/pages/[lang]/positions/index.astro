@@ -1,6 +1,6 @@
 ---
 import { SUPPORTED_LANGUAGES } from '@/config/i18n';
-import { t } from '@/config/translations';
+import { getPageData } from '@/config/translations';
 import PositionCard from '@/features/positions/components/PositionCard.astro';
 import { getPositions } from '@/features/positions/helpers/getPositions';
 import BaseLayout from '@/layouts/BaseLayout.astro';
@@ -10,13 +10,14 @@ export const getStaticPaths = () => SUPPORTED_LANGUAGES.map((lang) => ({ params:
 const { lang } = Astro.params;
 
 const positions = await getPositions(lang);
-const tr = t(lang);
-const pageTitle = tr.positions('pageTitle');
-const pageDescription = tr.positions('pageDescription');
-const heading = tr.positions('heading');
+const page = await getPageData('positions-listing', lang);
+const pageTitle = page?.data.title ?? 'Positions';
+const pageDescription = page?.data.description;
+const heading = page?.data.heading ?? 'Positions';
+const readMore = page?.data.readMore ?? 'Read more';
 ---
 
-<BaseLayout title={pageTitle} description={pageDescription} lang={lang}>
+<BaseLayout title={pageTitle} {...(pageDescription ? { description: pageDescription } : {})} lang={lang}>
   <div class="section">
     <div class="container">
       <h1>{heading}</h1>
@@ -25,9 +26,10 @@ const heading = tr.positions('heading');
           <PositionCard
             title={pos.data.title}
             description={pos.data.description}
-            slug={pos.slug}
+            slug={pos.id.split('/').at(0) ?? pos.id}
             lang={lang}
             headingLevel={2}
+            readMoreLabel={readMore}
           />
         ))}
       </div>

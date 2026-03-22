@@ -3,7 +3,6 @@ import type { ImageMetadata } from 'astro';
 import CpButton from '@/components/cp/CpButton.astro';
 import CpCard from '@/components/cp/CpCard.astro';
 import type { Language } from '@/config/i18n';
-import { t } from '@/config/translations';
 import BlogPicture from '@/features/blog/components/BlogPicture.astro';
 
 interface Props {
@@ -14,11 +13,19 @@ interface Props {
   image?: ImageMetadata | undefined;
   lang: Language;
   headingLevel?: 2 | 3;
+  readMoreLabel?: string;
 }
 
-const { title, description, category, slug, image, lang, headingLevel = 3 } = Astro.props;
-
-const readMore = t(lang).blog('readMore');
+const {
+  title,
+  description,
+  category,
+  slug,
+  image,
+  lang,
+  headingLevel = 3,
+  readMoreLabel = 'Read more',
+} = Astro.props;
 ---
 
 <CpCard hoverable elevated class="post-card">
@@ -28,7 +35,7 @@ const readMore = t(lang).blog('readMore');
     {headingLevel === 2 ? <h2>{title}</h2> : <h3>{title}</h3>}
     <p class="text-secondary">{description}</p>
     <a href={`/${lang}/blog/${slug}`}>
-      <CpButton variant="ghost">{readMore} →</CpButton>
+      <CpButton variant="ghost">{readMoreLabel} →</CpButton>
     </a>
   </div>
 </CpCard>

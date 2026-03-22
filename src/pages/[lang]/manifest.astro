@@ -7,8 +7,8 @@ export const getStaticPaths = () => SUPPORTED_LANGUAGES.map((lang) => ({ params:
 
 const { lang } = Astro.params;
 
-const manifestPage = await getCollection('pages', ({ data }) => data.lang === lang);
-const page = manifestPage[0];
+const manifestPages = await getCollection('pages', ({ data }) => data.lang === lang);
+const page = manifestPages.find((p) => p.id.startsWith('manifest/'));
 
 if (!page) {
   return Astro.redirect(`/${lang}`);
@@ -17,7 +17,7 @@ if (!page) {
 const { Content } = await page.render();
 ---
 
-<BaseLayout title={`${page.data.title} - Prometheus`} description={page.data.description} lang={lang}>
+<BaseLayout title={`${page.data.title} - Prometheus`} {...(page.data.description ? { description: page.data.description } : {})} lang={lang}>
   <article class="section">
     <div class="container">
       <div class="manifest-header">

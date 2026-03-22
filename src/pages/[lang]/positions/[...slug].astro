@@ -1,12 +1,12 @@
 ---
 import { getCollection } from 'astro:content';
-import { t } from '@/config/translations';
+import { getPageData } from '@/config/translations';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 
 export const getStaticPaths = async () => {
   const entries = await getCollection('positions');
   return entries.map((entry) => ({
-    params: { lang: entry.data.lang, slug: entry.slug },
+    params: { lang: entry.data.lang, slug: entry.id.split('/').at(0) ?? entry.id },
     props: { entry },
   }));
 };
@@ -14,8 +14,8 @@ export const getStaticPaths = async () => {
 const { entry } = Astro.props;
 const { lang } = Astro.params;
 const { Content } = await entry.render();
-const tr = t(lang);
-const backLabel = tr.positions('backToList');
+const page = await getPageData('positions-listing', lang);
+const backLabel = page?.data.backToList ?? '← Back';
 ---
 
 <BaseLayout title={`${entry.data.title} - Prometheus`} description={entry.data.description} lang={lang}>

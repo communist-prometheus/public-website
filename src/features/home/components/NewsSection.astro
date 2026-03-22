@@ -2,28 +2,25 @@
 import type { CollectionEntry } from 'astro:content';
 import CpButton from '@/components/cp/CpButton.astro';
 import type { Language } from '@/config/i18n';
-import { t } from '@/config/translations';
 import PostCard from '@/features/blog/components/PostCard.astro';
 import { getArticleSlug } from '@/features/blog/helpers/getBlogPosts';
 
 interface Props {
   posts: CollectionEntry<'blog'>[];
   lang: Language;
+  latestNewsLabel: string;
+  viewAllLabel: string;
 }
 
-const { posts, lang } = Astro.props;
-
-const tr = t(lang);
-const title = tr.home('latestNews');
-const viewAll = tr.home('viewAllPosts');
+const { posts, lang, latestNewsLabel, viewAllLabel } = Astro.props;
 ---
 
 <section class="section">
   <div class="container">
     <div class="section-header">
-      <h2>{title}</h2>
+      <h2>{latestNewsLabel}</h2>
       <a href={`/${lang}/blog`}>
-        <CpButton variant="secondary">{viewAll}</CpButton>
+        <CpButton variant="secondary">{viewAllLabel}</CpButton>
       </a>
     </div>
     <div class="grid grid-2">

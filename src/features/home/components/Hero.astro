@@ -1,17 +1,18 @@
 ---
 interface Props {
   title: string;
-  description: string;
 }
 
-const { title, description } = Astro.props;
+const { title } = Astro.props;
 ---
 
 <section class="hero section">
   <div class="container">
     <div class="hero-content">
       <h1>{title}</h1>
-      <p class="hero-description">{description}</p>
+      <div class="hero-description">
+        <slot />
+      </div>
     </div>
   </div>
 </section>
@@ -42,5 +43,9 @@ const { title, description } = Astro.props;
     font-size: 1.125rem;
     color: var(--color-text-secondary);
     line-height: 1.8;
+  }
+
+  .hero-description :global(p) {
+    margin: 0;
   }
 </style>

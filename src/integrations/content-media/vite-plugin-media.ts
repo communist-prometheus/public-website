@@ -14,7 +14,7 @@ const CONTENT_TYPES: Readonly<Record<string, string>> = {
 };
 
 const MEDIA_OUTPUT_BASE = '_media';
-const CONTENT_BLOG_DIR = resolve('src/content/blog');
+const CONTENT_DIR = resolve('src/content');
 
 interface MediaEntry {
   readonly outputPath: string;
@@ -24,24 +24,46 @@ interface MediaEntry {
 const scanMediaFiles = (): ReadonlyArray<MediaEntry> => {
   const entries: MediaEntry[] = [];
 
-  if (!existsSync(CONTENT_BLOG_DIR)) return entries;
+  if (!existsSync(CONTENT_DIR)) return entries;
 
-  for (const articleDir of readdirSync(CONTENT_BLOG_DIR)) {
-    const assetsDir = join(CONTENT_BLOG_DIR, articleDir, 'assets');
+  for (const collection of readdirSync(CONTENT_DIR)) {
+    const collectionDir = join(CONTENT_DIR, collection);
+    if (!statSync(collectionDir).isDirectory()) continue;
 
-    if (!existsSync(assetsDir) || !statSync(assetsDir).isDirectory()) continue;
+    for (const item of readdirSync(collectionDir)) {
+      const assetsDir = join(collectionDir, item, 'assets');
+      if (!existsSync(assetsDir) || !statSync(assetsDir).isDirectory()) continue;
 
-    for (const file of readdirSync(assetsDir)) {
-      if (MEDIA_EXTENSIONS.has(extname(file).toLowerCase())) {
-        entries.push({
-          outputPath: `${MEDIA_OUTPUT_BASE}/${articleDir}/${file}`,
-          sourcePath: join(assetsDir, file),
-        });
+      for (const file of readdirSync(assetsDir)) {
+        if (MEDIA_EXTENSIONS.has(extname(file).toLowerCase())) {
+          entries.push({
+            outputPath: `${MEDIA_OUTPUT_BASE}/${item}/${file}`,
+            sourcePath: join(assetsDir, file),
+          });
+        }
       }
     }
   }
 
   return entries;
+};
+
+const resolveMediaPath = (url: string): string | undefined => {
+  const parts = url.slice(`/${MEDIA_OUTPUT_BASE}/`.length).split('/');
+  if (parts.length < 2) return undefined;
+
+  const slug = parts.at(0);
+  const fileName = parts.slice(1).join('/');
+  if (!slug || !fileName) return undefined;
+
+  if (!existsSync(CONTENT_DIR)) return undefined;
+
+  for (const collection of readdirSync(CONTENT_DIR)) {
+    const filePath = join(CONTENT_DIR, collection, slug, 'assets', fileName);
+    if (existsSync(filePath)) return filePath;
+  }
+
+  return undefined;
 };
 
 const vitePluginMedia = (): Plugin => ({
@@ -52,21 +74,14 @@ const vitePluginMedia = (): Plugin => ({
       const url = req.url;
       if (!url?.startsWith(`/${MEDIA_OUTPUT_BASE}/`)) return next();
 
-      const parts = url.slice(`/${MEDIA_OUTPUT_BASE}/`.length).split('/');
-      if (parts.length < 2) return next();
-
-      const slug = parts.at(0);
-      const fileName = parts.slice(1).join('/');
-      if (!slug || !fileName) return next();
-      const filePath = join(CONTENT_BLOG_DIR, slug, 'assets', fileName);
-
-      if (!existsSync(filePath)) {
+      const filePath = resolveMediaPath(url);
+      if (!filePath) {
         res.statusCode = 404;
         res.end('Not found');
         return;
       }
 
-      const ext = extname(fileName).toLowerCase();
+      const ext = extname(filePath).toLowerCase();
       const contentType = CONTENT_TYPES[ext] ?? 'application/octet-stream';
       const stat = statSync(filePath);
 

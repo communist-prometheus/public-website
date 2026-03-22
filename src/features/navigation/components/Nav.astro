@@ -8,7 +8,7 @@ interface Props {
 
 const { lang } = Astro.props;
 
-const links = getNavLinks(lang);
+const links = await getNavLinks(lang);
 ---
 
 <nav>

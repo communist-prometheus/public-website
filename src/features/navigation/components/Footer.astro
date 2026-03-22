@@ -1,6 +1,6 @@
 ---
 import type { Language } from '@/config/i18n';
-import { t } from '@/config/translations';
+import { getNavData } from '@/config/translations';
 
 interface Props {
   lang: Language;
@@ -9,7 +9,8 @@ interface Props {
 const { lang } = Astro.props;
 
 const currentYear = new Date().getFullYear();
-const copyright = t(lang).footer('copyright');
+const nav = await getNavData(lang);
+const copyright = nav?.data.copyright ?? '© All rights reserved';
 ---
 
 <footer transition:persist="footer">

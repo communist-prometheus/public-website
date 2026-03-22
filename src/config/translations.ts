@@ -1,128 +1,27 @@
+import type { CollectionEntry } from 'astro:content';
+import { getCollection } from 'astro:content';
 import type { Language } from './i18n';
 
-type Entry = Readonly<Record<Language, string>>;
-
-const defineSection = <T extends Readonly<Record<string, Entry>>>(section: T): T => section;
-
-const nav = defineSection({
-  home: { en: 'Home', ru: 'Главная', it: 'Home', es: 'Inicio' },
-  blog: { en: 'Blog', ru: 'Блог', it: 'Blog', es: 'Blog' },
-  positions: { en: 'Positions', ru: 'Позиции', it: 'Posizioni', es: 'Posiciones' },
-  manifest: { en: 'Manifest', ru: 'Манифест', it: 'Manifesto', es: 'Manifiesto' },
-  menu: { en: 'Menu', ru: 'Меню', it: 'Menu', es: 'Menú' },
-});
-
-const footer = defineSection({
-  copyright: {
-    en: '© All rights reserved',
-    ru: '© Все права защищены',
-    it: '© Tutti i diritti riservati',
-    es: '© Todos los derechos reservados',
-  },
-});
-
-const blog = defineSection({
-  pageTitle: {
-    en: 'Blog - Prometheus',
-    ru: 'Блог - Prometheus',
-    it: 'Blog - Prometheus',
-    es: 'Blog - Prometheus',
-  },
-  pageDescription: {
-    en: 'Articles, tutorials, and insights about modern web development, open source, and technology.',
-    ru: 'Статьи, руководства и материалы о современной веб-разработке, открытом коде и технологиях.',
-    it: 'Articoli, tutorial e approfondimenti sullo sviluppo web moderno, open source e tecnologia.',
-    es: 'Artículos, tutoriales y conocimientos sobre desarrollo web moderno, código abierto y tecnología.',
-  },
-  heading: { en: 'Blog', ru: 'Блог', it: 'Blog', es: 'Blog' },
-  allCategory: { en: 'All', ru: 'Все', it: 'Tutti', es: 'Todos' },
-  readMore: { en: 'Read more', ru: 'Читать далее', it: 'Leggi di più', es: 'Leer más' },
-});
-
-const home = defineSection({
-  pageTitle: {
-    en: 'Prometheus - Modern Web Platform',
-    ru: 'Prometheus - Современная веб-платформа',
-    it: 'Prometheus - Piattaforma Web Moderna',
-    es: 'Prometheus - Plataforma Web Moderna',
-  },
-  heroTitle: {
-    en: 'Welcome to Prometheus',
-    ru: 'Добро пожаловать в Prometheus',
-    it: 'Benvenuti su Prometheus',
-    es: 'Bienvenidos a Prometheus',
-  },
-  heroDescription: {
-    en: 'A modern platform for sharing knowledge, ideas, and innovations. Built with cutting-edge web technologies to deliver the best experience.',
-    ru: 'Современная платформа для обмена знаниями, идеями и инновациями. Построена с использованием передовых веб-технологий для лучшего опыта.',
-    it: "Una piattaforma moderna per condividere conoscenze, idee e innovazioni. Costruita con tecnologie web all'avanguardia per offrire la migliore esperienza.",
-    es: 'Una plataforma moderna para compartir conocimientos, ideas e innovaciones. Construida con tecnologías web de vanguardia para ofrecer la mejor experiencia.',
-  },
-  latestNews: {
-    en: 'Latest News',
-    ru: 'Последние новости',
-    it: 'Ultime Notizie',
-    es: 'Últimas Noticias',
-  },
-  viewAllPosts: {
-    en: 'View all posts',
-    ru: 'Все посты',
-    it: 'Tutti gli articoli',
-    es: 'Ver todos los artículos',
-  },
-});
-
-const positions = defineSection({
-  pageTitle: {
-    en: 'Positions - Prometheus',
-    ru: 'Позиции - Prometheus',
-    it: 'Posizioni - Prometheus',
-    es: 'Posiciones - Prometheus',
-  },
-  pageDescription: {
-    en: 'Explore open positions and opportunities to join the Prometheus team.',
-    ru: 'Откройте для себя вакансии и возможности присоединиться к команде Prometheus.',
-    it: 'Esplora le posizioni aperte e le opportunità per unirti al team Prometheus.',
-    es: 'Explora las posiciones abiertas y oportunidades para unirte al equipo de Prometheus.',
-  },
-  heading: { en: 'Positions', ru: 'Позиции', it: 'Posizioni', es: 'Posiciones' },
-  viewAll: {
-    en: 'View all positions',
-    ru: 'Все позиции',
-    it: 'Tutte le posizioni',
-    es: 'Ver todas las posiciones',
-  },
-  readMore: { en: 'Read more', ru: 'Подробнее', it: 'Leggi di più', es: 'Leer más' },
-  backToList: {
-    en: '← Back to positions',
-    ru: '← Назад к позициям',
-    it: '← Torna alle posizioni',
-    es: '← Volver a posiciones',
-  },
-});
-
-const lookup =
-  (lang: Language) =>
-  (entry: Entry): string =>
-    entry[lang];
-
-export const t = (lang: Language) => {
-  const resolve = lookup(lang);
-  return {
-    nav: (key: keyof typeof nav): string => resolve(nav[key]),
-    footer: (key: keyof typeof footer): string => resolve(footer[key]),
-    blog: (key: keyof typeof blog): string => resolve(blog[key]),
-    home: (key: keyof typeof home): string => resolve(home[key]),
-    positions: (key: keyof typeof positions): string => resolve(positions[key]),
-  };
+export const getPageData = async (
+  slug: string,
+  lang: Language,
+): Promise<CollectionEntry<'pages'> | undefined> => {
+  const pages = await getCollection('pages', ({ data }) => data.lang === lang);
+  return pages.find((p) => p.id.startsWith(`${slug}/`));
 };
 
-export const getNavLinks = (lang: Language) => {
-  const tr = t(lang);
+export const getNavData = async (lang: Language): Promise<CollectionEntry<'nav'> | undefined> => {
+  const entries = await getCollection('nav', ({ data }) => data.lang === lang);
+  return entries.at(0);
+};
+
+export const getNavLinks = async (lang: Language) => {
+  const nav = await getNavData(lang);
+  if (!nav) return [];
   return [
-    { href: `/${lang}`, label: tr.nav('home') },
-    { href: `/${lang}/blog`, label: tr.nav('blog') },
-    { href: `/${lang}/positions`, label: tr.nav('positions') },
-    { href: `/${lang}/manifest`, label: tr.nav('manifest') },
+    { href: `/${lang}`, label: nav.data.home },
+    { href: `/${lang}/blog`, label: nav.data.blog },
+    { href: `/${lang}/positions`, label: nav.data.positions },
+    { href: `/${lang}/manifest`, label: nav.data.manifest },
   ];
 };

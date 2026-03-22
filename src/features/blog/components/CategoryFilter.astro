@@ -1,15 +1,10 @@
 ---
-import type { Language } from '@/config/i18n';
-import { t } from '@/config/translations';
-
 interface Props {
   categories: string[];
-  lang: Language;
+  allLabel?: string;
 }
 
-const { categories, lang } = Astro.props;
-
-const allLabel = t(lang).blog('allCategory');
+const { categories, allLabel = 'All' } = Astro.props;
 ---
 
 <div class="category-filter">
