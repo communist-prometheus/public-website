@@ -11,6 +11,8 @@ lang: en
 
 Prometheus blog supports a wide range of embedded media. This article demonstrates each type and how it renders within the content area.
 
+![image.png](./assets/image.png)
+
 ## Raster Photography
 
 Standard photographs and raster images are automatically optimized by Astro — converted to modern formats (AVIF, WebP) and served in multiple sizes for responsive loading.
