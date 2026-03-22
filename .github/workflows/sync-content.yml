@@ -1,0 +1,37 @@
+name: Sync content from content repo
+
+on:
+  repository_dispatch:
+    types: [content-updated]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure git author from content commit
+        run: |
+          git config user.name "${{ github.event.client_payload.author_name }}"
+          git config user.email "${{ github.event.client_payload.author_email }}"
+
+      - name: Add content remote
+        run: git remote add content https://github.com/communist-prometheus/public-website-content.git
+
+      - name: Checkout target branch
+        run: |
+          BRANCH="${{ github.event.client_payload.branch }}"
+          git checkout "$BRANCH"
+          git pull origin "$BRANCH"
+
+      - name: Subtree pull from content repo
+        run: |
+          BRANCH="${{ github.event.client_payload.branch }}"
+          git subtree pull --prefix=src/content content "$BRANCH" --squash -m "content: ${{ github.event.client_payload.commit_message }}"
+
+      - name: Push changes
+        run: |
+          BRANCH="${{ github.event.client_payload.branch }}"
+          git push origin "$BRANCH"
