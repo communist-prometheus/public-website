@@ -1,2 +1,3 @@
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
-git subtree pull --prefix=src/content content "$BRANCH" --squash -m "content: sync after pull" 2>/dev/null || true
+# Run subtree sync in background to avoid blocking on network issues
+(git fetch content "$BRANCH" 2>/dev/null && git subtree pull --prefix=src/content content "$BRANCH" --squash -m "content: sync after pull" 2>/dev/null) &
