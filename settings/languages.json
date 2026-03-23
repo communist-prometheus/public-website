@@ -1,6 +1,22 @@
 [
-  { "code": "en", "label": "English" },
-  { "code": "ru", "label": "Русский" },
-  { "code": "it", "label": "Italiano" },
-  { "code": "es", "label": "Español" }
+  {
+    "code": "en",
+    "label": "English"
+  },
+  {
+    "code": "ru",
+    "label": "Русский"
+  },
+  {
+    "code": "it",
+    "label": "Italiano"
+  },
+  {
+    "code": "es",
+    "label": "Español"
+  },
+  {
+    "code": "fr",
+    "label": "Franch"
+  }
 ]
