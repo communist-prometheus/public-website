@@ -1,9 +1,0 @@
-# Guard against recursive calls (subtree push triggers pre-push again)
-[ "$SUBTREE_PUSH_ACTIVE" = "1" ] && exit 0
-
-BRANCH=$(git rev-parse --abbrev-ref HEAD)
-# Check if src/content/ was modified in commits being pushed
-if git diff --name-only "origin/$BRANCH"..HEAD 2>/dev/null | grep -q '^src/content/'; then
-  echo "[subtree] Content changes detected, pushing to content repo..."
-  SUBTREE_PUSH_ACTIVE=1 git subtree push --prefix=src/content content "$BRANCH" 2>/dev/null || echo "[subtree] Push to content repo failed (non-blocking)"
-fi
