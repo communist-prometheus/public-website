@@ -1,0 +1,78 @@
+name: Validate content
+
+on:
+  push:
+    branches: [master, develop]
+  pull_request:
+    branches: [master, develop]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate languages.json
+        run: |
+          FILE="settings/languages.json"
+          if [ ! -f "$FILE" ]; then
+            echo "::error::$FILE not found"
+            exit 1
+          fi
+          node -e "
+            const data = JSON.parse(require('fs').readFileSync('$FILE', 'utf8'));
+            if (!Array.isArray(data)) { console.error('languages.json must be an array'); process.exit(1); }
+            for (const entry of data) {
+              if (!entry.code || typeof entry.code !== 'string') { console.error('Missing code:', JSON.stringify(entry)); process.exit(1); }
+              if (!entry.label || typeof entry.label !== 'string') { console.error('Missing label:', JSON.stringify(entry)); process.exit(1); }
+            }
+            console.log('languages.json OK:', data.length, 'languages');
+          "
+
+      - name: Validate frontmatter in all markdown files
+        run: |
+          ERROR=0
+          for file in $(find . -name '*.md' -not -path './.github/*'); do
+            # Check file has frontmatter delimiters
+            if ! head -1 "$file" | grep -q '^---$'; then
+              echo "::error file=$file::Missing frontmatter opening ---"
+              ERROR=1
+              continue
+            fi
+            # Check frontmatter has closing delimiter
+            if ! awk 'NR>1' "$file" | grep -q '^---$'; then
+              echo "::error file=$file::Missing frontmatter closing ---"
+              ERROR=1
+              continue
+            fi
+            # Check lang field exists
+            if ! grep -q '^lang:' "$file"; then
+              echo "::error file=$file::Missing lang field in frontmatter"
+              ERROR=1
+            fi
+            # Check title field exists
+            if ! grep -q '^title:' "$file"; then
+              echo "::error file=$file::Missing title field in frontmatter"
+              ERROR=1
+            fi
+          done
+          if [ "$ERROR" -eq 1 ]; then exit 1; fi
+          echo "All markdown files valid"
+
+      - name: Validate folder structure
+        run: |
+          ERROR=0
+          for dir in blog positions pages common; do
+            if [ ! -d "$dir" ]; then continue; fi
+            for slug_dir in "$dir"/*/; do
+              [ -d "$slug_dir" ] || continue
+              slug=$(basename "$slug_dir")
+              # Check at least one index.*.md exists
+              if ! ls "$slug_dir"index.*.md 1>/dev/null 2>&1; then
+                echo "::error::$slug_dir has no index.*.md files"
+                ERROR=1
+              fi
+            done
+          done
+          if [ "$ERROR" -eq 1 ]; then exit 1; fi
+          echo "Folder structure valid"
