@@ -1,0 +1,20 @@
+[
+  {
+    "key": "test",
+    "translations": {
+      "en": "Test Label",
+      "ru": "Test",
+      "it": "Test",
+      "es": "Test"
+    }
+  },
+  {
+    "key": "tech",
+    "translations": {
+      "en": "Tech",
+      "ru": "Тех",
+      "it": "Techi",
+      "es": "Teche"
+    }
+  }
+]
