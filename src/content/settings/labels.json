@@ -1,20 +1,29 @@
 [
   {
-    "key": "test",
+    "key": "technology",
     "translations": {
-      "en": "Test Label",
-      "ru": "Test",
-      "it": "Test",
-      "es": "Test"
+      "en": "Technology",
+      "ru": "Технологии",
+      "it": "Tecnologia",
+      "es": "Tecnología"
     }
   },
   {
-    "key": "tech",
+    "key": "announcement",
     "translations": {
-      "en": "Tech",
-      "ru": "Тех",
-      "it": "Techi",
-      "es": "Teche"
+      "en": "Announcement",
+      "ru": "Объявление",
+      "it": "Annuncio",
+      "es": "Anuncio"
+    }
+  },
+  {
+    "key": "community",
+    "translations": {
+      "en": "Community",
+      "ru": "Сообщество",
+      "it": "Comunità",
+      "es": "Comunidad"
     }
   }
 ]
