@@ -1,5 +1,5 @@
 ---
-title: Test Page 01
+title: Test Page 1
 lang: en
 description: Test Page Description
 category: technology
