@@ -4,9 +4,6 @@ on:
   repository_dispatch:
     types: [content-updated]
 
-permissions:
-  contents: write
-
 jobs:
   sync:
     runs-on: ubuntu-latest
@@ -14,6 +11,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GH_PAT }}
 
       - name: Configure git author from content commit
         run: |
