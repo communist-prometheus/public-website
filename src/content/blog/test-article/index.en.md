@@ -1,5 +1,5 @@
 ---
-title: Test Article 23
+title: Test Article 24
 lang: en
 description: this is test article
 category: Test
