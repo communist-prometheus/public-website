@@ -6,5 +6,5 @@ export const getPositions = async (
   lang: Language,
 ): Promise<readonly CollectionEntry<'positions'>[]> => {
   const entries = await getCollection('positions', ({ data }) => data.lang === lang);
-  return entries.sort((a, b) => a.data.order - b.data.order);
+  return entries.sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
 };

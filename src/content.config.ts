@@ -35,7 +35,7 @@ const positionsCollection = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string(),
-    order: z.number(),
+    pubDate: z.date(),
     lang: langEnum,
   }),
 });

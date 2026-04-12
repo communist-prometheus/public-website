@@ -1,7 +1,7 @@
 ---
 title: Sovranità Digitale
 description: La tecnologia deve servire le persone, non le corporazioni. Sosteniamo l'infrastruttura open-source, la proprietà dei dati e i diritti digitali come diritti umani fondamentali.
-order: 1
+pubDate: 2024-01-15
 lang: it
 ---
 

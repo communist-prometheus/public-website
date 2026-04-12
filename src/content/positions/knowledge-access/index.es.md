@@ -1,7 +1,7 @@
 ---
 title: Acceso Universal al Conocimiento
 description: La educación y el conocimiento deben estar disponibles libremente para todos. Luchamos contra el control de la información y trabajamos para democratizar el acceso a los recursos educativos.
-order: 2
+pubDate: 2024-02-01
 lang: es
 ---
 
