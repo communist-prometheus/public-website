@@ -15,8 +15,14 @@ jobs:
         uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
 
-      - name: Building application
+      - name: Building application (static site)
         run: bun run build
+
+      - name: Installing Playwright browsers
+        run: bunx playwright install --with-deps chromium
+
+      - name: Running E2E tests (chromium, skip lighthouse/mobile)
+        run: bunx playwright test --project=chromium --reporter=line
 
       - name: Deploying to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
