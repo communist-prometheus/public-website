@@ -1,7 +1,7 @@
 ---
 title: Soberanía Digital
 description: La tecnología debe servir a las personas, no a las corporaciones. Abogamos por la infraestructura de código abierto, la propiedad de los datos y los derechos digitales como derechos humanos fundamentales.
-order: 1
+pubDate: 2024-01-15
 lang: es
 ---
 
