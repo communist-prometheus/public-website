@@ -30,13 +30,9 @@ test.describe('Positions section', () => {
   });
 
   test('individual position page renders content', async ({ page }) => {
-    await page.goto('/en/positions');
-    await page.waitForLoadState('networkidle');
-
-    const firstLink = page.locator('[data-testid="position-card"] a').first();
-    const href = await firstLink.getAttribute('href');
-    await firstLink.click();
-    await page.waitForURL(`**${href}`);
+    // Use a known position with content — new positions created via
+    // admin may have empty bodies and would fail the .content check.
+    await page.goto('/en/positions/digital-sovereignty');
     await page.waitForLoadState('networkidle');
 
     await expect(page.locator('h1')).toBeVisible();

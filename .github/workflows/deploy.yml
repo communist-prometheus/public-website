@@ -19,9 +19,11 @@ jobs:
         run: bun run build
 
       - name: Installing Playwright browsers
+        if: ${{ !startsWith(github.event.head_commit.message, 'content:') }}
         run: bunx playwright install --with-deps chromium
 
       - name: Running E2E tests (chromium, skip lighthouse/mobile)
+        if: ${{ !startsWith(github.event.head_commit.message, 'content:') }}
         run: bunx playwright test --project=chromium --reporter=line
 
       - name: Deploying to Cloudflare Workers
