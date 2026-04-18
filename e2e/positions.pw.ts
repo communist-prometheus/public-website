@@ -30,8 +30,8 @@ test.describe('Positions section', () => {
   });
 
   test('individual position page renders content', async ({ page }) => {
-    // Use a known position with content — new positions created via
-    // admin may have empty bodies and would fail the .content check.
+    /* Use a known position with content — new positions created via
+       admin may have empty bodies and would fail the .content check. */
     await page.goto('/en/positions/digital-sovereignty');
     await page.waitForLoadState('networkidle');
 
