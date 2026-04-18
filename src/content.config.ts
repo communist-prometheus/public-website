@@ -11,6 +11,8 @@ const blogCollection = defineCollection({
       description: z.string(),
       category: z.string(),
       pubDate: z.date(),
+      published: z.boolean().optional().default(true),
+      publishDate: z.date().optional(),
       image: image().optional(),
       lang: langEnum,
     }),
@@ -35,7 +37,9 @@ const positionsCollection = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string(),
-    pubDate: z.date(),
+    pubDate: z.date().optional(),
+    published: z.boolean().optional().default(true),
+    publishDate: z.date().optional(),
     lang: langEnum,
   }),
 });
