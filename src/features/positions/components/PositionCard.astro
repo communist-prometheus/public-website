@@ -31,7 +31,7 @@ const {
 
 <style>
   .position-card {
-    padding: var(--spacing-lg);
+    padding: clamp(var(--spacing-sm), 3vw, var(--spacing-lg));
     background: var(--color-surface-elevated);
     border-left: 3px solid var(--color-accent);
     border-radius: 0 var(--radius-md) var(--radius-md) 0;
@@ -46,6 +46,8 @@ const {
     font-size: 1.125rem;
     font-weight: 600;
     margin-bottom: var(--spacing-xs);
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
 
   p {

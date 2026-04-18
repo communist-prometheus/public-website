@@ -52,7 +52,7 @@ const {
   .post-image {
     margin: var(--spacing-sm);
     width: calc(100% - var(--spacing-sm) * 2);
-    height: 200px;
+    height: clamp(120px, 30vw, 200px);
     overflow: hidden;
     border-radius: var(--radius-md);
   }
@@ -67,8 +67,9 @@ const {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-sm);
-    padding: var(--spacing-lg);
+    padding: clamp(var(--spacing-sm), 3vw, var(--spacing-lg));
     flex: 1;
+    min-width: 0;
   }
 
   .category {
@@ -85,8 +86,10 @@ const {
   }
 
   h2, h3 {
-    font-size: 1.25rem;
+    font-size: clamp(1rem, 3vw, 1.25rem);
     line-height: 1.4;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
 
   p {

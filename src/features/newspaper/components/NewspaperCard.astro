@@ -24,7 +24,7 @@ const pdfPath = `/newspaper/${slug}/assets/gazette.pdf`;
 
 <style>
   .newspaper-card {
-    padding: var(--spacing-lg);
+    padding: clamp(var(--spacing-sm), 3vw, var(--spacing-lg));
     background: var(--color-surface-elevated);
     border-left: 3px solid var(--color-warning, #ff9800);
     border-radius: 0 var(--radius-md) var(--radius-md) 0;
@@ -39,6 +39,8 @@ const pdfPath = `/newspaper/${slug}/assets/gazette.pdf`;
     font-size: 1.125rem;
     font-weight: 600;
     margin-bottom: var(--spacing-xs);
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
 
   p {
