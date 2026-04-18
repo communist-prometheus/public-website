@@ -14,7 +14,8 @@ image: ./assets/screenshot_0.png
 1. ыаываываыва
 2. ыаыа
 
+[pdf-sample_0 (1).pdf](./assets/pdf-sample_0 (1).pdf)
+
 ываыва
 
 ![image.png](./assets/image.png)
-
