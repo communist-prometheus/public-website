@@ -1,0 +1,57 @@
+---
+import CpButton from '@/components/cp/CpButton.astro';
+
+interface Props {
+  readonly title: string;
+  readonly description: string;
+  readonly slug: string;
+  readonly headingLevel?: 2 | 3;
+  readonly downloadLabel?: string;
+}
+
+const { title, description, slug, headingLevel = 3, downloadLabel = 'Download PDF' } = Astro.props;
+
+const pdfPath = `/newspaper/${slug}/assets/gazette.pdf`;
+---
+
+<article class="newspaper-card" data-testid="newspaper-card">
+  {headingLevel === 2 ? <h2>{title}</h2> : <h3>{title}</h3>}
+  <p>{description}</p>
+  <a href={pdfPath} download>
+    <CpButton variant="ghost">{downloadLabel} ↓</CpButton>
+  </a>
+</article>
+
+<style>
+  .newspaper-card {
+    padding: var(--spacing-lg);
+    background: var(--color-surface-elevated);
+    border-left: 3px solid var(--color-warning, #ff9800);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
+  }
+
+  .newspaper-card:hover {
+    box-shadow: var(--shadow-md);
+  }
+
+  h2, h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: var(--spacing-xs);
+  }
+
+  p {
+    font-size: 0.9375rem;
+    color: var(--color-text-secondary);
+    line-height: 1.7;
+    margin-bottom: var(--spacing-md);
+  }
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    text-decoration: none;
+  }
+</style>

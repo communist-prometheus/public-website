@@ -53,6 +53,7 @@ const commonCollection = defineCollection({
     blog: z.string().optional(),
     positions: z.string().optional(),
     manifest: z.string().optional(),
+    newspaper: z.string().optional(),
     menu: z.string().optional(),
     copyright: z.string().optional(),
     readMore: z.string().optional(),
@@ -61,9 +62,22 @@ const commonCollection = defineCollection({
   }),
 });
 
+const newspaperCollection = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    pubDate: z.date().optional(),
+    published: z.boolean().optional().default(true),
+    publishDate: z.date().optional(),
+    lang: langEnum,
+  }),
+});
+
 export const collections = {
   blog: blogCollection,
   pages: pagesCollection,
   positions: positionsCollection,
   common: commonCollection,
+  newspaper: newspaperCollection,
 };
