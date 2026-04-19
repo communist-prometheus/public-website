@@ -1,5 +1,4 @@
 ---
-import CpButton from '@/components/cp/CpButton.astro';
 
 interface Props {
   readonly title: string;
@@ -17,8 +16,8 @@ const pdfPath = `/newspaper/${slug}/assets/gazette.pdf`;
 <article class="newspaper-card" data-testid="newspaper-card">
   {headingLevel === 2 ? <h2>{title}</h2> : <h3>{title}</h3>}
   <p>{description}</p>
-  <a href={pdfPath} download>
-    <CpButton variant="ghost">{downloadLabel} ↓</CpButton>
+  <a href={pdfPath} download class="read-more">
+    {downloadLabel} <span aria-hidden="true">↓</span>
   </a>
 </article>
 
@@ -50,10 +49,18 @@ const pdfPath = `/newspaper/${slug}/assets/gazette.pdf`;
     margin-bottom: var(--spacing-md);
   }
 
-  a {
+  .read-more {
     display: inline-flex;
     align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-primary);
     min-height: 44px;
     text-decoration: none;
+  }
+
+  .read-more:hover {
+    background: var(--color-surface);
   }
 </style>

@@ -40,8 +40,9 @@ const { title, description, lang } = Astro.props;
     </script>
   </head>
   <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     <Header lang={lang} />
-    <main>
+    <main id="main-content">
       <slot />
     </main>
     <Footer lang={lang} />
@@ -63,5 +64,22 @@ const { title, description, lang } = Astro.props;
   main {
     flex: 1;
     view-transition-name: main-content;
+  }
+
+  .skip-link {
+    position: absolute;
+    top: -100%;
+    left: var(--spacing-sm);
+    z-index: 9999;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .skip-link:focus {
+    top: var(--spacing-xs);
   }
 </style>

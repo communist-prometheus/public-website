@@ -48,4 +48,12 @@ const { title } = Astro.props;
   .hero-description :global(p) {
     margin: 0;
   }
+
+  @media (forced-colors: active) {
+    h1 {
+      background: none;
+      -webkit-text-fill-color: unset;
+      color: CanvasText;
+    }
+  }
 </style>

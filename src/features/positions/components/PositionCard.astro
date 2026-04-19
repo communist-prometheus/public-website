@@ -1,5 +1,4 @@
 ---
-import CpButton from '@/components/cp/CpButton.astro';
 import type { Language } from '@/config/i18n';
 
 interface Props {
@@ -24,8 +23,8 @@ const {
 <article class="position-card" data-testid="position-card">
   {headingLevel === 2 ? <h2>{title}</h2> : <h3>{title}</h3>}
   <p>{description}</p>
-  <a href={`/${lang}/positions/${slug}`}>
-    <CpButton variant="ghost">{readMoreLabel} →</CpButton>
+  <a href={`/${lang}/positions/${slug}`} class="read-more">
+    {readMoreLabel} <span aria-hidden="true">→</span>
   </a>
 </article>
 
@@ -57,10 +56,18 @@ const {
     margin-bottom: var(--spacing-md);
   }
 
-  a {
+  .read-more {
     display: inline-flex;
     align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-primary);
     min-height: 44px;
     text-decoration: none;
+  }
+
+  .read-more:hover {
+    background: var(--color-surface);
   }
 </style>
