@@ -25,6 +25,7 @@ const readMore = labels?.data.readMore ?? 'Download PDF';
               title={item.data.title}
               description={item.data.description}
               slug={item.id.split('/').at(0) ?? item.id}
+              image={item.data.image ?? undefined}
               headingLevel={2}
               downloadLabel={readMore}
             />

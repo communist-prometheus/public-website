@@ -64,14 +64,16 @@ const commonCollection = defineCollection({
 
 const newspaperCollection = defineCollection({
   type: 'content',
-  schema: z.object({
-    title: z.string(),
-    description: z.string(),
-    pubDate: z.date().optional(),
-    published: z.boolean().optional().default(true),
-    publishDate: z.date().optional(),
-    lang: langEnum,
-  }),
+  schema: ({ image }) =>
+    z.object({
+      title: z.string(),
+      description: z.string(),
+      pubDate: z.date().optional(),
+      published: z.boolean().optional().default(true),
+      publishDate: z.date().optional(),
+      image: image().optional(),
+      lang: langEnum,
+    }),
 });
 
 export const collections = {
