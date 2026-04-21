@@ -5,16 +5,23 @@
       "en": "Technology",
       "ru": "Технологии",
       "it": "Tecnologia",
-      "es": "Tecnología"
+      "es": "Tecnología",
+      "pu": "Технология",
+      "bl": "Технология",
+      "pl": "Technologia",
+      "uk": "Технології"
     }
   },
   {
     "key": "announcement",
     "translations": {
-      "en": "Announcement",
+      "en": "Anouncement",
       "ru": "Объявление",
       "it": "Annuncio",
-      "es": "Anuncio"
+      "es": "Anuncio",
+      "bl": "Съобщение",
+      "uk": "Оголошення",
+      "pl": "Ogłoszenie"
     }
   },
   {
@@ -23,7 +30,10 @@
       "en": "Community",
       "ru": "Сообщество",
       "it": "Comunità",
-      "es": "Comunidad"
+      "es": "Comunidad",
+      "bl": "Общност",
+      "pl": "Społeczność",
+      "uk": "Спільнота"
     }
   }
 ]
