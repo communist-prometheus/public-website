@@ -1,6 +1,26 @@
 [
-  { "code": "en", "label": "English" },
-  { "code": "ru", "label": "Русский" },
-  { "code": "it", "label": "Italiano" },
-  { "code": "es", "label": "Español" }
+  {
+    "code": "en",
+    "label": "English"
+  },
+  {
+    "code": "ru",
+    "label": "Русский"
+  },
+  {
+    "code": "it",
+    "label": "Italiano"
+  },
+  {
+    "code": "es",
+    "label": "Español"
+  },
+  {
+    "code": "pu",
+    "label": "Bulgarian"
+  },
+  {
+    "code": "pl",
+    "label": "Polish"
+  }
 ]
