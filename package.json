@@ -3,10 +3,11 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
-    "build": "biome format . && biome check . && eslint . && astro check && astro build",
+    "build": "biome format . && biome check . && eslint . && node --experimental-strip-types scripts/check-schema.ts && astro check && astro build",
     "preview": "astro preview",
     "astro": "astro",
     "check": "astro check",
+    "check:schema": "node --experimental-strip-types scripts/check-schema.ts",
     "lint": "biome check . && eslint .",
     "lint:fix": "biome check --write . && eslint --fix .",
     "lint:comments": "eslint .",
