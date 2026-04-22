@@ -10,7 +10,7 @@ const sortDate = (entry: CollectionEntry<'blog'>): number =>
 export const getBlogPosts = async (lang: Language): Promise<CollectionEntry<'blog'>[]> => {
   const posts = await getCollection(
     'blog',
-    ({ data }) => data.lang === lang && data.published !== false,
+    ({ data }) => data.lang === lang && data.published === true,
   );
   return posts.sort((a, b) => sortDate(b) - sortDate(a));
 };

@@ -5,6 +5,7 @@ description: sdfsdf
 category: technology
 pubDate: 2026-04-18
 image: ./assets/screenshot_0.png
+published: true
 ---
 
 # Заголовок

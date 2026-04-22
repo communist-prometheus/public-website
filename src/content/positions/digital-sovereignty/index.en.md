@@ -3,6 +3,7 @@ title: Digital Sovereignty
 description: Technology must serve the people, not corporations. We advocate for open-source infrastructure, data ownership, and digital rights as fundamental human rights.
 pubDate: 2024-01-15
 lang: en
+published: true
 ---
 
 ## The Problem

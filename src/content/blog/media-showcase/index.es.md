@@ -5,6 +5,7 @@ category: Tecnología
 pubDate: 2024-02-10
 image: ./assets/cover.jpg
 lang: es
+published: true
 ---
 
 # Contenido multimedia en el blog

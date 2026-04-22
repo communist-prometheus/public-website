@@ -5,6 +5,7 @@ category: Объявление
 pubDate: 2024-01-15
 image: ./assets/hero.svg
 lang: ru
+published: true
 ---
 
 # Добро пожаловать в Prometheus

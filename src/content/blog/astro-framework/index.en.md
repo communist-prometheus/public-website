@@ -4,6 +4,7 @@ description: Learn about Astro's unique approach to building fast, content-focus
 category: Technology
 pubDate: 2024-01-25
 lang: en
+published: true
 ---
 
 # Why Choose Astro Framework

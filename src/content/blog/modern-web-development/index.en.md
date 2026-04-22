@@ -4,6 +4,7 @@ description: Explore the latest best practices in web development including perf
 category: Technology
 pubDate: 2024-01-20
 lang: en
+published: true
 ---
 
 # Modern Web Development Best Practices

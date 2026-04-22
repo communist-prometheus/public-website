@@ -10,7 +10,7 @@ export const getPositions = async (
 ): Promise<readonly CollectionEntry<'positions'>[]> => {
   const entries = await getCollection(
     'positions',
-    ({ data }) => data.lang === lang && data.published !== false,
+    ({ data }) => data.lang === lang && data.published === true,
   );
   return entries.sort((a, b) => sortDate(b) - sortDate(a));
 };

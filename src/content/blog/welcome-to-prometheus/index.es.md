@@ -5,6 +5,7 @@ category: Anuncio
 pubDate: 2024-01-15
 image: ./assets/hero.svg
 lang: es
+published: true
 ---
 
 # Bienvenidos a Prometheus

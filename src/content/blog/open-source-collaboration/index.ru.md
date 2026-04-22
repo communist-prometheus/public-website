@@ -5,6 +5,7 @@ category: Сообщество
 pubDate: 2024-02-05
 image: ./assets/cover.jpg
 lang: ru
+published: true
 ---
 
 # Сила открытого сотрудничества

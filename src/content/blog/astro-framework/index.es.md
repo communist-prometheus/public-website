@@ -4,6 +4,7 @@ description: Descubre el enfoque único de Astro para construir sitios web rápi
 category: Tecnología
 pubDate: 2024-01-25
 lang: es
+published: true
 ---
 
 # Por Qué Elegir el Framework Astro

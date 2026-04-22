@@ -4,6 +4,7 @@ description: Узнайте об уникальном подходе Astro к с
 category: Технологии
 pubDate: 2024-01-25
 lang: ru
+published: true
 ---
 
 # Почему выбрать фреймворк Astro

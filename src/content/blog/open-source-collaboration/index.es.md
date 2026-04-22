@@ -5,6 +5,7 @@ category: Comunidad
 pubDate: 2024-02-05
 image: ./assets/cover.jpg
 lang: es
+published: true
 ---
 
 # El poder de la colaboración open source

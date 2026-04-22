@@ -4,6 +4,7 @@ description: Scopri l'approccio unico di Astro per costruire siti web veloci e o
 category: Tecnologia
 pubDate: 2024-01-25
 lang: it
+published: true
 ---
 
 # Perché Scegliere il Framework Astro

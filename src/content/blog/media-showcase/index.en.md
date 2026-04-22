@@ -5,6 +5,7 @@ category: Technology
 pubDate: 2024-02-10
 image: ./assets/cover.jpg
 lang: en
+published: true
 ---
 
 # Rich Media in Blog Posts

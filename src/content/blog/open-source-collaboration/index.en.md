@@ -5,6 +5,7 @@ category: Community
 pubDate: 2024-02-05
 image: ./assets/cover.jpg
 lang: en
+published: true
 ---
 
 # The Power of Open Source Collaboration

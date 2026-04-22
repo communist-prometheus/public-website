@@ -5,6 +5,7 @@ category: Технологии
 pubDate: 2024-02-10
 image: ./assets/cover.jpg
 lang: ru
+published: true
 ---
 
 # Мультимедиа в блоге
