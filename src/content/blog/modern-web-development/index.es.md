@@ -2,9 +2,9 @@
 title: Mejores Prácticas de Desarrollo Web Moderno
 description: Explora las últimas mejores prácticas en desarrollo web, incluyendo optimización del rendimiento, accesibilidad y experiencia de usuario.
 category: Tecnología
-pubDate: 2024-01-20
 lang: es
 published: true
+publishDate: 2024-01-20
 ---
 
 # Mejores Prácticas de Desarrollo Web Moderno

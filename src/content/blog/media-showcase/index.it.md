@@ -2,10 +2,10 @@
 title: Contenuti multimediali nel blog
 description: Una vetrina dei diversi tipi di media supportati negli articoli del blog Prometheus — immagini raster, grafica vettoriale, video e audio.
 category: Tecnologia
-pubDate: 2024-02-10
 image: ./assets/cover.jpg
 lang: it
 published: true
+publishDate: 2024-02-10
 ---
 
 # Contenuti multimediali nel blog

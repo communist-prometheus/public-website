@@ -2,10 +2,10 @@
 title: Мультимедиа в блоге
 description: Демонстрация различных типов медиаконтента в статьях блога Prometheus — растровые изображения, векторная графика, видео и аудио.
 category: Технологии
-pubDate: 2024-02-10
 image: ./assets/cover.jpg
 lang: ru
 published: true
+publishDate: 2024-02-10
 ---
 
 # Мультимедиа в блоге

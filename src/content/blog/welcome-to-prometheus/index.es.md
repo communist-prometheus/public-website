@@ -2,10 +2,10 @@
 title: Bienvenidos a Prometheus
 description: Descubre nuestra visión para una plataforma moderna de intercambio de conocimientos construida con tecnologías de vanguardia.
 category: Anuncio
-pubDate: 2024-01-15
 image: ./assets/hero.svg
 lang: es
 published: true
+publishDate: 2024-01-15
 ---
 
 # Bienvenidos a Prometheus

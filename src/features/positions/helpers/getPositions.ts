@@ -3,7 +3,7 @@ import { getCollection } from 'astro:content';
 import type { Language } from '@/config/i18n';
 
 const sortDate = (entry: CollectionEntry<'positions'>): number =>
-  (entry.data.publishDate ?? entry.data.pubDate ?? new Date(0)).getTime();
+  (entry.data.publishDate ?? new Date(0)).getTime();
 
 export const getPositions = async (
   lang: Language,

@@ -1,7 +1,7 @@
 ---
 title: Article 1
 description: Test newspaper article
-pubDate: 2026-04-18
 lang: en
 published: true
+publishDate: 2026-04-18
 ---

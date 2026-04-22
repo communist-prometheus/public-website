@@ -10,7 +10,6 @@ const blogCollection = defineCollection({
       title: z.string(),
       description: z.string(),
       category: z.string(),
-      pubDate: z.date(),
       published: z.boolean().optional().default(false),
       publishDate: z.date().optional(),
       image: image().optional(),
@@ -37,8 +36,7 @@ const positionsCollection = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string(),
-    pubDate: z.date().optional(),
-    published: z.boolean().optional().default(true),
+    published: z.boolean().optional().default(false),
     publishDate: z.date().optional(),
     lang: langEnum,
   }),
@@ -68,7 +66,6 @@ const newspaperCollection = defineCollection({
     z.object({
       title: z.string(),
       description: z.string(),
-      pubDate: z.date().optional(),
       published: z.boolean().optional().default(false),
       publishDate: z.date().optional(),
       image: image().optional(),

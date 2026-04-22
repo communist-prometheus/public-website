@@ -2,10 +2,10 @@
 title: El poder de la colaboración open source
 description: Cómo las comunidades de código abierto impulsan la innovación, generan confianza y crean software que perdura en el tiempo.
 category: Comunidad
-pubDate: 2024-02-05
 image: ./assets/cover.jpg
 lang: es
 published: true
+publishDate: 2024-02-05
 ---
 
 # El poder de la colaboración open source

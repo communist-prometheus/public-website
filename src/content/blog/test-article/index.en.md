@@ -3,9 +3,9 @@ title: Test Article 59
 lang: en
 description: this is test article
 category: Test
-pubDate: 2026-03-25
 image: ./assets/1000050381.jpg
 published: true
+publishDate: 2026-03-25
 ---
 
 # Test

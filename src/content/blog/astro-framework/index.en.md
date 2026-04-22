@@ -2,9 +2,9 @@
 title: Why Choose Astro Framework
 description: Learn about Astro's unique approach to building fast, content-focused websites with the tools you love.
 category: Technology
-pubDate: 2024-01-25
 lang: en
 published: true
+publishDate: 2024-01-25
 ---
 
 # Why Choose Astro Framework

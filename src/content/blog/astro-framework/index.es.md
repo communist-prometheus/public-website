@@ -2,9 +2,9 @@
 title: Por Qué Elegir el Framework Astro
 description: Descubre el enfoque único de Astro para construir sitios web rápidos y centrados en el contenido con las herramientas que amas.
 category: Tecnología
-pubDate: 2024-01-25
 lang: es
 published: true
+publishDate: 2024-01-25
 ---
 
 # Por Qué Elegir el Framework Astro

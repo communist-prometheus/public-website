@@ -2,9 +2,9 @@
 title: Modern Web Development Best Practices
 description: Explore the latest best practices in web development including performance optimization, accessibility, and user experience.
 category: Technology
-pubDate: 2024-01-20
 lang: en
 published: true
+publishDate: 2024-01-20
 ---
 
 # Modern Web Development Best Practices

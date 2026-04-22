@@ -1,9 +1,9 @@
 ---
 title: Universal Knowledge Access
 description: Education and knowledge should be freely available to everyone. We fight against information gatekeeping and work to democratize access to learning resources.
-pubDate: 2024-02-01
 lang: en
 published: true
+publishDate: 2024-02-01
 ---
 
 ## The Problem

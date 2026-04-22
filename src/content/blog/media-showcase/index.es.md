@@ -2,10 +2,10 @@
 title: Contenido multimedia en el blog
 description: Una muestra de los diferentes tipos de medios compatibles en los artículos del blog Prometheus — imágenes rasterizadas, gráficos vectoriales, video y audio.
 category: Tecnología
-pubDate: 2024-02-10
 image: ./assets/cover.jpg
 lang: es
 published: true
+publishDate: 2024-02-10
 ---
 
 # Contenido multimedia en el blog

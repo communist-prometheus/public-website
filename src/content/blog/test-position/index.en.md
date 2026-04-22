@@ -3,8 +3,8 @@ title: Test position
 lang: en
 description: Test position
 category: technology
-pubDate: 2026-04-18
 published: true
+publishDate: 2026-04-18
 ---
 
 sdfsdfsdfsdf

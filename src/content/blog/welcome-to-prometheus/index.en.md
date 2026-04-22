@@ -2,10 +2,10 @@
 title: Welcome to Prometheus
 description: Discover our vision for a modern knowledge sharing platform built with cutting-edge technologies.
 category: Announcement
-pubDate: 2024-01-15
 image: ./assets/hero.svg
 lang: en
 published: true
+publishDate: 2024-01-15
 ---
 
 # Welcome to Prometheus

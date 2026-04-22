@@ -2,10 +2,10 @@
 title: Добро пожаловать в Prometheus
 description: Откройте для себя наше видение современной платформы для обмена знаниями, построенной на передовых технологиях.
 category: Объявление
-pubDate: 2024-01-15
 image: ./assets/hero.svg
 lang: ru
 published: true
+publishDate: 2024-01-15
 ---
 
 # Добро пожаловать в Prometheus

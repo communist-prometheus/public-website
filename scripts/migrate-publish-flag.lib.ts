@@ -10,9 +10,9 @@ const hasKey = (block: string, key: string): boolean => new RegExp(`^${key}:`, '
  */
 export const migrate = (source: string): string | undefined => {
   const match = source.match(MATTER);
-  if (!match) return undefined;
-  const block = match[1];
+  const block = match?.[1];
+  if (block === undefined) return undefined;
   if (hasKey(block, 'published')) return undefined;
   const next = `${block}\npublished: true`;
-  return source.replace(match[0], `---\n${next}\n---`);
+  return source.replace(match?.[0] ?? '', `---\n${next}\n---`);
 };

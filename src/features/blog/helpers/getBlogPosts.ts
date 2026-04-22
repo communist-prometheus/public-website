@@ -5,7 +5,7 @@ export const getArticleSlug = (entry: CollectionEntry<'blog'>): string =>
   entry.id.split('/').at(0) ?? entry.id;
 
 const sortDate = (entry: CollectionEntry<'blog'>): number =>
-  (entry.data.publishDate ?? entry.data.pubDate).getTime();
+  (entry.data.publishDate ?? new Date(0)).getTime();
 
 export const getBlogPosts = async (lang: Language): Promise<CollectionEntry<'blog'>[]> => {
   const posts = await getCollection(

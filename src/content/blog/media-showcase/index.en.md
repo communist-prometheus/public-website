@@ -2,10 +2,10 @@
 title: Rich Media in Blog Posts
 description: A showcase of different media types supported in Prometheus blog articles — raster images, vector graphics, video, and audio.
 category: Technology
-pubDate: 2024-02-10
 image: ./assets/cover.jpg
 lang: en
 published: true
+publishDate: 2024-02-10
 ---
 
 # Rich Media in Blog Posts

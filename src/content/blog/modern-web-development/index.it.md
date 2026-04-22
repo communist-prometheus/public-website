@@ -2,9 +2,9 @@
 title: Best Practice per lo Sviluppo Web Moderno
 description: Esplora le ultime best practice nello sviluppo web, inclusa l'ottimizzazione delle prestazioni, l'accessibilità e l'esperienza utente.
 category: Tecnologia
-pubDate: 2024-01-20
 lang: it
 published: true
+publishDate: 2024-01-20
 ---
 
 # Best Practice per lo Sviluppo Web Moderno

@@ -2,10 +2,10 @@
 title: The Power of Open Source Collaboration
 description: How open source communities drive innovation, build trust, and create software that stands the test of time.
 category: Community
-pubDate: 2024-02-05
 image: ./assets/cover.jpg
 lang: en
 published: true
+publishDate: 2024-02-05
 ---
 
 # The Power of Open Source Collaboration
