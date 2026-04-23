@@ -7,6 +7,13 @@ interface Props {
 }
 
 const { lang } = Astro.props;
+
+// Build a per-language href that preserves the current path instead
+// of pointing at the bare `/{code}` root. Critical for middle-click,
+// right-click "open in new tab", keyboard "copy link", and any code
+// path where the JS click handler below does not fire.
+const rest = Astro.url.pathname.replace(/^\/[a-z]{2}(?=\/|$)/, '');
+const hrefFor = (code: string) => (rest === '' ? `/${code}` : `/${code}${rest}`);
 ---
 
 <div class="lang-switcher" data-testid="language-switcher">
@@ -31,7 +38,7 @@ const { lang } = Astro.props;
     {SUPPORTED_LANGUAGES.map((code) => (
       <li role="option" aria-selected={code === lang}>
         <a
-          href={`/${code}`}
+          href={hrefFor(code)}
           data-lang={code}
           data-testid={`lang-option-${code}`}
           class:list={['lang-option', { active: code === lang }]}
@@ -88,18 +95,13 @@ const { lang } = Astro.props;
       }
     });
 
+    // Native anchor href is now server-rendered with the correct
+    // per-page path, so we just close the dropdown and let the
+    // browser (or astro view-transitions) follow the link. Handling
+    // Ctrl/Cmd/middle-click is automatic this way — they open in a
+    // new tab pointing at the correct article URL.
     dropdown.querySelectorAll<HTMLAnchorElement>('.lang-option').forEach((option) => {
-      option.addEventListener('click', (e: MouseEvent) => {
-        e.preventDefault();
-        const targetLang = option.dataset['lang'];
-        if (!targetLang) return;
-
-        const path = globalThis.location.pathname;
-        const newPath = path.replace(/^\/[a-z]{2}/, `/${targetLang}`);
-
-        close();
-        globalThis.location.href = newPath;
-      });
+      option.addEventListener('click', () => close());
     });
 
     updateCurrentLang();

@@ -66,6 +66,75 @@ test.describe('Language coverage — every code in settings must work', () => {
   });
 });
 
+test.describe('Language coverage — every page has a full header nav', () => {
+  /*
+   * The top header nav is driven by getNavLinks(lang), which in turn
+   * reads common/menu. Without a per-language fallback the nav
+   * silently disappeared on every page whose language had no menu
+   * translation — the visible break the user filed the bug about.
+   */
+  const probes = [
+    '/',
+    '/manifest',
+    '/blog',
+    '/positions',
+    '/newspaper',
+    '/blog/welcome-to-prometheus',
+  ] as const;
+
+  for (const code of codes) {
+    for (const p of probes) {
+      test(`/${code}${p} header nav has links`, async ({ page }) => {
+        await page.goto(`/${code}${p}`, { waitUntil: 'domcontentloaded' });
+        const navLinks = await page
+          .locator('[data-testid="desktop-nav"] a')
+          .evaluateAll((els) => els.map((el) => (el as HTMLAnchorElement).getAttribute('href')));
+        expect(navLinks.length, `nav links on /${code}${p}`).toBeGreaterThanOrEqual(4);
+        expect(navLinks).toEqual(
+          expect.arrayContaining([
+            `/${code}`,
+            `/${code}/blog`,
+            `/${code}/positions`,
+            `/${code}/manifest`,
+          ]),
+        );
+      });
+    }
+  }
+});
+
+test.describe('Language coverage — switcher href is path-aware', () => {
+  /*
+   * The switcher <a href> must preserve the current path, not point
+   * at /{code}. Otherwise middle-click / right-click / Ctrl+click /
+   * pre-hydration click drops the user on the language root instead
+   * of the same article in the new language.
+   */
+  const here = [
+    '/en/',
+    '/en/blog',
+    '/en/blog/welcome-to-prometheus',
+    '/en/positions/digital-sovereignty',
+    '/uk/blog/welcome-to-prometheus',
+  ] as const;
+
+  for (const from of here) {
+    for (const target of codes) {
+      test(`href on ${from} for ${target} preserves path`, async ({ page }) => {
+        await page.goto(from, { waitUntil: 'domcontentloaded' });
+        const href = await page
+          .locator(`${switcherSel} [data-testid="lang-option-${target}"]`)
+          .first()
+          .getAttribute('href');
+        const expected = from.replace(/^\/[a-z]{2}/, `/${target}`).replace(/\/$/, '');
+        const normalised = (href ?? '').replace(/\/$/, '');
+        const wanted = expected === '' ? `/${target}` : expected;
+        expect(normalised, `href on ${from} for ${target}`).toBe(wanted);
+      });
+    }
+  }
+});
+
 test.describe('Language coverage — detail pages do not 404 on new langs', () => {
   const detailProbes = [
     '/blog/welcome-to-prometheus',
