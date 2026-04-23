@@ -14,25 +14,38 @@ jobs:
           token: ${{ secrets.GH_PAT }}
 
       - name: Configure git author from content commit
+        env:
+          AUTHOR_NAME: ${{ github.event.client_payload.author_name }}
+          AUTHOR_EMAIL: ${{ github.event.client_payload.author_email }}
         run: |
-          git config user.name "${{ github.event.client_payload.author_name }}"
-          git config user.email "${{ github.event.client_payload.author_email }}"
+          git config user.name "$AUTHOR_NAME"
+          git config user.email "$AUTHOR_EMAIL"
 
       - name: Add content remote
         run: git remote add content https://github.com/communist-prometheus/public-website-content.git
 
       - name: Checkout target branch
+        env:
+          BRANCH: ${{ github.event.client_payload.branch }}
         run: |
-          BRANCH="${{ github.event.client_payload.branch }}"
           git checkout "$BRANCH"
           git pull origin "$BRANCH"
 
+      # Pass payload values via env (never inline into the script with
+      # `${{ ... }}`). Inlining is fragile: a commit message that
+      # contains a double quote, a backtick, or a $( expansion would
+      # break the shell or run arbitrary commands. Env vars quoted as
+      # "$MSG" are opaque strings to the shell.
       - name: Subtree pull from content repo
+        env:
+          BRANCH: ${{ github.event.client_payload.branch }}
+          MSG: ${{ github.event.client_payload.commit_message }}
         run: |
-          BRANCH="${{ github.event.client_payload.branch }}"
-          git subtree pull --prefix=src/content content "$BRANCH" --squash -m "content: ${{ github.event.client_payload.commit_message }}"
+          git subtree pull --prefix=src/content content "$BRANCH" \
+            --squash -m "content: $MSG"
 
       - name: Push changes
+        env:
+          BRANCH: ${{ github.event.client_payload.branch }}
         run: |
-          BRANCH="${{ github.event.client_payload.branch }}"
           git push origin "$BRANCH"
