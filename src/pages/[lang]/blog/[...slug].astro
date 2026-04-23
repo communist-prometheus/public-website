@@ -1,15 +1,20 @@
 ---
 import { getCollection } from 'astro:content';
+import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from '@/config/i18n';
 import BlogPicture from '@/features/blog/components/BlogPicture.astro';
 import { getArticleSlug } from '@/features/blog/helpers/getBlogPosts';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 
 export const getStaticPaths = async () => {
   const posts = await getCollection('blog');
-  return posts.map((post) => ({
-    params: { lang: post.data.lang, slug: getArticleSlug(post) },
-    props: { post },
-  }));
+  const slugs = new Set(posts.map((p) => getArticleSlug(p)));
+  const byKey = new Map(posts.map((p) => [`${p.data.lang}/${getArticleSlug(p)}`, p] as const));
+  return SUPPORTED_LANGUAGES.flatMap((lang) =>
+    [...slugs].flatMap((slug) => {
+      const post = byKey.get(`${lang}/${slug}`) ?? byKey.get(`${DEFAULT_LANGUAGE}/${slug}`);
+      return post ? [{ params: { lang, slug }, props: { post } }] : [];
+    }),
+  );
 };
 
 const { post } = Astro.props;
