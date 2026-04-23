@@ -1,14 +1,12 @@
 ---
 import type { Language } from '@/config/i18n';
-import { LANGUAGE_LABELS } from '@/config/i18n';
-import { getReadyLanguages } from '@/config/ready-languages';
+import { LANGUAGE_LABELS, SUPPORTED_LANGUAGES } from '@/config/i18n';
 
 interface Props {
   lang: Language;
 }
 
 const { lang } = Astro.props;
-const readyLangs = await getReadyLanguages();
 ---
 
 <div class="lang-switcher" data-testid="language-switcher">
@@ -30,7 +28,7 @@ const readyLangs = await getReadyLanguages();
     aria-label="Available languages"
     data-testid="language-dropdown"
   >
-    {readyLangs.map((code) => (
+    {SUPPORTED_LANGUAGES.map((code) => (
       <li role="option" aria-selected={code === lang}>
         <a
           href={`/${code}`}

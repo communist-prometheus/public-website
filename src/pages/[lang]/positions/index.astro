@@ -1,21 +1,22 @@
 ---
-import { getReadyLanguages } from '@/config/ready-languages';
+import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from '@/config/i18n';
 import { getLabelsData, getPageData } from '@/config/translations';
 import PositionCard from '@/features/positions/components/PositionCard.astro';
 import { getPositions } from '@/features/positions/helpers/getPositions';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 
-export const getStaticPaths = async () =>
-  (await getReadyLanguages()).map((lang) => ({ params: { lang } }));
+export const getStaticPaths = () => SUPPORTED_LANGUAGES.map((lang) => ({ params: { lang } }));
 
 const { lang } = Astro.params;
 
 const positions = await getPositions(lang);
-const page = await getPageData('positions-listing', lang);
+const page =
+  (await getPageData('positions-listing', lang)) ??
+  (await getPageData('positions-listing', DEFAULT_LANGUAGE));
 const pageTitle = page?.data.title ?? 'Positions';
 const pageDescription = page?.data.description;
 const heading = page?.data.heading ?? 'Positions';
-const labels = await getLabelsData(lang);
+const labels = (await getLabelsData(lang)) ?? (await getLabelsData(DEFAULT_LANGUAGE));
 const readMore = labels?.data.readMore ?? 'Read more';
 ---
 
