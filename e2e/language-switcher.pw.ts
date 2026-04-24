@@ -30,7 +30,7 @@ test.describe('Language switcher - Desktop', () => {
     await expect(ruOption).toBeVisible();
     await ruOption.click();
 
-    await page.waitForURL('**/ru/blog');
+    await page.waitForURL(/\/ru\/blog\/?$/);
     await expect(page.locator('h1')).toBeVisible();
   });
 
@@ -45,7 +45,7 @@ test.describe('Language switcher - Desktop', () => {
     await expect(enOption).toBeVisible();
     await enOption.click();
 
-    await page.waitForURL('**/en/manifest');
+    await page.waitForURL(/\/en\/manifest\/?$/);
     await expect(page.locator('h1')).toBeVisible();
   });
 
@@ -59,7 +59,7 @@ test.describe('Language switcher - Desktop', () => {
     const ruOption = switcher.locator('[data-testid="lang-option-ru"]');
     await ruOption.click();
 
-    await page.waitForURL('**/ru');
+    await page.waitForURL(/\/ru\/?$/);
     await expect(page).toHaveURL(/\/ru\/?$/);
   });
 
@@ -97,7 +97,7 @@ test.describe('Language switcher - Desktop', () => {
     await page.waitForLoadState('networkidle');
 
     await page.locator(`${desktopNav} a[href="/en/blog"]`).click();
-    await page.waitForURL('**/en/blog');
+    await page.waitForURL(/\/en\/blog\/?$/);
 
     const switcher = page.locator(switcherSel);
     await switcher.click();
@@ -106,6 +106,6 @@ test.describe('Language switcher - Desktop', () => {
     await expect(ruOption).toBeVisible();
     await ruOption.click();
 
-    await page.waitForURL('**/ru/blog');
+    await page.waitForURL(/\/ru\/blog\/?$/);
   });
 });
