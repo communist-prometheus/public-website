@@ -95,14 +95,13 @@ const hrefFor = (code: string) => (rest === '' ? `/${code}` : `/${code}${rest}`)
       }
     });
 
-    // Native anchor href is now server-rendered with the correct
-    // per-page path, so we just close the dropdown and let the
-    // browser (or astro view-transitions) follow the link. Handling
-    // Ctrl/Cmd/middle-click is automatic this way — they open in a
-    // new tab pointing at the correct article URL.
-    dropdown.querySelectorAll<HTMLAnchorElement>('.lang-option').forEach((option) => {
-      option.addEventListener('click', () => close());
-    });
+    // The anchor href is server-rendered with the correct per-page
+    // path, so native navigation handles every flavour of click
+    // (left / middle / Ctrl / keyboard). We do NOT attach a click
+    // listener here: calling `close()` flips `visibility: hidden`
+    // on the dropdown mid-click, which can abort the left-click's
+    // default navigation on some browsers. The dropdown naturally
+    // disappears once the whole document swaps under us.
 
     updateCurrentLang();
 
@@ -111,11 +110,17 @@ const hrefFor = (code: string) => (rest === '' ? `/${code}` : `/${code}${rest}`)
       const langMatch = path.match(/^\/([a-z]{2})/);
       const activeLang = langMatch?.[1] ?? 'en';
 
+      // Rest of the path after the lang prefix. Keep the trailing
+      // slash that Astro uses so the anchor href matches the
+      // canonical static URL exactly (no extra 307 hop).
+      const rest = path.replace(/^\/[a-z]{2}(?=\/|$)/, '');
+
       const label = switcher.querySelector<HTMLElement>('.lang-current');
       if (label) label.textContent = activeLang.toUpperCase();
 
       switcher.querySelectorAll<HTMLAnchorElement>('.lang-option').forEach((option) => {
         const optionLang = option.dataset['lang'];
+        if (optionLang) option.href = rest === '' ? `/${optionLang}` : `/${optionLang}${rest}`;
         option.classList.toggle('active', optionLang === activeLang);
         option.closest('li')?.setAttribute('aria-selected', String(optionLang === activeLang));
       });
