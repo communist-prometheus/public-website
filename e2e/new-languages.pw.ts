@@ -89,7 +89,7 @@ for (const lang of languages) {
       const option = switcher.locator(`[data-testid="lang-option-${lang.code}"]`);
       await option.click();
 
-      await page.waitForURL(`**/${lang.code}/blog`);
+      await page.waitForURL(new RegExp(`/${lang.code}/blog/?$`));
       await expect(page.locator('h1')).toBeVisible();
     });
   });
