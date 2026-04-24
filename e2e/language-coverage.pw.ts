@@ -187,10 +187,12 @@ test.describe('Language coverage — switcher click never lands on 404', () => {
       const last = documentStatuses.at(-1);
       expect(last, `last document status for ${from} → ${target}`).toBeLessThan(400);
       await expect(page.locator('h1').first()).toBeVisible();
-      // Nav must also reflect the new language. The visible bug was
-      // that clicking uk moved the URL but the header nav still
-      // said Home→/en, Blog→/en/blog because
-      // <header transition:persist> froze it at the landing page.
+      /*
+       * Nav must also reflect the new language. The visible bug:
+       * clicking uk moved the URL but the header nav still said
+       * Home→/en, Blog→/en/blog because <header transition:persist>
+       * froze it at the landing page.
+       */
       const navLangs = await page
         .locator('[data-testid="desktop-nav"] a')
         .evaluateAll((els) =>
