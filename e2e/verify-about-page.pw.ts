@@ -6,13 +6,12 @@ import { expect, test } from '@playwright/test';
 /**
  * Manual prod probe for the new About page split.
  *
- * - /{lang} home shows compact Hero (heroTitle + description) + a
- *   "Read more" CTA, no longer renders the long markdown body.
- * - /{lang}/about renders the full About content with title, lead and
- *   prose body.
- * - The site nav contains a localised About link.
+ * Asserts: /{lang} home shows compact Hero (heroTitle + subtitle) +
+ * a "Read more" CTA, /{lang}/about renders the full About content
+ * with title and prose body, and the site nav has a localised About
+ * link.
  */
-const PROD = process.env.PROBE_BASE_URL ?? 'https://comprom.org';
+const PROD = process.env['PROBE_BASE_URL'] ?? 'https://comprom.org';
 const SHOTS = resolve(process.cwd(), 'screenshots/about-verify');
 mkdirSync(SHOTS, { recursive: true });
 

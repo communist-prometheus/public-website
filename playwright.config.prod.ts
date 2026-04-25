@@ -4,8 +4,7 @@ import { defineConfig } from '@playwright/test';
  * Prod-only Playwright config used to drive opt-in probes against
  * https://comprom.org without spinning up a local astro preview.
  *
- * Run a probe with:
- *   bun run playwright test e2e/verify-about-page.pw.ts --config playwright.config.prod.ts
+ * Run a probe with: bun run playwright test e2e/verify-about-page.pw.ts --config playwright.config.prod.ts
  */
 export default defineConfig({
   testDir: './e2e',

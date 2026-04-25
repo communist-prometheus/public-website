@@ -25,6 +25,7 @@ const pagesCollection = defineCollection({
     description: z.string().optional(),
     lang: langEnum,
     heroTitle: z.string().optional(),
+    subtitle: z.string().optional(),
     latestNews: z.string().optional(),
     viewAllPosts: z.string().optional(),
     heading: z.string().optional(),
