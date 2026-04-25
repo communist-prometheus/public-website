@@ -50,6 +50,7 @@ const commonCollection = defineCollection({
     title: z.string(),
     lang: langEnum,
     home: z.string().optional(),
+    about: z.string().optional(),
     blog: z.string().optional(),
     positions: z.string().optional(),
     manifest: z.string().optional(),
