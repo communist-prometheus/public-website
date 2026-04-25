@@ -1,6 +1,6 @@
 ---
 import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from '@/config/i18n';
-import { getPageData } from '@/config/translations';
+import { getCommonData, getPageData } from '@/config/translations';
 import { getBlogPosts } from '@/features/blog/helpers/getBlogPosts';
 import Hero from '@/features/home/components/Hero.astro';
 import NewsSection from '@/features/home/components/NewsSection.astro';
@@ -21,14 +21,23 @@ const latestPositions = positions.slice(0, 3);
 const homePage = (await getPageData('home', lang)) ?? (await getPageData('home', DEFAULT_LANGUAGE));
 if (!homePage) return Astro.redirect(`/${DEFAULT_LANGUAGE}`);
 
-const { Content } = await homePage.render();
 const { title, description, heroTitle, latestNews, viewAllPosts } = homePage.data;
+
+const labels = await getCommonData('labels', lang);
+const readMoreLabel = labels?.data.readMore ?? 'Read more';
 ---
 
 <BaseLayout title={title} {...(description ? { description } : {})} lang={lang}>
   <Hero title={heroTitle ?? ''}>
-    <Content />
+    {description ? <p>{description}</p> : null}
+    <a class="button hero-cta" href={`/${lang}/about`}>{readMoreLabel} →</a>
   </Hero>
   <PositionsWidget lang={lang} positions={latestPositions} />
   <NewsSection posts={latestPosts} lang={lang} latestNewsLabel={latestNews ?? ''} viewAllLabel={viewAllPosts ?? ''} />
 </BaseLayout>
+
+<style>
+  .hero-cta {
+    margin-top: var(--spacing-lg);
+  }
+</style>
