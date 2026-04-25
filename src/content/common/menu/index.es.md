@@ -1,6 +1,7 @@
 ---
 title: Navigation
 home: Inicio
+about: Sobre nosotros
 blog: Blog
 positions: Posiciones
 manifest: Manifiesto
