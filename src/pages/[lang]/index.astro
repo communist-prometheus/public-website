@@ -21,7 +21,14 @@ const latestPositions = positions.slice(0, 3);
 const homePage = (await getPageData('home', lang)) ?? (await getPageData('home', DEFAULT_LANGUAGE));
 if (!homePage) return Astro.redirect(`/${DEFAULT_LANGUAGE}`);
 
-const { title, description, heroTitle, subtitle, latestNews, viewAllPosts } = homePage.data;
+const { title, description, heroTitle, latestNews, viewAllPosts } = homePage.data;
+
+// The visible Hero subtitle is the description of the About page —
+// home is an entry-point teaser that previews About, not a page with
+// its own copy. `description` on home stays as the SEO meta source.
+const aboutPage =
+  (await getPageData('about', lang)) ?? (await getPageData('about', DEFAULT_LANGUAGE));
+const heroIntro = aboutPage?.data.description;
 
 const labels = await getCommonData('labels', lang);
 const readMoreLabel = labels?.data.readMore ?? 'Read more';
@@ -29,7 +36,7 @@ const readMoreLabel = labels?.data.readMore ?? 'Read more';
 
 <BaseLayout title={title} {...(description ? { description } : {})} lang={lang}>
   <Hero title={heroTitle ?? ''}>
-    {subtitle ? <p>{subtitle}</p> : null}
+    {heroIntro ? <p>{heroIntro}</p> : null}
     <a class="button hero-cta" href={`/${lang}/about`}>{readMoreLabel} →</a>
   </Hero>
   <PositionsWidget lang={lang} positions={latestPositions} />
