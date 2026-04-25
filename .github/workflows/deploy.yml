@@ -4,6 +4,15 @@ on:
   push:
     branches: [master]
 
+# Serialise deploys per ref. When a new commit on master arrives while
+# an older deploy is still building, cancel the in-flight one — its
+# image would otherwise overwrite the newer commit's image. This
+# prevents the race we saw between a code push and a content-sync
+# subtree commit landing seconds apart.
+concurrency:
+  group: deploy-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
