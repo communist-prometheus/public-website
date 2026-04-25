@@ -11,6 +11,10 @@ const page = (await getPageData('about', lang)) ?? (await getPageData('about', D
 if (!page) return Astro.redirect(`/${DEFAULT_LANGUAGE}`);
 
 const { Content } = await page.render();
+// `subtitle` is the visible lead under the title; `description` is
+// the SEO meta source. Fall back to description until subtitle is
+// authored.
+const lead = page.data.subtitle ?? page.data.description;
 ---
 
 <BaseLayout title={`${page.data.title} - Prometheus`} {...(page.data.description ? { description: page.data.description } : {})} lang={lang}>
@@ -18,7 +22,7 @@ const { Content } = await page.render();
     <div class="container">
       <div class="about-header">
         <h1>{page.data.title}</h1>
-        {page.data.description ? <p class="lead">{page.data.description}</p> : null}
+        {lead ? <p class="lead">{lead}</p> : null}
       </div>
       <div class="prose">
         <Content />
