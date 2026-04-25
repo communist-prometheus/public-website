@@ -68,6 +68,7 @@ export const getNavLinks = async (lang: Language) => {
   if (!menu) return [];
   return [
     { href: `/${lang}`, label: menu.data.home ?? 'Home' },
+    { href: `/${lang}/about`, label: menu.data.about ?? 'About' },
     { href: `/${lang}/blog`, label: menu.data.blog ?? 'Blog' },
     { href: `/${lang}/positions`, label: menu.data.positions ?? 'Positions' },
     { href: `/${lang}/manifest`, label: menu.data.manifest ?? 'Manifest' },
