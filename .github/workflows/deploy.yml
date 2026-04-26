@@ -14,15 +14,23 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # CONTENT_BRANCH mirrors github.ref_name 1:1 — master deploys
+    # build with content/master, develop deploys with content/develop.
+    # WRANGLER_COMMAND is resolved by the "Resolve branch env" step
+    # below so we don't carry an inline ternary into the wrangler call.
     env:
-      # Content lives in a separate repo. CONTENT_BRANCH is read by
-      # `scripts/fetch-content.ts` (invoked via `prebuild`) and pulls
-      # the matching branch from public-website-content. The naming
-      # convention is symmetric: master ↔ master, develop ↔ develop.
       CONTENT_BRANCH: ${{ github.ref_name }}
     steps:
       - name: Cloning git repository
         uses: actions/checkout@v4
+
+      - name: Resolve branch env
+        run: |
+          if [ "$GITHUB_REF_NAME" = "develop" ]; then
+            echo "WRANGLER_COMMAND=deploy --env develop" >> "$GITHUB_ENV"
+          else
+            echo "WRANGLER_COMMAND=deploy" >> "$GITHUB_ENV"
+          fi
 
       - name: Installing tools and dependencies
         uses: oven-sh/setup-bun@v2
@@ -51,7 +59,6 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           packageManager: bun
           wranglerVersion: "4.80.0"
-          # Master deploys to the production worker; develop deploys to
-          # the `develop` env in wrangler.jsonc which targets a separate
-          # worker instance (public-website-develop).
-          command: ${{ github.ref_name == 'develop' && 'deploy --env develop' || 'deploy' }}
+          # WRANGLER_COMMAND was resolved by the "Resolve branch env"
+          # step (deploy --env develop on develop, deploy on master).
+          command: ${{ env.WRANGLER_COMMAND }}
