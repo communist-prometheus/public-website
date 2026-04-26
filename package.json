@@ -2,6 +2,9 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
+    "fetch-content": "bun scripts/fetch-content.ts",
+    "predev": "bun run fetch-content",
+    "prebuild": "bun run fetch-content",
     "dev": "astro dev",
     "build": "biome format . && biome check . && eslint . && astro check && astro build",
     "preview": "astro preview",

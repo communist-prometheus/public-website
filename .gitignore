@@ -1,6 +1,9 @@
 # build output
 dist/
 
+# content collection — fetched at build time from public-website-content
+src/content/
+
 # generated types
 .astro/
 .astro-cache/
