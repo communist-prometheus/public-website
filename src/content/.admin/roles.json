@@ -1,7 +1,0 @@
-{
-  "roles": {
-    "editor": [],
-    "chief-editor": [],
-    "admin": ["undeadliner"]
-  }
-}

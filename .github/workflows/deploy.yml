@@ -2,13 +2,11 @@ name: Deploy to Cloudflare Workers
 
 on:
   push:
-    branches: [master]
+    branches: [master, develop]
 
-# Serialise deploys per ref. When a new commit on master arrives while
-# an older deploy is still building, cancel the in-flight one — its
-# image would otherwise overwrite the newer commit's image. This
-# prevents the race we saw between a code push and a content-sync
-# subtree commit landing seconds apart.
+# Serialise deploys per ref. When a new commit arrives while an older
+# deploy is still building, cancel the in-flight one — its image would
+# otherwise overwrite the newer commit's image.
 concurrency:
   group: deploy-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -16,6 +14,12 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      # Content lives in a separate repo. CONTENT_BRANCH is read by
+      # `scripts/fetch-content.ts` (invoked via `prebuild`) and pulls
+      # the matching branch from public-website-content. The naming
+      # convention is symmetric: master ↔ master, develop ↔ develop.
+      CONTENT_BRANCH: ${{ github.ref_name }}
     steps:
       - name: Cloning git repository
         uses: actions/checkout@v4
@@ -42,3 +46,7 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           packageManager: bun
           wranglerVersion: "4.80.0"
+          # Master deploys to the production worker; develop deploys to
+          # the `develop` env in wrangler.jsonc which targets a separate
+          # worker instance (public-website-develop).
+          command: ${{ github.ref_name == 'develop' && 'deploy --env develop' || 'deploy' }}
