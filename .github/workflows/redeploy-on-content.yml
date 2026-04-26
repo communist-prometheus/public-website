@@ -1,0 +1,47 @@
+name: Redeploy on content update
+
+# Replaces the old subtree-pull workflow. Content is no longer
+# committed into this repo; instead the deploy build clones it from
+# `public-website-content`. So the only thing we need on a content
+# push is to kick off a fresh deploy of the matching branch — we do
+# that with an empty commit on the corresponding branch, which then
+# triggers `Deploy to Cloudflare Workers` via the regular push event.
+#
+# Branch mapping is symmetric: a push to `master` of the content repo
+# redeploys `master` here; a push to `develop`/`dev` redeploys the
+# matching branch. The branch comes from the dispatch payload.
+
+on:
+  repository_dispatch:
+    types: [content-updated]
+
+# Serialise per branch so two content pushes in quick succession queue
+# behind one another instead of producing competing empty commits.
+concurrency:
+  group: redeploy-${{ github.event.client_payload.branch }}
+  cancel-in-progress: false
+
+jobs:
+  redeploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.client_payload.branch }}
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Configure git author from content commit
+        env:
+          AUTHOR_NAME: ${{ github.event.client_payload.author_name }}
+          AUTHOR_EMAIL: ${{ github.event.client_payload.author_email }}
+        run: |
+          git config user.name "$AUTHOR_NAME"
+          git config user.email "$AUTHOR_EMAIL"
+
+      - name: Empty commit to trigger deploy
+        env:
+          BRANCH: ${{ github.event.client_payload.branch }}
+          MSG: ${{ github.event.client_payload.commit_message }}
+        run: |
+          git commit --allow-empty -m "content: $MSG"
+          git push origin "$BRANCH"
