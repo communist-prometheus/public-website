@@ -71,11 +71,11 @@ export const getNavLinks = async (
   if (!menu) return [];
   const candidates = [
     { href: `/${lang}`, label: menu.data.home },
-    { href: `/${lang}/about`, label: menu.data.about },
     { href: `/${lang}/blog`, label: menu.data.blog },
     { href: `/${lang}/positions`, label: menu.data.positions },
     { href: `/${lang}/manifest`, label: menu.data.manifest },
     { href: `/${lang}/newspaper`, label: menu.data.newspaper },
+    { href: `/${lang}/about`, label: menu.data.about },
   ] as const;
   return candidates.flatMap((c) =>
     typeof c.label === 'string' && c.label.length > 0 ? [{ href: c.href, label: c.label }] : [],
