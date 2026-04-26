@@ -6,11 +6,11 @@
   },
   "env": {
     // Develop environment — deploys from the `develop` branch into a
-    // separate CF Worker reachable at
-    // public-website-develop.<account>.workers.dev. Add a custom route
-    // here if/when a dev domain is configured.
+    // separate CF Worker (public-website-develop) and binds it to
+    // dev.comprom.org via the Custom Domain route below.
     "develop": {
-      "name": "public-website-develop"
+      "name": "public-website-develop",
+      "routes": [{ "pattern": "dev.comprom.org", "custom_domain": true }]
     }
   }
 }
