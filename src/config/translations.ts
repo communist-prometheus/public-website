@@ -55,23 +55,29 @@ export const getMenuData = (lang: Language) => getCommonData('menu', lang);
 export const getLabelsData = (lang: Language) => getCommonData('labels', lang);
 
 /**
- * Resolve the navigation links for a language. Uses the menu entry
- * with default-language fallback so that newly-added languages still
- * show a working nav until their own translation lands.
+ * Resolve the navigation links for a language. Each link is rendered
+ * only when its localised label exists in the menu entry — no
+ * English string fallbacks. If a translation is missing, fix the
+ * content; the link is dropped from the nav until then.
  *
  * @param lang target language
  * @returns nav-link tuples, or [] only when even the default lang
  * has no menu entry (broken state)
  */
-export const getNavLinks = async (lang: Language) => {
+export const getNavLinks = async (
+  lang: Language,
+): Promise<ReadonlyArray<{ readonly href: string; readonly label: string }>> => {
   const menu = await getMenuData(lang);
   if (!menu) return [];
-  return [
-    { href: `/${lang}`, label: menu.data.home ?? 'Home' },
-    { href: `/${lang}/about`, label: menu.data.about ?? 'About' },
-    { href: `/${lang}/blog`, label: menu.data.blog ?? 'Blog' },
-    { href: `/${lang}/positions`, label: menu.data.positions ?? 'Positions' },
-    { href: `/${lang}/manifest`, label: menu.data.manifest ?? 'Manifest' },
-    { href: `/${lang}/newspaper`, label: menu.data.newspaper ?? 'Newspaper' },
-  ];
+  const candidates = [
+    { href: `/${lang}`, label: menu.data.home },
+    { href: `/${lang}/about`, label: menu.data.about },
+    { href: `/${lang}/blog`, label: menu.data.blog },
+    { href: `/${lang}/positions`, label: menu.data.positions },
+    { href: `/${lang}/manifest`, label: menu.data.manifest },
+    { href: `/${lang}/newspaper`, label: menu.data.newspaper },
+  ] as const;
+  return candidates.flatMap((c) =>
+    typeof c.label === 'string' && c.label.length > 0 ? [{ href: c.href, label: c.label }] : [],
+  );
 };
