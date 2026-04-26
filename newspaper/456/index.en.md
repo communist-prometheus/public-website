@@ -1,5 +1,5 @@
 ---
-title: 24
+title: "24"
 lang: en
 description: ert
 image: ./assets/cover.png
