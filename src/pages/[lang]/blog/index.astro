@@ -32,25 +32,29 @@ const readMore = labels?.data.readMore ?? 'Read more';
   <div class="section">
     <div class="container">
       <h1>{heading}</h1>
-      <CategoryFilter categories={categories} allLabel={allCategory} />
-      <div class="grid grid-2">
-        {
-          posts.map((post) => (
-            <div data-category={post.data.category}>
-              <PostCard
-                title={post.data.title}
-                description={post.data.description}
-                category={post.data.category}
-                slug={getArticleSlug(post)}
-                image={post.data.image}
-                lang={lang}
-                headingLevel={2}
-                readMoreLabel={readMore}
-              />
-            </div>
-          ))
-        }
-      </div>
+      {posts.length > 0 ? (
+        <>
+          <CategoryFilter categories={categories} allLabel={allCategory} />
+          <div class="grid grid-2">
+            {posts.map((post) => (
+              <div data-category={post.data.category}>
+                <PostCard
+                  title={post.data.title}
+                  description={post.data.description}
+                  category={post.data.category}
+                  slug={getArticleSlug(post)}
+                  image={post.data.image}
+                  lang={lang}
+                  headingLevel={2}
+                  readMoreLabel={readMore}
+                />
+              </div>
+            ))}
+          </div>
+        </>
+      ) : (
+        <p class="empty-state">No posts yet.</p>
+      )}
     </div>
   </div>
 </BaseLayout>
@@ -60,5 +64,12 @@ const readMore = labels?.data.readMore ?? 'Read more';
     font-size: clamp(1.75rem, 5vw, 2.5rem);
     font-weight: 700;
     margin-bottom: var(--spacing-xl);
+  }
+
+  .empty-state {
+    color: var(--color-text-secondary);
+    font-size: 1.125rem;
+    text-align: center;
+    padding: var(--spacing-xl) 0;
   }
 </style>

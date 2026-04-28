@@ -6,7 +6,7 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 
 export const getStaticPaths = async () => {
   const slugFrom = (id: string) => id.split('/').at(0) ?? id;
-  const entries = await getCollection('positions');
+  const entries = await getCollection('positions', ({ data }) => data.published === true);
   const slugs = new Set(entries.map((e) => slugFrom(e.id)));
   const byKey = new Map(entries.map((e) => [`${e.data.lang}/${slugFrom(e.id)}`, e] as const));
   return SUPPORTED_LANGUAGES.flatMap((lang) =>
