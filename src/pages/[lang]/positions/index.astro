@@ -24,18 +24,22 @@ const readMore = labels?.data.readMore ?? 'Read more';
   <div class="section">
     <div class="container">
       <h1>{heading}</h1>
-      <div class="positions-grid">
-        {positions.map((pos) => (
-          <PositionCard
-            title={pos.data.title}
-            description={pos.data.description}
-            slug={pos.id.split('/').at(0) ?? pos.id}
-            lang={lang}
-            headingLevel={2}
-            readMoreLabel={readMore}
-          />
-        ))}
-      </div>
+      {positions.length > 0 ? (
+        <div class="positions-grid">
+          {positions.map((pos) => (
+            <PositionCard
+              title={pos.data.title}
+              description={pos.data.description}
+              slug={pos.id.split('/').at(0) ?? pos.id}
+              lang={lang}
+              headingLevel={2}
+              readMoreLabel={readMore}
+            />
+          ))}
+        </div>
+      ) : (
+        <p class="empty-state">No positions yet.</p>
+      )}
     </div>
   </div>
 </BaseLayout>
@@ -45,6 +49,13 @@ const readMore = labels?.data.readMore ?? 'Read more';
     font-size: clamp(1.75rem, 5vw, 2.5rem);
     font-weight: 700;
     margin-bottom: var(--spacing-xl);
+  }
+
+  .empty-state {
+    color: var(--color-text-secondary);
+    font-size: 1.125rem;
+    text-align: center;
+    padding: var(--spacing-xl) 0;
   }
 
   .positions-grid {
