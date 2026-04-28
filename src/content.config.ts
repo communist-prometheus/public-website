@@ -11,7 +11,12 @@ const blogCollection = defineCollection({
       description: z.string(),
       category: z.string(),
       pubDate: z.date(),
-      published: z.boolean().optional().default(true),
+      /*
+       * Absent / non-true `published` means draft. The build does NOT
+       * render drafts (see getBlogPosts). Editors must explicitly set
+       * `published: true` for an article to ship to the live site.
+       */
+      published: z.boolean().optional(),
       publishDate: z.date().optional(),
       image: image().optional(),
       lang: langEnum,
@@ -39,7 +44,8 @@ const positionsCollection = defineCollection({
     title: z.string(),
     description: z.string(),
     pubDate: z.date().optional(),
-    published: z.boolean().optional().default(true),
+    /* See blog: absent / non-true is draft. */
+    published: z.boolean().optional(),
     publishDate: z.date().optional(),
     lang: langEnum,
   }),
@@ -71,7 +77,8 @@ const newspaperCollection = defineCollection({
       title: z.string(),
       description: z.string(),
       pubDate: z.date().optional(),
-      published: z.boolean().optional().default(true),
+      // See blog: absent / non-true is draft.
+      published: z.boolean().optional(),
       publishDate: z.date().optional(),
       image: image().optional(),
       lang: langEnum,

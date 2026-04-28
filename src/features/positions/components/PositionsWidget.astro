@@ -19,27 +19,31 @@ const viewAll = labels?.data.viewAll ?? 'View all';
 const readMore = labels?.data.readMore ?? 'Read more';
 ---
 
-<section class="positions-widget" data-testid="positions-widget">
-  <div class="container">
-    <div class="widget-header">
-      <h2>{heading}</h2>
-      <a href={`/${lang}/positions`}>
-        <CpButton variant="secondary">{viewAll}</CpButton>
-      </a>
-    </div>
-    <div class="positions-list">
-      {positions.map((pos) => (
-        <PositionCard
-          title={pos.data.title}
-          description={pos.data.description}
-          slug={pos.id.split('/').at(0) ?? pos.id}
-          lang={lang}
-          readMoreLabel={readMore}
-        />
-      ))}
-    </div>
-  </div>
-</section>
+{
+  positions.length > 0 && (
+    <section class="positions-widget" data-testid="positions-widget">
+      <div class="container">
+        <div class="widget-header">
+          <h2>{heading}</h2>
+          <a href={`/${lang}/positions`}>
+            <CpButton variant="secondary">{viewAll}</CpButton>
+          </a>
+        </div>
+        <div class="positions-list">
+          {positions.map((pos) => (
+            <PositionCard
+              title={pos.data.title}
+              description={pos.data.description}
+              slug={pos.id.split('/').at(0) ?? pos.id}
+              lang={lang}
+              readMoreLabel={readMore}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
 
 <style>
   .positions-widget {
