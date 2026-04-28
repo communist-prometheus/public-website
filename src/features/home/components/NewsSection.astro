@@ -15,30 +15,32 @@ interface Props {
 const { posts, lang, latestNewsLabel, viewAllLabel } = Astro.props;
 ---
 
-<section class="section">
-  <div class="container">
-    <div class="section-header">
-      <h2>{latestNewsLabel}</h2>
-      <a href={`/${lang}/blog`}>
-        <CpButton variant="secondary">{viewAllLabel}</CpButton>
-      </a>
-    </div>
-    <div class="grid grid-2">
-      {
-        posts.map((post) => (
-          <PostCard
-            title={post.data.title}
-            description={post.data.description}
-            category={post.data.category}
-            slug={getArticleSlug(post)}
-            image={post.data.image}
-            lang={lang}
-          />
-        ))
-      }
-    </div>
-  </div>
-</section>
+{
+  posts.length > 0 && (
+    <section class="section">
+      <div class="container">
+        <div class="section-header">
+          <h2>{latestNewsLabel}</h2>
+          <a href={`/${lang}/blog`}>
+            <CpButton variant="secondary">{viewAllLabel}</CpButton>
+          </a>
+        </div>
+        <div class="grid grid-2">
+          {posts.map((post) => (
+            <PostCard
+              title={post.data.title}
+              description={post.data.description}
+              category={post.data.category}
+              slug={getArticleSlug(post)}
+              image={post.data.image}
+              lang={lang}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
 
 <style>
   .section-header {
