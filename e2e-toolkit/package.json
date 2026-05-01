@@ -1,0 +1,13 @@
+{
+  "name": "@prometheus/e2e-toolkit",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Network-aware Playwright wrappers. Tests import from this package, never from @playwright/test directly. No blind timeouts — every wait polls a checker and watches the page's request graph; on a static site the wait returns on the first tick.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "peerDependencies": {
+    "@playwright/test": "*"
+  }
+}

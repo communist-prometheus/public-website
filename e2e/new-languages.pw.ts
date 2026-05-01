@@ -1,4 +1,12 @@
-import { expect, test } from '@playwright/test';
+import {
+  click,
+  expectMinCount,
+  expectText,
+  expectVisible,
+  test,
+  visit,
+  waitForCondition,
+} from '@prometheus/e2e-toolkit';
 
 /**
  * E2E tests for Italian and Spanish language support.
@@ -22,18 +30,14 @@ const languages = [
 for (const lang of languages) {
   test.describe(`${lang.label} (${lang.code}) language support`, () => {
     test('home page renders translated content', async ({ page }) => {
-      await page.goto(`/${lang.code}`);
-      await page.waitForLoadState('networkidle');
-
-      await expect(page.locator('h1')).toBeVisible();
-      await expect(page.locator('footer')).toBeVisible();
+      await visit(page, `/${lang.code}`);
+      await expectVisible(page, page.locator('h1'));
+      await expectVisible(page, page.locator('footer'));
     });
 
     test('blog page renders translated heading', async ({ page }) => {
-      await page.goto(`/${lang.code}/blog`);
-      await page.waitForLoadState('networkidle');
-
-      await expect(page.locator('h1')).toBeVisible();
+      await visit(page, `/${lang.code}/blog`);
+      await expectVisible(page, page.locator('h1'));
       /*
        * Post count varies by language — `it` carries the full corpus,
        * `es` ships nav + page chrome only until a translation lands.
@@ -41,57 +45,49 @@ for (const lang of languages) {
     });
 
     test('positions page renders translated heading', async ({ page }) => {
-      await page.goto(`/${lang.code}/positions`);
-      await page.waitForLoadState('networkidle');
-
-      await expect(page.locator('h1')).toBeVisible();
+      await visit(page, `/${lang.code}/positions`);
+      await expectVisible(page, page.locator('h1'));
       const cards = page.locator('[data-testid="position-card"]');
-      const count = await cards.count();
-      expect(count).toBeGreaterThanOrEqual(2);
+      await expectMinCount(page, cards, 2);
     });
 
     test('manifest page renders content', async ({ page }) => {
-      await page.goto(`/${lang.code}/manifest`);
-      await page.waitForLoadState('networkidle');
-
-      await expect(page.locator('h1')).toBeVisible();
+      await visit(page, `/${lang.code}/manifest`);
+      /*
+       * Manifest body markdown adds its own H1 next to the page H1
+       * for some translations (it/ru), so scope to the first.
+       */
+      await expectVisible(page, page.locator('h1').first());
     });
 
     test('navigation renders translated labels', async ({ page }) => {
-      await page.goto(`/${lang.code}`);
-      await page.waitForLoadState('networkidle');
-
+      await visit(page, `/${lang.code}`);
       const nav = page.locator('[data-testid="desktop-nav"]');
-      await expect(nav.locator(`a[href="/${lang.code}"]`)).toHaveText(lang.nav.home);
-      await expect(nav.locator(`a[href="/${lang.code}/blog"]`)).toHaveText(lang.nav.blog);
-      await expect(nav.locator(`a[href="/${lang.code}/positions"]`)).toHaveText(lang.nav.positions);
-      await expect(nav.locator(`a[href="/${lang.code}/manifest"]`)).toHaveText(lang.nav.manifest);
+      await expectText(page, nav.locator(`a[href="/${lang.code}"]`), lang.nav.home);
+      await expectText(page, nav.locator(`a[href="/${lang.code}/blog"]`), lang.nav.blog);
+      await expectText(page, nav.locator(`a[href="/${lang.code}/positions"]`), lang.nav.positions);
+      await expectText(page, nav.locator(`a[href="/${lang.code}/manifest"]`), lang.nav.manifest);
     });
 
     test('language switcher shows option', async ({ page }) => {
-      await page.goto('/en');
-      await page.waitForLoadState('networkidle');
-
+      await visit(page, '/en');
       const switcher = page.locator('header .desktop-only [data-testid="language-switcher"]');
-      await switcher.click();
-
+      await click(page, switcher);
       const option = switcher.locator(`[data-testid="lang-option-${lang.code}"]`);
-      await expect(option).toBeVisible();
-      await expect(option).toHaveText(lang.label);
+      await expectVisible(page, option);
+      await expectText(page, option, lang.label);
     });
 
     test('language switcher navigates to correct page', async ({ page }) => {
-      await page.goto('/en/blog');
-      await page.waitForLoadState('networkidle');
-
+      await visit(page, '/en/blog');
       const switcher = page.locator('header .desktop-only [data-testid="language-switcher"]');
-      await switcher.click();
-
+      await click(page, switcher);
       const option = switcher.locator(`[data-testid="lang-option-${lang.code}"]`);
-      await option.click();
-
-      await page.waitForURL(new RegExp(`/${lang.code}/blog/?$`));
-      await expect(page.locator('h1')).toBeVisible();
+      await click(page, option);
+      await waitForCondition(page, async () =>
+        new RegExp(`/${lang.code}/blog/?$`).test(page.url()),
+      );
+      await expectVisible(page, page.locator('h1'));
     });
   });
 }
