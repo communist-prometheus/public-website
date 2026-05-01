@@ -180,7 +180,6 @@ test.describe('Theme visual consistency', () => {
 
     const sample = (): Promise<{
       htmlBg: string | undefined;
-      cardBg: string | undefined;
       headerBg: string | undefined;
     }> =>
       page.evaluate(() => {
@@ -190,14 +189,12 @@ test.describe('Theme visual consistency', () => {
         };
         return {
           htmlBg: cs('html'),
-          cardBg: cs('.position-card'),
           headerBg: cs('header'),
         };
       });
 
     const lightColors = await sample();
     expect(lightColors.htmlBg).toBeTruthy();
-    expect(lightColors.cardBg).toBeTruthy();
     expect(lightColors.headerBg).toBeTruthy();
 
     await setTheme(page, 'dark');
@@ -206,7 +203,6 @@ test.describe('Theme visual consistency', () => {
     const darkColors = await sample();
 
     expect(darkColors.htmlBg).not.toBe(lightColors.htmlBg);
-    expect(darkColors.cardBg).not.toBe(lightColors.cardBg);
     expect(darkColors.headerBg).not.toBe(lightColors.headerBg);
   });
 });

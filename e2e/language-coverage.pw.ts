@@ -155,8 +155,13 @@ test.describe('Language coverage — detail pages render where translated', () =
     { code: 'it', detail: '/blog/appeal-to-russian-workers' },
     { code: 'ru', detail: '/blog/iran-imperialism-crisis' },
     { code: 'it', detail: '/blog/iran-imperialism-crisis' },
-    { code: 'en', detail: '/positions/digital-sovereignty' },
-    { code: 'ru', detail: '/positions/digital-sovereignty' },
+    /*
+     * positions/digital-sovereignty existed in earlier corpora but
+     * the editor has since cleared the positions collection. The
+     * blog probes above are enough to cover the cross-language
+     * detail-page render; positions probes were repointed when the
+     * editor emptied the list.
+     */
   ];
 
   for (const { code, detail } of detailProbes) {
@@ -173,7 +178,10 @@ test.describe('Language coverage — switcher click never lands on 404', () => {
     { from: '/en/', target: 'uk' },
     { from: '/en/blog', target: 'uk' },
     { from: '/ru/blog/appeal-to-russian-workers', target: 'it' },
-    { from: '/en/positions/digital-sovereignty', target: 'uk' },
+    /*
+     * positions/digital-sovereignty was removed by the editor —
+     * blog detail probes cover the same switcher behaviour.
+     */
     { from: '/ru/blog', target: 'bl' },
     { from: '/it/blog/appeal-to-russian-workers', target: 'ru' },
     { from: '/pl/manifest', target: 'it' },
