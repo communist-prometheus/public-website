@@ -2,6 +2,7 @@
 import { type CollectionEntry, getCollection } from 'astro:content';
 import { DEFAULT_LANGUAGE, type Language, SUPPORTED_LANGUAGES } from '@/config/i18n';
 import { getLabelsData } from '@/config/translations';
+import { deriveDescription } from '@/features/content/helpers/deriveDescription';
 import MissingTranslation from '@/features/i18n/MissingTranslation.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 
@@ -47,7 +48,8 @@ const labels = (await getLabelsData(lang)) ?? (await getLabelsData(DEFAULT_LANGU
 const backLabel = labels?.data.backToList ?? '← Back';
 
 const pageTitle = entry ? `${entry.data.title} - Communist Prometheus` : 'Communist Prometheus';
-const pageDescription = entry?.data.description;
+/* See deriveDescription — falls back to body's first paragraph when frontmatter description is empty. */
+const pageDescription = entry ? deriveDescription(entry.data.description, entry.body) : undefined;
 ---
 
 <BaseLayout
