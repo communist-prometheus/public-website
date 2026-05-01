@@ -11,7 +11,8 @@ import { expect, test } from '@playwright/test';
  * 5. Filter works after SPA navigation to blog page
  */
 
-const BLOG = '/en/blog';
+// Blog has content in ru / it; en is intentionally empty in prod.
+const BLOG = '/ru/blog';
 
 test.describe('Blog category filter', () => {
   test.beforeEach(async ({ page }) => {
@@ -76,10 +77,10 @@ test.describe('Blog category filter', () => {
   });
 
   test('filter works after SPA navigation to blog', async ({ page }) => {
-    await page.goto('/en');
+    await page.goto('/ru');
     await page.waitForLoadState('networkidle');
 
-    const blogLink = page.locator('a[href="/en/blog"]').first();
+    const blogLink = page.locator('a[href="/ru/blog"]').first();
     await blogLink.click();
     await page.waitForURL('**/blog');
 
