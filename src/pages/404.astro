@@ -1,0 +1,112 @@
+---
+import { DEFAULT_LANGUAGE } from '@/config/i18n';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+
+/*
+ * Multilingual 404 page. CF Workers Assets serves this verbatim for
+ * any path that does not exist in `dist/`, with the original URL
+ * preserved (no redirect). The layout reads `lang` from the URL prefix
+ * client-side so that switching language on the 404 still routes to
+ * the chosen locale once a real page is reached.
+ */
+const TEXTS = {
+  en: {
+    title: 'Page not found — Communist Prometheus',
+    heading: 'This page does not exist',
+    body: 'The address you opened has no content yet. The link may be stale, or the article hasn’t been published in this language.',
+    home: 'Back to home',
+  },
+  ru: {
+    title: 'Страница не найдена — Коммунистический Прометей',
+    heading: 'Такой страницы нет',
+    body: 'По адресу, который вы открыли, ничего не опубликовано. Возможно, ссылка устарела или материал ещё не переведён на этот язык.',
+    home: 'На главную',
+  },
+  it: {
+    title: 'Pagina non trovata — Prometeo Comunista',
+    heading: 'Questa pagina non esiste',
+    body: 'L’indirizzo che hai aperto non contiene ancora nulla. Il link potrebbe essere obsoleto, oppure il materiale non è ancora stato tradotto in questa lingua.',
+    home: 'Torna alla home',
+  },
+  es: {
+    title: 'Página no encontrada — Prometeo Comunista',
+    heading: 'Esta página no existe',
+    body: 'La dirección que abriste no tiene todavía contenido. El enlace puede haber caducado, o el material aún no se ha traducido a este idioma.',
+    home: 'Volver al inicio',
+  },
+} as const;
+
+type Lang = keyof typeof TEXTS;
+---
+
+<BaseLayout title={TEXTS.en.title} lang={DEFAULT_LANGUAGE}>
+  <div class="section not-found">
+    <div class="container">
+      {(Object.keys(TEXTS) as readonly Lang[]).map((lang) => {
+        const t = TEXTS[lang];
+        return (
+          <article class="not-found-block" lang={lang} data-lang={lang}>
+            <h1>{t.heading}</h1>
+            <p>{t.body}</p>
+            <a href={`/${lang}`} class="home-link">{t.home} →</a>
+          </article>
+        );
+      })}
+    </div>
+  </div>
+</BaseLayout>
+
+<script is:inline>
+  /*
+   * Show only the block for the language matched by the URL prefix.
+   * Falls back to the first block (English) for paths that don’t
+   * carry a /xx/ prefix at all.
+   */
+  (function () {
+    var match = location.pathname.match(/^\/([a-z]{2})(\/|$)/);
+    var pick = match ? match[1] : 'en';
+    var blocks = document.querySelectorAll('.not-found-block');
+    var found = false;
+    blocks.forEach(function (b) {
+      if (b.getAttribute('data-lang') === pick) {
+        found = true;
+      } else {
+        b.hidden = true;
+      }
+    });
+    if (!found && blocks[0]) blocks[0].hidden = false;
+    document.documentElement.lang = pick;
+  })();
+</script>
+
+<style>
+  .not-found {
+    padding-top: clamp(var(--spacing-xl), 8vw, var(--spacing-2xl));
+    padding-bottom: clamp(var(--spacing-xl), 8vw, var(--spacing-2xl));
+  }
+
+  .not-found-block h1 {
+    font-size: clamp(1.75rem, 5vw, 2.5rem);
+    font-weight: 700;
+    margin-bottom: var(--spacing-md);
+  }
+
+  .not-found-block p {
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    color: var(--color-text-secondary);
+    max-width: 60ch;
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .home-link {
+    color: var(--color-accent);
+    text-decoration: none;
+    font-weight: 500;
+    border-bottom: 1px solid currentColor;
+  }
+
+  .home-link:hover {
+    color: var(--color-accent-hover);
+  }
+</style>
