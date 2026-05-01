@@ -79,7 +79,7 @@ test.describe('Language coverage — every page has a full header nav', () => {
     '/blog',
     '/positions',
     '/newspaper',
-    '/blog/welcome-to-prometheus',
+    '/blog/appeal-to-russian-workers',
   ] as const;
 
   for (const code of codes) {
@@ -113,9 +113,9 @@ test.describe('Language coverage — switcher href is path-aware', () => {
   const here = [
     '/en/',
     '/en/blog',
-    '/en/blog/welcome-to-prometheus',
+    '/en/blog/appeal-to-russian-workers',
     '/en/positions/digital-sovereignty',
-    '/uk/blog/welcome-to-prometheus',
+    '/uk/blog/appeal-to-russian-workers',
   ] as const;
 
   for (const from of here) {
@@ -137,8 +137,8 @@ test.describe('Language coverage — switcher href is path-aware', () => {
 
 test.describe('Language coverage — detail pages do not 404 on new langs', () => {
   const detailProbes = [
-    '/blog/welcome-to-prometheus',
-    '/blog/modern-web-development',
+    '/blog/appeal-to-russian-workers',
+    '/blog/iran-imperialism-crisis',
     '/positions/digital-sovereignty',
   ] as const;
 
@@ -164,10 +164,10 @@ test.describe('Language coverage — switcher click never lands on 404', () => {
   const clicks: readonly { readonly from: string; readonly target: string }[] = [
     { from: '/en/', target: 'uk' },
     { from: '/en/blog', target: 'uk' },
-    { from: '/en/blog/welcome-to-prometheus', target: 'uk' },
+    { from: '/en/blog/appeal-to-russian-workers', target: 'uk' },
     { from: '/en/positions/digital-sovereignty', target: 'uk' },
     { from: '/ru/blog', target: 'bl' },
-    { from: '/uk/blog/welcome-to-prometheus', target: 'en' },
+    { from: '/uk/blog/appeal-to-russian-workers', target: 'en' },
     { from: '/pl/manifest', target: 'it' },
     { from: '/bl/', target: 'pl' },
   ];
