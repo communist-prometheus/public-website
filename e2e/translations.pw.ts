@@ -24,8 +24,11 @@ test.describe('Translations - English', () => {
 
     await expect(page.locator('h1')).toHaveText('Blog');
     await expect(page.locator('.category-btn[data-category="all"]')).toHaveText('All');
-    // /en/blog has no posts in prod — only ru/it carry content. The post
-    // card "Read more" assertion lives in the Russian variant below.
+    /*
+     * /en/blog has no posts in prod — only ru/it carry content.
+     * The post card "Read more" assertion lives in the Russian
+     * variant below.
+     */
   });
 
   test('navigation renders English labels', async ({ page }) => {
