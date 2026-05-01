@@ -1,6 +1,6 @@
 import { readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
-import { test } from '@playwright/test';
+import { test, visit } from '@prometheus/e2e-toolkit';
 import { playAudit } from 'playwright-lighthouse';
 
 const LIGHTHOUSE_THRESHOLDS = {
@@ -88,8 +88,7 @@ const slugify = (name: string): string => name.toLowerCase().replaceAll(/[^a-z0-
 test.describe('Lighthouse mobile audit', () => {
   for (const { name, path } of PAGES) {
     test(`${name} — mobile (${path})`, async ({ page }) => {
-      await page.goto(path);
-      await page.waitForLoadState('networkidle');
+      await visit(page, path);
 
       await playAudit({
         page,
@@ -109,8 +108,7 @@ test.describe('Lighthouse mobile audit', () => {
 test.describe('Lighthouse desktop audit', () => {
   for (const { name, path } of PAGES) {
     test(`${name} — desktop (${path})`, async ({ page }) => {
-      await page.goto(path);
-      await page.waitForLoadState('networkidle');
+      await visit(page, path);
 
       await playAudit({
         page,

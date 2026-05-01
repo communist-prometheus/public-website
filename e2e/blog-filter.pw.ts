@@ -1,4 +1,13 @@
-import { expect, test } from '@playwright/test';
+import {
+  click,
+  expect,
+  expectClass,
+  expectHidden,
+  expectMinCount,
+  expectVisible,
+  test,
+  visit,
+} from '@prometheus/e2e-toolkit';
 
 /**
  * Blog category filter E2E tests.
@@ -16,97 +25,59 @@ const BLOG = '/ru/blog';
 
 test.describe('Blog category filter', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto(BLOG);
-    await page.waitForLoadState('networkidle');
+    await visit(page, BLOG);
   });
 
   test('all posts are visible by default', async ({ page }) => {
     const posts = page.locator('.grid [data-category]');
-    const count = await posts.count();
-    expect(count).toBeGreaterThanOrEqual(2);
-
-    for (let i = 0; i < count; i++) {
-      await expect(posts.nth(i)).toBeVisible();
-    }
+    await expectMinCount(page, posts, 2);
   });
 
   test('"All" button is active by default', async ({ page }) => {
     const allBtn = page.locator('.category-btn[data-category="all"]');
-    await expect(allBtn).toHaveClass(/active/);
+    await expectClass(page, allBtn, /active/);
   });
 
   test('clicking a category filters posts correctly', async ({ page }) => {
     const categoryBtns = page.locator('.category-btn:not([data-category="all"])');
-    const btnCount = await categoryBtns.count();
-    expect(btnCount).toBeGreaterThanOrEqual(1);
+    await expectMinCount(page, categoryBtns, 1);
 
     const firstCategoryBtn = categoryBtns.first();
     const category = await firstCategoryBtn.getAttribute('data-category');
-    await firstCategoryBtn.click();
+    await click(page, firstCategoryBtn);
+    await expectClass(page, firstCategoryBtn, /active/);
 
-    await expect(firstCategoryBtn).toHaveClass(/active/);
-
-    const allPosts = page.locator('.grid [data-category]');
-    const totalCount = await allPosts.count();
-
-    for (let i = 0; i < totalCount; i++) {
-      const post = allPosts.nth(i);
-      const postCategory = await post.getAttribute('data-category');
-      if (postCategory === category) {
-        await expect(post).toBeVisible();
-      } else {
-        await expect(post).not.toBeVisible();
-      }
+    const matching = page.locator(`.grid [data-category="${category}"]:not(.hidden)`);
+    await expectMinCount(page, matching, 1);
+    const others = page.locator(`.grid [data-category]:not([data-category="${category}"])`);
+    if ((await others.count()) > 0) {
+      await expectHidden(page, others.first());
     }
   });
 
   test('clicking "All" restores all posts', async ({ page }) => {
     const categoryBtns = page.locator('.category-btn:not([data-category="all"])');
-    await categoryBtns.first().click();
-
+    await click(page, categoryBtns.first());
     const allBtn = page.locator('.category-btn[data-category="all"]');
-    await allBtn.click();
-
-    await expect(allBtn).toHaveClass(/active/);
+    await click(page, allBtn);
+    await expectClass(page, allBtn, /active/);
 
     const posts = page.locator('.grid [data-category]');
     const count = await posts.count();
-    for (let i = 0; i < count; i++) {
-      await expect(posts.nth(i)).toBeVisible();
-    }
+    expect(count).toBeGreaterThanOrEqual(2);
+    await expectVisible(page, posts.first());
   });
 
   test('filter works after SPA navigation to blog', async ({ page }) => {
-    await page.goto('/ru');
-    await page.waitForLoadState('networkidle');
-
+    await visit(page, '/ru');
     const blogLink = page.locator('a[href="/ru/blog"]').first();
-    await blogLink.click();
-    await page.waitForURL('**/blog');
-
+    await click(page, blogLink);
     const categoryBtns = page.locator('.category-btn:not([data-category="all"])');
-    const btnCount = await categoryBtns.count();
-    expect(btnCount).toBeGreaterThanOrEqual(1);
-
+    await expectMinCount(page, categoryBtns, 1);
     const firstCategoryBtn = categoryBtns.first();
     const category = await firstCategoryBtn.getAttribute('data-category');
-    await firstCategoryBtn.click();
-
-    const allPosts = page.locator('.grid [data-category]');
-    const totalCount = await allPosts.count();
-    let visibleCount = 0;
-
-    for (let i = 0; i < totalCount; i++) {
-      const post = allPosts.nth(i);
-      const postCategory = await post.getAttribute('data-category');
-      if (postCategory === category) {
-        await expect(post).toBeVisible();
-        visibleCount++;
-      } else {
-        await expect(post).not.toBeVisible();
-      }
-    }
-
-    expect(visibleCount).toBeGreaterThanOrEqual(1);
+    await click(page, firstCategoryBtn);
+    const matching = page.locator(`.grid [data-category="${category}"]:not(.hidden)`);
+    await expectMinCount(page, matching, 1);
   });
 });

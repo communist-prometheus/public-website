@@ -3,10 +3,16 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir: './e2e',
   testMatch: '**/*.pw.ts',
-  fullyParallel: false,
+  fullyParallel: true,
   retries: 0,
-  workers: 1,
+  workers: process.env.CI ? 4 : undefined,
   reporter: 'list',
+  /*
+   * Per-test ceiling. Each network-aware wait inside the toolkit
+   * already self-aborts at 10 s; this is a backstop in case Playwright
+   * itself wedges on an action.
+   */
+  timeout: 30_000,
   use: {
     baseURL: 'http://localhost:4327',
     screenshot: 'only-on-failure',
@@ -32,6 +38,20 @@ export default defineConfig({
     },
     {
       name: 'lighthouse',
+      /*
+       * playwright-lighthouse pins port 9222, so two workers fight for
+       * the same socket and the loser dies before audit. Force serial
+       * execution within the project — other projects keep running in
+       * parallel via the global worker pool.
+       */
+      fullyParallel: false,
+      /*
+       * Each Lighthouse audit boots Chromium, runs the full report, and
+       * writes HTML — easily 30–60 s on positions/manifest pages. Bump
+       * to 120 s so genuine perf budget regressions, not test timeouts,
+       * are what fails this suite.
+       */
+      timeout: 120_000,
       use: {
         browserName: 'chromium',
         launchOptions: {

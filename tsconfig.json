@@ -12,7 +12,8 @@
     "allowUnreachableCode": false,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@prometheus/e2e-toolkit": ["e2e-toolkit/src/index.ts"]
     }
   },
   "include": [".astro/types.d.ts", "**/*"],
