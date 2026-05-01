@@ -1,11 +1,15 @@
-import { defineConfig } from '@playwright/test';
+import process from 'node:process';
+import { defineConfig, type PlaywrightTestConfig } from '@playwright/test';
+
+const { CI } = process.env;
+const ciWorkers: Pick<PlaywrightTestConfig, 'workers'> = CI ? { workers: 4 } : {};
 
 export default defineConfig({
   testDir: './e2e',
   testMatch: '**/*.pw.ts',
   fullyParallel: true,
   retries: 0,
-  workers: process.env.CI ? 4 : undefined,
+  ...ciWorkers,
   reporter: 'list',
   /*
    * Per-test ceiling. Each network-aware wait inside the toolkit
