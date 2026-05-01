@@ -29,7 +29,8 @@ const openMobileMenu = async (page: Page): Promise<void> => {
 };
 
 const closeMobileMenu = async (page: Page): Promise<void> => {
-  await click(page, page.locator('[data-testid="mobile-menu-close"]'));
+  // Mirror admin's draggable-FAB pattern: same button toggles open/close.
+  await click(page, page.locator('[data-testid="mobile-menu-toggle"]'));
   await expectHidden(page, page.locator('[data-testid="mobile-menu-panel"]'));
 };
 
@@ -58,7 +59,7 @@ test.describe('Mobile menu interaction', () => {
     await expectMinCount(page, links, 3);
   });
 
-  test('closes on close button click', async ({ page }) => {
+  test('FAB toggles menu closed when clicked while open', async ({ page }) => {
     await openMobileMenu(page);
     await closeMobileMenu(page);
   });
