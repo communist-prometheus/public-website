@@ -1,6 +1,5 @@
 import {
   click,
-  expectMinCount,
   expectText,
   expectVisible,
   test,
