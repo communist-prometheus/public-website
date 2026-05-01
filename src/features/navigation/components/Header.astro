@@ -37,24 +37,36 @@ const { lang } = Astro.props;
 
 <script is:inline>
   /*
-   * Sticky-with-reveal header. Mirrors the admin's useScrollHeader
-   * behaviour: scrolling DOWN past the header height slides it out
-   * of view (more reading space on long articles); scrolling UP at
-   * any point slides it back. Implemented as a translateY offset
-   * with rAF coalescing so it survives 60 fps scroll without
-   * thrashing layout. View-Transitions reset the offset on swap.
+   * Sticky-with-reveal header — desktop only. On mobile the header
+   * contains the MobileMenu hamburger AND the panel/overlay, and a
+   * `transform` on `<header>` would make the header the containing
+   * block for those `position: fixed` panel elements (CSS spec).
+   * The panel + overlay then float over the article instead of the
+   * viewport — which is exactly what broke the mobile UX after the
+   * scroll-reveal first shipped. So gate the script to desktop.
    */
   (function () {
     var header = document.querySelector('[data-scroll-header]');
     if (!header) return;
-    var height = header.getBoundingClientRect().height || 60;
+    var DESKTOP_QUERY = '(min-width: 768px)';
     var lastY = window.scrollY;
     var offset = 0;
     var ticking = false;
+    function isDesktop() {
+      return window.matchMedia(DESKTOP_QUERY).matches;
+    }
     function applyOffset(o) {
-      header.style.transform = 'translateY(' + o + 'px)';
+      header.style.transform = isDesktop() ? 'translateY(' + o + 'px)' : '';
     }
     function handleScroll() {
+      ticking = false;
+      if (!isDesktop()) {
+        offset = 0;
+        applyOffset(0);
+        lastY = window.scrollY;
+        return;
+      }
+      var height = header.getBoundingClientRect().height || 60;
       var y = window.scrollY;
       var dy = y - lastY;
       lastY = y;
@@ -64,13 +76,22 @@ const { lang } = Astro.props;
         offset = Math.max(-height, Math.min(0, offset - dy));
       }
       applyOffset(offset);
-      ticking = false;
     }
     window.addEventListener('scroll', function () {
       if (ticking) return;
       ticking = true;
       window.requestAnimationFrame(handleScroll);
     }, { passive: true });
+    /*
+     * Resize / orientation changes can flip the breakpoint. Reset
+     * inline transform when we leave desktop so mobile gets the
+     * untransformed header back, even if a previous scroll left
+     * a non-zero offset behind.
+     */
+    window.matchMedia(DESKTOP_QUERY).addEventListener('change', function () {
+      offset = 0;
+      applyOffset(0);
+    });
     document.addEventListener('astro:before-swap', function () {
       offset = 0;
       lastY = 0;
