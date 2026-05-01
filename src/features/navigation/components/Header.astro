@@ -12,7 +12,7 @@ interface Props {
 const { lang } = Astro.props;
 ---
 
-<header>
+<header data-scroll-header>
   <div class="header-container">
     <div class="header-content">
       <a href={`/${lang}`} class="logo" aria-label="Communist Prometheus">
@@ -35,6 +35,50 @@ const { lang } = Astro.props;
   </div>
 </header>
 
+<script is:inline>
+  /*
+   * Sticky-with-reveal header. Mirrors the admin's useScrollHeader
+   * behaviour: scrolling DOWN past the header height slides it out
+   * of view (more reading space on long articles); scrolling UP at
+   * any point slides it back. Implemented as a translateY offset
+   * with rAF coalescing so it survives 60 fps scroll without
+   * thrashing layout. View-Transitions reset the offset on swap.
+   */
+  (function () {
+    var header = document.querySelector('[data-scroll-header]');
+    if (!header) return;
+    var height = header.getBoundingClientRect().height || 60;
+    var lastY = window.scrollY;
+    var offset = 0;
+    var ticking = false;
+    function applyOffset(o) {
+      header.style.transform = 'translateY(' + o + 'px)';
+    }
+    function handleScroll() {
+      var y = window.scrollY;
+      var dy = y - lastY;
+      lastY = y;
+      if (y < height) {
+        offset = 0;
+      } else {
+        offset = Math.max(-height, Math.min(0, offset - dy));
+      }
+      applyOffset(offset);
+      ticking = false;
+    }
+    window.addEventListener('scroll', function () {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(handleScroll);
+    }, { passive: true });
+    document.addEventListener('astro:before-swap', function () {
+      offset = 0;
+      lastY = 0;
+      applyOffset(0);
+    });
+  })();
+</script>
+
 <style>
   header {
     position: sticky;
@@ -42,6 +86,8 @@ const { lang } = Astro.props;
     background: var(--color-surface-elevated);
     border-bottom: 1px solid var(--color-border);
     z-index: 100;
+    transition: transform var(--transition-fast);
+    will-change: transform;
   }
 
   @media (min-width: 768px) {

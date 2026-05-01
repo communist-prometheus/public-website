@@ -3,6 +3,7 @@ import { type CollectionEntry, getCollection } from 'astro:content';
 import { type Language, SUPPORTED_LANGUAGES } from '@/config/i18n';
 import BlogPicture from '@/features/blog/components/BlogPicture.astro';
 import { getArticleSlug } from '@/features/blog/helpers/getBlogPosts';
+import { deriveDescription } from '@/features/content/helpers/deriveDescription';
 import MissingTranslation from '@/features/i18n/MissingTranslation.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 
@@ -46,7 +47,12 @@ const { lang, slug } = Astro.params;
 const Content = post ? (await post.render()).Content : undefined;
 
 const pageTitle = post ? `${post.data.title} - Communist Prometheus` : 'Communist Prometheus';
-const pageDescription = post?.data.description;
+/*
+ * Editors can leave `description` blank; deriveDescription falls back
+ * to the first paragraph of the article body so the meta description
+ * + share previews still reflect the article instead of going empty.
+ */
+const pageDescription = post ? deriveDescription(post.data.description, post.body) : undefined;
 ---
 
 <BaseLayout
