@@ -10,9 +10,39 @@ interface Props {
   title: string;
   description?: string;
   lang: Language;
+  /**
+   * Optional locale-prefixed path of the current page so og:url +
+   * canonical reflect what Telegram / Twitter / Facebook will scrape.
+   * When omitted we fall back to Astro.url.pathname which is correct
+   * for static routes; per-collection detail pages should pass
+   * explicitly because Astro 5 sometimes hands the build path here.
+   */
+  ogImage?: string;
 }
 
-const { title, description, lang } = Astro.props;
+const { title, description, lang, ogImage } = Astro.props;
+
+/*
+ * Open Graph + Twitter cards. Telegram picks `og:title`,
+ * `og:description`, `og:image` for its inline preview; without these
+ * it caches whatever it could scrape from <title> at first visit
+ * and refuses to refresh until the URL changes. Adding the tags
+ * here means every page now gets a deterministic share preview
+ * regardless of cache state.
+ */
+const SITE_URL = 'https://comprom.org';
+const ogLocaleMap: Readonly<Record<string, string>> = {
+  en: 'en_US',
+  ru: 'ru_RU',
+  it: 'it_IT',
+  es: 'es_ES',
+  bl: 'bg_BG',
+  pl: 'pl_PL',
+  uk: 'uk_UA',
+};
+const canonical = `${SITE_URL}${Astro.url.pathname}`;
+const shareImage = ogImage ?? '/logo-light.svg';
+const absoluteImage = shareImage.startsWith('http') ? shareImage : `${SITE_URL}${shareImage}`;
 ---
 
 <!doctype html>
@@ -21,8 +51,20 @@ const { title, description, lang } = Astro.props;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href={canonical} />
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Communist Prometheus" />
+    <meta property="og:title" content={title} />
+    {description && <meta property="og:description" content={description} />}
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={absoluteImage} />
+    <meta property="og:locale" content={ogLocaleMap[lang] ?? 'en_US'} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    {description && <meta name="twitter:description" content={description} />}
+    <meta name="twitter:image" content={absoluteImage} />
     <ClientRouter />
     <script is:inline>
       (function () {
