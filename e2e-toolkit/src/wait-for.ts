@@ -29,10 +29,9 @@ const DEFAULT: Required<WaitOptions> = {
 
 /**
  * Generic wait built on a request-graph listener: poll a `checker`,
- * track every outgoing request, and resolve as soon as both
- *   1. checker returns `true`, AND
- *   2. no new request has fired for `settleMs` since the condition
- *      first held.
+ * track every outgoing request, and resolve as soon as both (1) the
+ * checker returns true, AND (2) no new request has fired for
+ * `settleMs` since the condition first held.
  *
  * On a static site the listener never fires, so the wait returns on
  * the first poll where the checker passes — usually <1 frame. On a
@@ -40,11 +39,9 @@ const DEFAULT: Required<WaitOptions> = {
  * timeouts.
  *
  * @param page Playwright page used as the request listener source.
- * @param checker Async predicate. MUST NOT throw — wrap risky reads
- *   in `.catch(() => false)`.
+ * @param checker Async predicate. MUST NOT throw — wrap risky reads in `.catch(() => false)`.
  * @param options Tunables (rarely needed).
- * @throws when the maxMs ceiling is hit; the message names the last
- *   request URL so you can identify a runaway fetch.
+ * @throws when the maxMs ceiling is hit; the message names the last request URL so you can identify a runaway fetch.
  */
 export const waitForCondition = async (
   page: Page,
