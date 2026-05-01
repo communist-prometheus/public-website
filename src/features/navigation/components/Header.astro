@@ -42,8 +42,8 @@ const { lang } = Astro.props;
    * `transform` on `<header>` would make the header the containing
    * block for those `position: fixed` panel elements (CSS spec).
    * The panel + overlay then float over the article instead of the
-   * viewport — which is exactly what broke the mobile UX after
-   * #59 shipped. So gate the scroll-hide to desktop.
+   * viewport — which is exactly what broke the mobile UX after the
+   * scroll-reveal first shipped. So gate the script to desktop.
    */
   (function () {
     var header = document.querySelector('[data-scroll-header]');
