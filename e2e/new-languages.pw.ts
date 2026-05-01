@@ -34,8 +34,10 @@ for (const lang of languages) {
       await page.waitForLoadState('networkidle');
 
       await expect(page.locator('h1')).toBeVisible();
-      // Post count varies by language — `it` carries the full corpus,
-      // `es` ships nav + page chrome only until a translation lands.
+      /*
+       * Post count varies by language — `it` carries the full corpus,
+       * `es` ships nav + page chrome only until a translation lands.
+       */
     });
 
     test('positions page renders translated heading', async ({ page }) => {
