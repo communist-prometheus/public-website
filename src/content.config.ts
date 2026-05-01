@@ -20,6 +20,12 @@ const blogCollection = defineCollection({
       publishDate: z.date().optional(),
       image: image().optional(),
       lang: langEnum,
+      /*
+       * Optional newspaper-issue slug this article appeared in. The
+       * blog detail page renders "Published in: <issue>" linking back
+       * to /<lang>/newspaper/<slug> when present.
+       */
+      newspaper: z.string().optional(),
     }),
 });
 
@@ -82,6 +88,14 @@ const newspaperCollection = defineCollection({
       publishDate: z.date().optional(),
       image: image().optional(),
       lang: langEnum,
+      /*
+       * Optional ordered list of blog-article slugs in this issue.
+       * The newspaper detail page renders these as a TOC linking to
+       * /<lang>/blog/<slug>. Slugs reference the blog collection,
+       * so removing a referenced article leaves a stale link — kept
+       * intentional so editors notice and fix the TOC.
+       */
+      articles: z.array(z.string()).optional(),
     }),
 });
 

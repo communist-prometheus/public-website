@@ -73,6 +73,16 @@ const pageDescription = post ? deriveDescription(post.data.description, post.bod
               day: 'numeric',
             })}
           </p>
+          {post.data.newspaper && (
+            <p class="newspaper-ref">
+              <a
+                href={`/${lang}/newspaper/${post.data.newspaper}`}
+                class="newspaper-link"
+              >
+                ↳ {post.data.newspaper}
+              </a>
+            </p>
+          )}
         </div>
         {post.data.image && (
           <div class="featured-image">
@@ -128,6 +138,28 @@ const pageDescription = post ? deriveDescription(post.data.description, post.bod
   .post-meta {
     color: var(--color-text-secondary);
     font-size: 0.875rem;
+  }
+
+  .newspaper-ref {
+    margin-top: var(--spacing-sm);
+    font-size: 0.875rem;
+  }
+
+  .newspaper-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25em;
+    padding: 0.25rem 0.625rem;
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-elevated);
+    border-left: 3px solid var(--color-warning, #ff9800);
+    color: var(--color-text-primary);
+    text-decoration: none;
+  }
+
+  .newspaper-link:hover {
+    background: var(--color-surface);
+    color: var(--color-accent);
   }
 
   .featured-image {

@@ -6,6 +6,7 @@ interface Props {
   readonly title: string;
   readonly description: string;
   readonly slug: string;
+  readonly lang: string;
   readonly image?: ImageMetadata | undefined;
   readonly headingLevel?: 2 | 3;
   readonly downloadLabel?: string;
@@ -15,25 +16,39 @@ const {
   title,
   description,
   slug,
+  lang,
   image,
   headingLevel = 3,
   downloadLabel = 'Download PDF',
 } = Astro.props;
 
+/*
+ * The card title now leads to the newspaper detail page (cover, TOC,
+ * download). Direct PDF download stays as a side action so editors
+ * who only want the file can still grab it from the listing.
+ */
+const detailPath = `/${lang}/newspaper/${slug}`;
 const pdfPath = `/newspaper/${slug}/assets/gazette.pdf`;
 ---
 
 <article class="newspaper-card" data-testid="newspaper-card">
-  {image && (
-    <div class="cover">
-      <Picture src={image} widths={[300, 500]} sizes="(max-width: 640px) 100vw, 300px" formats={['avif', 'webp']} alt={title} />
-    </div>
-  )}
-  {headingLevel === 2 ? <h2>{title}</h2> : <h3>{title}</h3>}
-  <p>{description}</p>
-  <a href={pdfPath} download class="read-more">
-    {downloadLabel} <span aria-hidden="true">↓</span>
+  <a href={detailPath} class="cover-link">
+    {image && (
+      <div class="cover">
+        <Picture src={image} widths={[300, 500]} sizes="(max-width: 640px) 100vw, 300px" formats={['avif', 'webp']} alt={title} />
+      </div>
+    )}
+    {headingLevel === 2 ? <h2>{title}</h2> : <h3>{title}</h3>}
   </a>
+  <p>{description}</p>
+  <div class="actions">
+    <a href={detailPath} class="open-link">
+      Open <span aria-hidden="true">→</span>
+    </a>
+    <a href={pdfPath} download class="read-more">
+      {downloadLabel} <span aria-hidden="true">↓</span>
+    </a>
+  </div>
 </article>
 
 <style>
@@ -79,6 +94,19 @@ const pdfPath = `/newspaper/${slug}/assets/gazette.pdf`;
     margin-bottom: var(--spacing-md);
   }
 
+  .cover-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+  }
+
+  .open-link,
   .read-more {
     display: inline-flex;
     align-items: center;
@@ -88,6 +116,15 @@ const pdfPath = `/newspaper/${slug}/assets/gazette.pdf`;
     color: var(--color-text-primary);
     min-height: 44px;
     text-decoration: none;
+  }
+
+  .open-link {
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+  }
+
+  .open-link:hover {
+    background: var(--color-accent-hover);
   }
 
   .read-more:hover {
