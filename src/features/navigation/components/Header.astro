@@ -15,7 +15,10 @@ const { lang } = Astro.props;
 <header>
   <div class="header-container">
     <div class="header-content">
-      <a href={`/${lang}`} class="logo">Prometheus</a>
+      <a href={`/${lang}`} class="logo" aria-label="Communist Prometheus">
+        <img src="/logo-light.svg" alt="" class="logo-img logo-light" width="160" height="51" />
+        <img src="/logo-dark.svg" alt="" class="logo-img logo-dark" width="160" height="51" />
+      </a>
       <div class="header-actions">
         <div class="desktop-only" data-testid="desktop-nav">
           <Nav lang={lang} />
@@ -65,18 +68,33 @@ const { lang } = Astro.props;
   }
 
   .logo {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--color-text-primary);
     text-decoration: none;
-    transition: color var(--transition-fast);
+    transition: opacity var(--transition-fast);
     min-height: 44px;
     display: inline-flex;
     align-items: center;
   }
 
   .logo:hover {
-    color: var(--color-accent);
+    opacity: 0.8;
+  }
+
+  .logo-img {
+    height: 36px;
+    width: auto;
+    display: block;
+  }
+
+  .logo-dark {
+    display: none;
+  }
+
+  :global([data-theme='dark']) .logo-light {
+    display: none;
+  }
+
+  :global([data-theme='dark']) .logo-dark {
+    display: block;
   }
 
   .header-actions {
