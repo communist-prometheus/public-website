@@ -1,39 +1,77 @@
 ---
-import { getCollection } from 'astro:content';
-import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from '@/config/i18n';
+import { type CollectionEntry, getCollection } from 'astro:content';
+import { DEFAULT_LANGUAGE, type Language, SUPPORTED_LANGUAGES } from '@/config/i18n';
 import { getLabelsData } from '@/config/translations';
+import MissingTranslation from '@/features/i18n/MissingTranslation.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 
+/*
+ * Emit one path per (supported language × slug that exists in *any*
+ * language). When the slug has a translation in `lang`, render the
+ * entry; otherwise show the "not yet translated" placeholder. Same
+ * shape as blog/[...slug].astro — keeps the URL the user typed and
+ * avoids silently swapping to the default-language entry.
+ */
 export const getStaticPaths = async () => {
   const slugFrom = (id: string) => id.split('/').at(0) ?? id;
   const entries = await getCollection('positions', ({ data }) => data.published === true);
   const slugs = new Set(entries.map((e) => slugFrom(e.id)));
   const byKey = new Map(entries.map((e) => [`${e.data.lang}/${slugFrom(e.id)}`, e] as const));
+  const slugToLangs = new Map<string, ReadonlyArray<Language>>();
+  for (const slug of slugs) {
+    slugToLangs.set(
+      slug,
+      SUPPORTED_LANGUAGES.filter((lang) => byKey.has(`${lang}/${slug}`)),
+    );
+  }
   return SUPPORTED_LANGUAGES.flatMap((lang) =>
-    [...slugs].flatMap((slug) => {
-      const entry = byKey.get(`${lang}/${slug}`) ?? byKey.get(`${DEFAULT_LANGUAGE}/${slug}`);
-      return entry ? [{ params: { lang, slug }, props: { entry } }] : [];
-    }),
+    [...slugs].map((slug) => ({
+      params: { lang, slug },
+      props: {
+        entry: byKey.get(`${lang}/${slug}`),
+        availableLangs: slugToLangs.get(slug) ?? [],
+      },
+    })),
   );
 };
 
-const { entry } = Astro.props;
-const { lang } = Astro.params;
-const { Content } = await entry.render();
+interface Props {
+  readonly entry?: CollectionEntry<'positions'>;
+  readonly availableLangs: ReadonlyArray<Language>;
+}
+
+const { entry, availableLangs } = Astro.props as Props;
+const { lang, slug } = Astro.params;
+const Content = entry ? (await entry.render()).Content : undefined;
 const labels = (await getLabelsData(lang)) ?? (await getLabelsData(DEFAULT_LANGUAGE));
 const backLabel = labels?.data.backToList ?? '← Back';
+
+const pageTitle = entry ? `${entry.data.title} - Communist Prometheus` : 'Communist Prometheus';
+const pageDescription = entry?.data.description;
 ---
 
-<BaseLayout title={`${entry.data.title} - Prometheus`} description={entry.data.description} lang={lang}>
+<BaseLayout
+  title={pageTitle}
+  {...(pageDescription ? { description: pageDescription } : {})}
+  lang={lang}
+>
   <div class="section">
     <div class="container">
       <a href={`/${lang}/positions`} class="back-link">{backLabel}</a>
-      <article>
-        <h1>{entry.data.title}</h1>
-        <div class="content">
-          <Content />
-        </div>
-      </article>
+      {entry && Content ? (
+        <article>
+          <h1>{entry.data.title}</h1>
+          <div class="content">
+            <Content />
+          </div>
+        </article>
+      ) : (
+        <MissingTranslation
+          lang={lang}
+          availableLangs={availableLangs}
+          relativePath={`/positions/${slug}`}
+        />
+      )}
     </div>
   </div>
 </BaseLayout>

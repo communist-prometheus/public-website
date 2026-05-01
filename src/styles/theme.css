@@ -130,6 +130,13 @@ html {
   background: var(--color-background);
   scrollbar-gutter: stable;
   overflow-x: hidden;
+  /*
+   * Mobile Safari / Android Chrome paint a translucent grey square
+   * over every tappable element on tap. Override globally to
+   * transparent so our own :active / :hover / :focus-visible styles
+   * are the only feedback the user sees.
+   */
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -145,6 +152,15 @@ canvas,
 svg {
   display: block;
   max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select,
+a {
+  /* Belt-and-braces override; some Android skins ignore the html-level rule. */
+  -webkit-tap-highlight-color: transparent;
 }
 
 input,

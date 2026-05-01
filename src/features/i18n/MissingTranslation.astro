@@ -1,0 +1,117 @@
+---
+import { LANGUAGE_LABELS, type Language } from '@/config/i18n';
+
+interface Props {
+  /** Current locale shown in the URL prefix. */
+  readonly lang: Language;
+  /** Locales where this content actually exists, in display order. */
+  readonly availableLangs: ReadonlyArray<Language>;
+  /**
+   * Site path under the locale prefix — the same string for every
+   * lang link so switching keeps the user on the same article.
+   * E.g. for /en/blog/foo this is `/blog/foo`.
+   */
+  readonly relativePath: string;
+}
+
+interface Copy {
+  readonly heading: string;
+  readonly body: string;
+  readonly availableHeading: string;
+}
+
+const EN: Copy = {
+  heading: 'Not translated yet',
+  body: 'This material is not yet available in your language.',
+  availableHeading: 'Available in:',
+};
+
+const TEXTS: Readonly<Record<string, Copy>> = {
+  en: EN,
+  ru: {
+    heading: 'Перевод ещё не готов',
+    body: 'Этот материал пока не доступен на выбранном языке.',
+    availableHeading: 'Доступно на:',
+  },
+  it: {
+    heading: 'Non ancora tradotto',
+    body: 'Questo materiale non è ancora disponibile nella lingua scelta.',
+    availableHeading: 'Disponibile in:',
+  },
+  es: {
+    heading: 'Traducción pendiente',
+    body: 'Este material aún no está disponible en el idioma elegido.',
+    availableHeading: 'Disponible en:',
+  },
+};
+
+const { lang, availableLangs, relativePath } = Astro.props;
+const t: Copy = TEXTS[lang] ?? EN;
+---
+
+<section class="missing-translation">
+  <h2>{t.heading}</h2>
+  <p>{t.body}</p>
+  {availableLangs.length > 0 && (
+    <p class="available">
+      <span class="available-label">{t.availableHeading}</span>
+      <span class="available-langs">
+        {availableLangs.map((l) => (
+          <a href={`/${l}${relativePath}`} hreflang={l}>{LANGUAGE_LABELS[l] ?? l}</a>
+        ))}
+      </span>
+    </p>
+  )}
+</section>
+
+<style>
+  .missing-translation {
+    max-width: 720px;
+    margin-inline: auto;
+    padding: clamp(var(--spacing-lg), 4vw, var(--spacing-2xl));
+    background: var(--color-surface);
+    border-left: 3px solid var(--color-accent);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  }
+
+  .missing-translation h2 {
+    font-size: clamp(1.25rem, 4vw, 1.5rem);
+    font-weight: 600;
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .missing-translation p {
+    font-size: 1rem;
+    color: var(--color-text-secondary);
+    line-height: 1.7;
+    margin-bottom: var(--spacing-md);
+  }
+
+  .available {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    align-items: baseline;
+  }
+
+  .available-label {
+    color: var(--color-text-primary);
+    font-weight: 500;
+  }
+
+  .available-langs {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+  }
+
+  .available-langs a {
+    color: var(--color-accent);
+    text-decoration: none;
+    border-bottom: 1px solid currentColor;
+  }
+
+  .available-langs a:hover {
+    color: var(--color-accent-hover);
+  }
+</style>

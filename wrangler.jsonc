@@ -2,7 +2,14 @@
   "name": "public-website",
   "compatibility_date": "2026-03-23",
   "assets": {
-    "directory": "./dist"
+    "directory": "./dist",
+    /*
+     * Serve src/pages/404.astro (built into dist/404.html) for any
+     * path that has no asset. CF preserves the requested URL — no
+     * redirect — which is the UX the editors asked for ("keep what
+     * the user typed, just say the content does not exist").
+     */
+    "not_found_handling": "404-page"
   },
   "env": {
     // Develop environment — deploys from the `develop` branch into a

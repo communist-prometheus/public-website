@@ -1,50 +1,94 @@
 ---
-import { getCollection } from 'astro:content';
-import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from '@/config/i18n';
+import { type CollectionEntry, getCollection } from 'astro:content';
+import { type Language, SUPPORTED_LANGUAGES } from '@/config/i18n';
 import BlogPicture from '@/features/blog/components/BlogPicture.astro';
 import { getArticleSlug } from '@/features/blog/helpers/getBlogPosts';
+import MissingTranslation from '@/features/i18n/MissingTranslation.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 
+/*
+ * Emit one path per (supported language × slug that exists in *any*
+ * language). When the slug has a translation in `lang`, render the
+ * post; otherwise hand the language switcher / placeholder so a
+ * switch to an untranslated locale lands on a clear "not yet
+ * translated" message instead of silently falling back to the
+ * default-language version under a misleading URL prefix.
+ */
 export const getStaticPaths = async () => {
   const posts = await getCollection('blog', ({ data }) => data.published === true);
   const slugs = new Set(posts.map((p) => getArticleSlug(p)));
   const byKey = new Map(posts.map((p) => [`${p.data.lang}/${getArticleSlug(p)}`, p] as const));
+  const slugToLangs = new Map<string, ReadonlyArray<Language>>();
+  for (const slug of slugs) {
+    slugToLangs.set(
+      slug,
+      SUPPORTED_LANGUAGES.filter((lang) => byKey.has(`${lang}/${slug}`)),
+    );
+  }
   return SUPPORTED_LANGUAGES.flatMap((lang) =>
-    [...slugs].flatMap((slug) => {
-      const post = byKey.get(`${lang}/${slug}`) ?? byKey.get(`${DEFAULT_LANGUAGE}/${slug}`);
-      return post ? [{ params: { lang, slug }, props: { post } }] : [];
-    }),
+    [...slugs].map((slug) => ({
+      params: { lang, slug },
+      props: {
+        post: byKey.get(`${lang}/${slug}`),
+        availableLangs: slugToLangs.get(slug) ?? [],
+      },
+    })),
   );
 };
 
-const { post } = Astro.props;
-const { Content } = await post.render();
+interface Props {
+  readonly post?: CollectionEntry<'blog'>;
+  readonly availableLangs: ReadonlyArray<Language>;
+}
 
-const { lang } = Astro.params;
+const { post, availableLangs } = Astro.props as Props;
+const { lang, slug } = Astro.params;
+const Content = post ? (await post.render()).Content : undefined;
+
+const pageTitle = post ? `${post.data.title} - Communist Prometheus` : 'Communist Prometheus';
+const pageDescription = post?.data.description;
 ---
 
-<BaseLayout title={`${post.data.title} - Prometheus`} description={post.data.description} lang={lang}>
-  <article class="section">
-    <div class="container">
-      <div class="post-header">
-        <span class="category">{post.data.category}</span>
-        <h1>{post.data.title}</h1>
-        <p class="post-meta">
-          {
-            (post.data.publishDate ?? post.data.pubDate).toLocaleDateString(lang, {
+<BaseLayout
+  title={pageTitle}
+  {...(pageDescription ? { description: pageDescription } : {})}
+  lang={lang}
+>
+  {post && Content ? (
+    <article class="section">
+      <div class="container">
+        <div class="post-header">
+          <span class="category">{post.data.category}</span>
+          <h1>{post.data.title}</h1>
+          <p class="post-meta">
+            {(post.data.publishDate ?? post.data.pubDate).toLocaleDateString(lang, {
               year: 'numeric',
               month: 'long',
               day: 'numeric',
-            })
-          }
-        </p>
+            })}
+          </p>
+        </div>
+        {post.data.image && (
+          <div class="featured-image">
+            <BlogPicture image={post.data.image} alt={post.data.title} preset="featured" loading="eager" />
+          </div>
+        )}
+        <div class="prose">
+          <Content />
+        </div>
       </div>
-      {post.data.image && <div class="featured-image"><BlogPicture image={post.data.image} alt={post.data.title} preset="featured" loading="eager" /></div>}
-      <div class="prose">
-        <Content />
+    </article>
+  ) : (
+    <div class="section">
+      <div class="container">
+        <MissingTranslation
+          lang={lang}
+          availableLangs={availableLangs}
+          relativePath={`/blog/${slug}`}
+        />
       </div>
     </div>
-  </article>
+  )}
 </BaseLayout>
 
 <style>
