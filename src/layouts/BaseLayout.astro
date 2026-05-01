@@ -52,6 +52,12 @@ const absoluteImage = shareImage.startsWith('http') ? shareImage : `${SITE_URL}$
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="canonical" href={canonical} />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={`Communist Prometheus — ${lang}`}
+      href={`/${lang}/rss.xml`}
+    />
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
     <meta property="og:type" content="website" />
