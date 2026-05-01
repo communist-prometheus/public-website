@@ -14,7 +14,11 @@ const labels = (await getLabelsData(lang)) ?? (await getLabelsData(DEFAULT_LANGU
 const readMore = labels?.data.readMore ?? 'Download PDF';
 ---
 
-<BaseLayout title="Newspaper" lang={lang}>
+<BaseLayout
+  title="Newspaper"
+  description="Print editions of the Prometheus newspaper — articles, communiqués and analysis."
+  lang={lang}
+>
   <div class="section">
     <div class="container">
       <h1>Newspaper</h1>

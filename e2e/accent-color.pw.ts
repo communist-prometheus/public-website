@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, visit } from '@prometheus/e2e-toolkit';
 
 /**
  * Accent color E2E tests.
@@ -16,71 +16,46 @@ const isOrangeRed = (rgb: string): boolean => {
   return r > 150 && g < 120 && b < 80;
 };
 
+const readAccent = (themeAttr: 'light' | 'dark' | undefined) =>
+  `(() => {
+    ${themeAttr ? `globalThis.document.documentElement.setAttribute('data-theme', '${themeAttr}');` : ''}
+    const raw = globalThis
+      .getComputedStyle(globalThis.document.documentElement)
+      .getPropertyValue('--color-accent')
+      .trim();
+    const el = globalThis.document.createElement('div');
+    el.style.color = raw;
+    globalThis.document.body.appendChild(el);
+    const rgb = globalThis.getComputedStyle(el).color;
+    el.remove();
+    return { raw, rgb };
+  })()`;
+
 test.describe('Accent color', () => {
   test('accent color is orange-red in light theme', async ({ page }) => {
-    await page.goto('/en');
-    await page.waitForLoadState('networkidle');
-
-    const accent = await page.evaluate(() =>
-      globalThis
-        .getComputedStyle(globalThis.document.documentElement)
-        .getPropertyValue('--color-accent')
-        .trim(),
-    );
-
-    expect(accent).toMatch(/hsl/);
-    expect(accent).not.toContain('250');
-
-    const accentRgb = await page.evaluate(() => {
-      const el = globalThis.document.createElement('div');
-      el.style.color = globalThis
-        .getComputedStyle(globalThis.document.documentElement)
-        .getPropertyValue('--color-accent');
-      globalThis.document.body.appendChild(el);
-      const rgb = globalThis.getComputedStyle(el).color;
-      el.remove();
-      return rgb;
-    });
-
-    expect(isOrangeRed(accentRgb)).toBe(true);
+    await visit(page, '/en');
+    const { raw, rgb } = await page.evaluate<{
+      readonly raw: string;
+      readonly rgb: string;
+    }>(readAccent(undefined));
+    expect(raw).toMatch(/hsl/);
+    expect(raw).not.toContain('250');
+    expect(isOrangeRed(rgb)).toBe(true);
   });
 
   test('accent color is orange-red in dark theme', async ({ page }) => {
-    await page.goto('/en');
-    await page.waitForLoadState('networkidle');
-
-    await page.evaluate(() => {
-      globalThis.document.documentElement.setAttribute('data-theme', 'dark');
-    });
-
-    const accent = await page.evaluate(() =>
-      globalThis
-        .getComputedStyle(globalThis.document.documentElement)
-        .getPropertyValue('--color-accent')
-        .trim(),
-    );
-
-    expect(accent).toMatch(/hsl/);
-    expect(accent).not.toContain('250');
-
-    const accentRgb = await page.evaluate(() => {
-      const el = globalThis.document.createElement('div');
-      el.style.color = globalThis
-        .getComputedStyle(globalThis.document.documentElement)
-        .getPropertyValue('--color-accent');
-      globalThis.document.body.appendChild(el);
-      const rgb = globalThis.getComputedStyle(el).color;
-      el.remove();
-      return rgb;
-    });
-
-    expect(isOrangeRed(accentRgb)).toBe(true);
+    await visit(page, '/en');
+    const { raw, rgb } = await page.evaluate<{
+      readonly raw: string;
+      readonly rgb: string;
+    }>(readAccent('dark'));
+    expect(raw).toMatch(/hsl/);
+    expect(raw).not.toContain('250');
+    expect(isOrangeRed(rgb)).toBe(true);
   });
 
   test('primary buttons use accent color as background', async ({ page }) => {
-    await page.goto('/components-demo');
-    await page.waitForLoadState('networkidle');
-
+    await visit(page, '/components-demo');
     const btn = page.locator('.primary').first();
     const bg = await btn.evaluate((el) => globalThis.getComputedStyle(el).backgroundColor);
     expect(isOrangeRed(bg)).toBe(true);

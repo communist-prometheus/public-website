@@ -1,306 +1,242 @@
-import { expect, type Page, test } from '@playwright/test';
+import {
+  click,
+  expect,
+  expectAttribute,
+  expectHidden,
+  expectMinCount,
+  expectVisible,
+  type Page,
+  pressKey,
+  test,
+  visit,
+  waitForCondition,
+} from '@prometheus/e2e-toolkit';
 
 /**
  * Mobile menu and responsive layout E2E tests.
  *
- * Covers:
- * 1. Hamburger menu visibility on mobile viewport
- * 2. Desktop nav hidden on mobile
- * 3. Mobile menu open/close behavior
- * 4. Navigation works from mobile menu
- * 5. Menu closes on navigation
- * 6. Menu closes on ESC key
- * 7. Menu closes on overlay click
- * 8. Theme toggle accessible in mobile menu
- * 9. Responsive layout — no horizontal overflow
- * 10. Touch targets meet minimum size (44x44)
+ * Every "wait for the menu animation" call is now a wait on the
+ * actual end state — `aria-expanded` flipping, the panel becoming
+ * visible/hidden — instead of an opaque 350 ms timer.
  */
 
 const BASE = '/en';
 const BLOG = '/en/blog';
 
-const openMobileMenu = async (page: Page) => {
-  const hamburger = page.locator('[data-testid="mobile-menu-toggle"]');
-  await hamburger.click();
-  await page.waitForTimeout(350);
+const openMobileMenu = async (page: Page): Promise<void> => {
+  await click(page, page.locator('[data-testid="mobile-menu-toggle"]'));
+  await expectVisible(page, page.locator('[data-testid="mobile-menu-panel"]'));
 };
 
-const closeMobileMenu = async (page: Page) => {
-  const closeBtn = page.locator('[data-testid="mobile-menu-close"]');
-  await closeBtn.click();
-  await page.waitForTimeout(350);
+const closeMobileMenu = async (page: Page): Promise<void> => {
+  await click(page, page.locator('[data-testid="mobile-menu-close"]'));
+  await expectHidden(page, page.locator('[data-testid="mobile-menu-panel"]'));
 };
 
 test.describe('Mobile menu visibility', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto(BASE);
-    await page.waitForLoadState('networkidle');
+    await visit(page, BASE);
   });
 
   test('hamburger button is visible on mobile', async ({ page }) => {
-    const hamburger = page.locator('[data-testid="mobile-menu-toggle"]');
-    await expect(hamburger).toBeVisible();
+    await expectVisible(page, page.locator('[data-testid="mobile-menu-toggle"]'));
   });
 
   test('desktop nav is hidden on mobile', async ({ page }) => {
-    const desktopNav = page.locator('[data-testid="desktop-nav"]');
-    await expect(desktopNav).not.toBeVisible();
+    await expectHidden(page, page.locator('[data-testid="desktop-nav"]'));
   });
 });
 
 test.describe('Mobile menu interaction', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto(BASE);
-    await page.waitForLoadState('networkidle');
+    await visit(page, BASE);
   });
 
   test('opens and shows navigation links', async ({ page }) => {
     await openMobileMenu(page);
-
-    const mobileNav = page.locator('[data-testid="mobile-menu-panel"]');
-    await expect(mobileNav).toBeVisible();
-
-    const links = mobileNav.locator('a');
-    const count = await links.count();
-    expect(count).toBeGreaterThanOrEqual(3);
+    const links = page.locator('[data-testid="mobile-menu-panel"] a');
+    await expectMinCount(page, links, 3);
   });
 
   test('closes on close button click', async ({ page }) => {
     await openMobileMenu(page);
-
-    const mobileNav = page.locator('[data-testid="mobile-menu-panel"]');
-    await expect(mobileNav).toBeVisible();
-
     await closeMobileMenu(page);
-    await expect(mobileNav).not.toBeVisible();
   });
 
   test('closes on ESC key', async ({ page }) => {
     await openMobileMenu(page);
-
-    const mobileNav = page.locator('[data-testid="mobile-menu-panel"]');
-    await expect(mobileNav).toBeVisible();
-
-    await page.keyboard.press('Escape');
-    await page.waitForTimeout(350);
-
-    await expect(mobileNav).not.toBeVisible();
+    await pressKey(page, 'Escape');
+    await expectHidden(page, page.locator('[data-testid="mobile-menu-panel"]'));
   });
 
   test('closes on overlay click', async ({ page }) => {
     await openMobileMenu(page);
-
     const overlay = page.locator('[data-testid="mobile-menu-overlay"]');
-    await expect(overlay).toBeVisible();
-
+    await expectVisible(page, overlay);
     await overlay.click({ position: { x: 10, y: 10 } });
-    await page.waitForTimeout(350);
-
-    const mobileNav = page.locator('[data-testid="mobile-menu-panel"]');
-    await expect(mobileNav).not.toBeVisible();
+    await expectHidden(page, page.locator('[data-testid="mobile-menu-panel"]'));
   });
 
   test('navigates and closes menu on link click', async ({ page }) => {
     await openMobileMenu(page);
-
     const blogLink = page.locator('[data-testid="mobile-menu-panel"] a:has-text("Blog")');
-    await blogLink.click();
-    await page.waitForURL('**/blog');
-
-    const mobileNav = page.locator('[data-testid="mobile-menu-panel"]');
-    await expect(mobileNav).not.toBeVisible();
+    await click(page, blogLink);
+    await waitForCondition(page, async () => /\/blog/.test(page.url()));
+    await expectHidden(page, page.locator('[data-testid="mobile-menu-panel"]'));
   });
 
   test('theme toggle is accessible in mobile menu', async ({ page }) => {
     await openMobileMenu(page);
-
     const themeToggle = page.locator('[data-testid="mobile-menu-panel"] [data-theme-toggle]');
-    await expect(themeToggle).toBeVisible();
+    await expectVisible(page, themeToggle);
   });
 
   test('menu works after SPA navigation', async ({ page }) => {
     await openMobileMenu(page);
-
     const blogLink = page.locator('[data-testid="mobile-menu-panel"] a:has-text("Blog")');
-    await blogLink.click();
-    await page.waitForURL('**/blog');
-
-    const panel = page.locator('[data-testid="mobile-menu-panel"]');
-    await expect(panel).not.toBeVisible({ timeout: 2000 });
-
+    await click(page, blogLink);
+    await waitForCondition(page, async () => /\/blog/.test(page.url()));
+    await expectHidden(page, page.locator('[data-testid="mobile-menu-panel"]'));
     await openMobileMenu(page);
-    await expect(panel).toBeVisible();
-
-    const links = panel.locator('a');
-    const count = await links.count();
-    expect(count).toBeGreaterThanOrEqual(3);
-
+    await expectMinCount(page, page.locator('[data-testid="mobile-menu-panel"] a'), 3);
     await closeMobileMenu(page);
-    await expect(panel).not.toBeVisible({ timeout: 2000 });
   });
 });
 
 test.describe('Mobile menu accessibility', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto(BASE);
-    await page.waitForLoadState('networkidle');
+    await visit(page, BASE);
   });
 
   test('hamburger button has proper aria attributes', async ({ page }) => {
     const hamburger = page.locator('[data-testid="mobile-menu-toggle"]');
-    await expect(hamburger).toHaveAttribute('aria-label', /menu/i);
-    await expect(hamburger).toHaveAttribute('aria-expanded', 'false');
-
-    await hamburger.click();
-    await page.waitForTimeout(350);
-
-    await expect(hamburger).toHaveAttribute('aria-expanded', 'true');
+    await expectAttribute(page, hamburger, 'aria-label', /menu/i);
+    await expectAttribute(page, hamburger, 'aria-expanded', 'false');
+    await click(page, hamburger);
+    await expectAttribute(page, hamburger, 'aria-expanded', 'true');
   });
 
   test('mobile menu panel has proper role', async ({ page }) => {
     await openMobileMenu(page);
-
     const panel = page.locator('[data-testid="mobile-menu-panel"]');
-    await expect(panel).toHaveAttribute('role', 'dialog');
-    await expect(panel).toHaveAttribute('aria-modal', 'true');
+    await expectAttribute(page, panel, 'role', 'dialog');
+    await expectAttribute(page, panel, 'aria-modal', 'true');
   });
 });
 
 test.describe('Mobile menu controls', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto(BASE);
-    await page.waitForLoadState('networkidle');
+    await visit(page, BASE);
   });
 
   test('theme toggle changes theme in mobile menu', async ({ page }) => {
-    const initialTheme = await page.evaluate(() => document.documentElement.dataset['theme']);
-
+    const initial = await page.evaluate(() => document.documentElement.dataset['theme']);
     await openMobileMenu(page);
-
     const themeBtn = page.locator('[data-testid="mobile-menu-panel"] [data-theme-toggle]');
-    await expect(themeBtn).toBeVisible();
-    await themeBtn.click();
-    await page.waitForTimeout(500);
-
-    const newTheme = await page.evaluate(() => document.documentElement.dataset['theme']);
-    expect(newTheme).not.toBe(initialTheme);
+    await expectVisible(page, themeBtn);
+    await click(page, themeBtn);
+    await waitForCondition(
+      page,
+      async () =>
+        (await page.evaluate(() => document.documentElement.dataset['theme'])) !== initial,
+    );
   });
 
   test('language switcher is visible in mobile menu', async ({ page }) => {
     await openMobileMenu(page);
-
     const switcher = page.locator(
       '[data-testid="mobile-menu-panel"] [data-testid="language-switcher"]',
     );
-    await expect(switcher).toBeVisible();
+    await expectVisible(page, switcher);
   });
 
   test('language switcher opens dropdown in mobile menu', async ({ page }) => {
     await openMobileMenu(page);
-
     const switcher = page.locator(
       '[data-testid="mobile-menu-panel"] [data-testid="language-switcher"]',
     );
-    const trigger = switcher.locator('.lang-trigger');
-    await trigger.click();
-
-    const dropdown = switcher.locator('[data-testid="language-dropdown"]');
-    await expect(dropdown).toBeVisible();
+    await click(page, switcher.locator('.lang-trigger'));
+    await expectVisible(page, switcher.locator('[data-testid="language-dropdown"]'));
   });
 
   test('language switcher navigates to another language from mobile menu', async ({ page }) => {
     await openMobileMenu(page);
-
     const switcher = page.locator(
       '[data-testid="mobile-menu-panel"] [data-testid="language-switcher"]',
     );
-    const trigger = switcher.locator('.lang-trigger');
-    await trigger.click();
-
+    await click(page, switcher.locator('.lang-trigger'));
     const ruOption = switcher.locator('[data-testid="lang-option-ru"]');
-    await expect(ruOption).toBeVisible();
-    await ruOption.click();
-
-    await page.waitForURL('**/ru');
+    await expectVisible(page, ruOption);
+    await click(page, ruOption);
+    await waitForCondition(page, async () => /\/ru\/?$/.test(page.url()));
     await expect(page).toHaveURL(/\/ru\/?$/);
   });
 });
 
 test.describe('Responsive layout', () => {
   test('no horizontal overflow on home page', async ({ page }) => {
-    await page.goto(BASE);
-    await page.waitForLoadState('networkidle');
-
-    const overflow = await page.evaluate(() => {
-      return document.documentElement.scrollWidth > document.documentElement.clientWidth;
-    });
+    await visit(page, BASE);
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+    );
     expect(overflow).toBe(false);
   });
 
   test('no horizontal overflow on blog page', async ({ page }) => {
-    await page.goto(BLOG);
-    await page.waitForLoadState('networkidle');
-
-    const overflow = await page.evaluate(() => {
-      return document.documentElement.scrollWidth > document.documentElement.clientWidth;
-    });
+    await visit(page, BLOG);
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+    );
     expect(overflow).toBe(false);
   });
 
   test('all interactive elements meet minimum touch target size (44x44)', async ({ page }) => {
-    await page.goto(BASE);
-    await page.waitForLoadState('networkidle');
-
-    const smallTargets = await page.evaluate(() => {
-      const interactiveSelectors = 'a, button, input, select, textarea, [role="button"]';
-      const elements = document.querySelectorAll(interactiveSelectors);
-      const violations: Array<{ tag: string; text: string; width: number; height: number }> = [];
-
-      for (const el of elements) {
-        const rect = el.getBoundingClientRect();
-        if (rect.width === 0 && rect.height === 0) continue;
-        const style = getComputedStyle(el);
-        if (style.display === 'none' || style.visibility === 'hidden') continue;
-
-        if (rect.width < 44 || rect.height < 44) {
-          violations.push({
+    await visit(page, BASE);
+    const small = await page.evaluate(() => {
+      const sel = 'a, button, input, select, textarea, [role="button"]';
+      const list: Array<{
+        tag: string;
+        text: string;
+        width: number;
+        height: number;
+      }> = [];
+      for (const el of document.querySelectorAll(sel)) {
+        const r = el.getBoundingClientRect();
+        if (r.width === 0 && r.height === 0) continue;
+        const cs = getComputedStyle(el);
+        if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+        /*
+         * Skip-to-main and similar focus-only elements are parked
+         * off-viewport until focus, so they can never be tapped.
+         */
+        if (r.bottom <= 0 || r.right <= 0) continue;
+        if (r.width < 44 || r.height < 44) {
+          list.push({
             tag: el.tagName.toLowerCase(),
             text: (el.textContent ?? '').trim().slice(0, 30),
-            width: Math.round(rect.width),
-            height: Math.round(rect.height),
+            width: Math.round(r.width),
+            height: Math.round(r.height),
           });
         }
       }
-      return violations;
+      return list;
     });
-
-    if (smallTargets.length > 0) {
-      console.log('\n=== Touch target violations ===');
-      for (const v of smallTargets) {
-        console.log(`  <${v.tag}> "${v.text}" — ${v.width}x${v.height}px`);
-      }
-      console.log('===============================\n');
-    }
-
-    expect(smallTargets, `${smallTargets.length} elements below 44x44px minimum`).toHaveLength(0);
+    expect(small, `${small.length} elements below 44x44px minimum`).toHaveLength(0);
   });
 
   test('cards stack vertically on mobile', async ({ page }) => {
-    await page.goto(BASE);
-    await page.waitForLoadState('networkidle');
-
-    const cardPositions = await page.evaluate(() => {
+    await visit(page, BASE);
+    const positions = await page.evaluate(() => {
       const cards = document.querySelectorAll('.card, .post-card');
-      return Array.from(cards).map((card) => {
-        const rect = card.getBoundingClientRect();
-        return { top: rect.top, left: rect.left, width: rect.width };
+      return Array.from(cards).map((c) => {
+        const r = c.getBoundingClientRect();
+        return { top: r.top, left: r.left, width: r.width };
       });
     });
-
-    if (cardPositions.length >= 2) {
-      for (let i = 1; i < cardPositions.length; i++) {
-        const prev = cardPositions[i - 1];
-        const curr = cardPositions[i];
+    if (positions.length >= 2) {
+      for (let i = 1; i < positions.length; i++) {
+        const prev = positions[i - 1];
+        const curr = positions[i];
         if (prev && curr) {
           expect(curr.top).toBeGreaterThan(prev.top);
         }
