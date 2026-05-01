@@ -107,13 +107,22 @@ const { lang } = Astro.props;
     background: var(--color-surface-elevated);
     border-bottom: 1px solid var(--color-border);
     z-index: 100;
-    transition: transform var(--transition-fast);
-    will-change: transform;
   }
 
+  /*
+   * The scroll-hide reveal lives on desktop only — the JS guards
+   * its `transform` mutations behind a matchMedia gate. The
+   * transition + will-change live in the SAME media query so they
+   * never apply on mobile; otherwise either property would make
+   * `<header>` a containing block for `position: fixed` descendants
+   * (CSS spec) and trap the MobileMenu panel inside the header
+   * box, which is exactly what broke the menu on prod.
+   */
   @media (min-width: 768px) {
     header {
       backdrop-filter: blur(10px);
+      transition: transform var(--transition-fast);
+      will-change: transform;
     }
   }
 
