@@ -1,0 +1,225 @@
+---
+import { type CollectionEntry, getCollection } from 'astro:content';
+import { type Language, SUPPORTED_LANGUAGES } from '@/config/i18n';
+import { getLabelsData } from '@/config/translations';
+import { getArticleSlug } from '@/features/blog/helpers/getBlogPosts';
+import MissingTranslation from '@/features/i18n/MissingTranslation.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+
+/*
+ * Newspaper issue detail page. Mirrors the blog/positions
+ * cross-language pattern: emit one path per (lang × slug-that-exists-
+ * in-any-language); render the issue when the target locale carries
+ * it, otherwise render the MissingTranslation card. URL is preserved
+ * either way.
+ */
+export const getStaticPaths = async () => {
+  const issues = await getCollection('newspaper', ({ data }) => data.published === true);
+  const slugFrom = (id: string) => id.split('/').at(0) ?? id;
+  const slugs = new Set(issues.map((i) => slugFrom(i.id)));
+  const byKey = new Map(issues.map((i) => [`${i.data.lang}/${slugFrom(i.id)}`, i] as const));
+  const slugToLangs = new Map<string, ReadonlyArray<Language>>();
+  for (const slug of slugs) {
+    slugToLangs.set(
+      slug,
+      SUPPORTED_LANGUAGES.filter((lang) => byKey.has(`${lang}/${slug}`)),
+    );
+  }
+  return SUPPORTED_LANGUAGES.flatMap((lang) =>
+    [...slugs].map((slug) => ({
+      params: { lang, slug },
+      props: {
+        issue: byKey.get(`${lang}/${slug}`),
+        availableLangs: slugToLangs.get(slug) ?? [],
+      },
+    })),
+  );
+};
+
+interface Props {
+  readonly issue?: CollectionEntry<'newspaper'>;
+  readonly availableLangs: ReadonlyArray<Language>;
+}
+
+const { issue, availableLangs } = Astro.props as Props;
+const { lang, slug } = Astro.params;
+
+const labels = (await getLabelsData(lang)) ?? (await getLabelsData('en'));
+const backLabel = labels?.data.backToList ?? '← Back';
+const downloadLabel = labels?.data.readMore ?? 'Download PDF';
+
+interface TocEntry {
+  readonly slug: string;
+  readonly title: string;
+  readonly href: string;
+}
+
+const tocEntries = await (async (): Promise<ReadonlyArray<TocEntry>> => {
+  if (!issue?.data.articles?.length) return [];
+  const posts = await getCollection('blog');
+  const byKey = new Map(posts.map((p) => [`${p.data.lang}/${getArticleSlug(p)}`, p] as const));
+  return issue.data.articles.map((articleSlug) => {
+    const localised = byKey.get(`${lang}/${articleSlug}`) ?? byKey.get(`en/${articleSlug}`);
+    return {
+      slug: articleSlug,
+      title: localised?.data.title ?? articleSlug,
+      href: `/${lang}/blog/${articleSlug}`,
+    };
+  });
+})();
+
+const pdfPath = issue ? `/newspaper/${slug}/assets/gazette.pdf` : undefined;
+---
+
+<BaseLayout
+  title={issue
+    ? `${issue.data.title} - Communist Prometheus`
+    : 'Communist Prometheus'}
+  {...(issue?.data.description
+    ? { description: issue.data.description }
+    : {})}
+  lang={lang}
+>
+  <div class="section">
+    <div class="container">
+      <a href={`/${lang}/newspaper`} class="back-link">{backLabel}</a>
+      {issue ? (
+        <article class="issue">
+          <header class="issue-header">
+            <h1>{issue.data.title}</h1>
+            <p class="issue-description">{issue.data.description}</p>
+            {pdfPath && (
+              <a href={pdfPath} download class="download-cta">
+                {downloadLabel} <span aria-hidden="true">↓</span>
+              </a>
+            )}
+          </header>
+          {tocEntries.length > 0 && (
+            <section class="toc" aria-label="Issue contents">
+              <h2>{labels?.data.viewAll ?? 'Contents'}</h2>
+              <ol>
+                {tocEntries.map((entry, idx) => (
+                  <li>
+                    <a href={entry.href}>
+                      <span class="toc-num">{idx + 1}.</span>
+                      <span class="toc-title">{entry.title}</span>
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )}
+        </article>
+      ) : (
+        <MissingTranslation
+          lang={lang}
+          availableLangs={availableLangs}
+          relativePath={`/newspaper/${slug}`}
+        />
+      )}
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .back-link {
+    display: inline-block;
+    margin-bottom: var(--spacing-lg);
+    color: var(--color-accent);
+    text-decoration: none;
+    font-size: 0.9375rem;
+  }
+
+  .back-link:hover {
+    color: var(--color-accent-hover);
+  }
+
+  .issue {
+    max-width: 720px;
+    margin-inline: auto;
+  }
+
+  .issue-header {
+    margin-bottom: var(--spacing-2xl);
+    text-align: center;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: var(--spacing-md);
+  }
+
+  .issue-description {
+    color: var(--color-text-secondary);
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .download-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    font-weight: 500;
+    min-height: 44px;
+  }
+
+  .download-cta:hover {
+    background: var(--color-accent-hover);
+  }
+
+  .toc {
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--spacing-xl);
+  }
+
+  .toc h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .toc ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  .toc a {
+    display: flex;
+    align-items: baseline;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-primary);
+    text-decoration: none;
+    border-left: 3px solid var(--color-warning, #ff9800);
+    background: var(--color-surface-elevated);
+  }
+
+  .toc a:hover {
+    background: var(--color-surface);
+    color: var(--color-accent);
+  }
+
+  .toc-num {
+    color: var(--color-text-secondary);
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+  }
+
+  .toc-title {
+    flex: 1;
+    line-height: 1.5;
+  }
+</style>
