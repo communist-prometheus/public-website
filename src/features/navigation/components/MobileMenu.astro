@@ -1,8 +1,8 @@
 ---
 import type { Language } from '@/config/i18n';
-import { LANGUAGE_LABELS, SUPPORTED_LANGUAGES } from '@/config/i18n';
 import { getMenuData, getNavLinks } from '@/config/translations';
 import ThemeToggle from '@/features/theme/components/ThemeToggle.astro';
+import LanguageSwitcher from './LanguageSwitcher.astro';
 
 interface Props {
   lang: Language;
@@ -13,20 +13,6 @@ const { lang } = Astro.props;
 const links = await getNavLinks(lang);
 const nav = await getMenuData(lang);
 const menuLabel = nav?.data.menu ?? 'Menu';
-
-/*
- * On mobile we render languages as a flat row of chips — the same
- * dropdown-style switcher the desktop header uses overflows the FAB
- * popup (the dropdown opens downward and lands off-screen when the
- * popup is already at the viewport edge). A flat row fits in one
- * line for our 4–7 languages and is always reachable without a
- * second click.
- */
-const restPath = (() => {
-  const path = Astro.url.pathname.replace(/^\/[a-z]{2}(?=\/|$)/, '');
-  return path === '' ? '' : path;
-})();
-const langHref = (code: string) => (restPath === '' ? `/${code}` : `/${code}${restPath}`);
 ---
 
 <!--
@@ -76,25 +62,8 @@ const langHref = (code: string) => (restPath === '' ? `/${code}` : `/${code}${re
         <li><a href={href}>{label}</a></li>
       ))}
     </ul>
-    <div
-      class="popup-langs"
-      role="group"
-      aria-label="Select language"
-      data-testid="language-switcher"
-    >
-      {SUPPORTED_LANGUAGES.map((code) => (
-        <a
-          href={langHref(code)}
-          data-testid={`lang-option-${code}`}
-          aria-current={code === lang ? 'page' : undefined}
-          class:list={['popup-lang', { active: code === lang }]}
-          title={LANGUAGE_LABELS[code]}
-        >
-          {code.toUpperCase()}
-        </a>
-      ))}
-    </div>
     <div class="popup-tools">
+      <LanguageSwitcher lang={lang} />
       <ThemeToggle />
     </div>
   </nav>
@@ -390,55 +359,46 @@ const langHref = (code: string) => (restPath === '' ? `/${code}` : `/${code}${re
     color: var(--color-text-primary);
   }
 
-  .popup-langs {
-    margin-top: var(--spacing-sm);
-    padding-top: var(--spacing-sm);
-    border-top: 1px solid var(--color-border);
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--spacing-xs);
-  }
-
-  .popup-lang {
-    flex: 1 1 calc(33% - var(--spacing-xs));
-    min-width: 48px;
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--spacing-xs);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    color: var(--color-text-secondary);
-    text-decoration: none;
-    font-size: 0.8125rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    transition:
-      background-color var(--transition-fast),
-      color var(--transition-fast),
-      border-color var(--transition-fast);
-  }
-
-  .popup-lang:hover,
-  .popup-lang:focus-visible {
-    background: var(--color-surface);
-    color: var(--color-text-primary);
-    border-color: var(--color-text-secondary);
-  }
-
-  .popup-lang.active {
-    background: var(--color-accent);
-    color: var(--color-on-accent);
-    border-color: var(--color-accent);
-  }
-
   .popup-tools {
     margin-top: var(--spacing-sm);
     padding-top: var(--spacing-sm);
     border-top: 1px solid var(--color-border);
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+  }
+
+  /*
+   * The desktop LanguageSwitcher renders its dropdown anchored
+   * downward + right-aligned. Inside the FAB popup that lands
+   * off-screen for any FAB corner. Remap the dropdown's anchor
+   * relative to the popup's data-corner so the list always opens
+   * INTO the popup area instead of beyond the viewport edge:
+   *
+   * - bottom-* corner → popup grows upward, dropdown opens upward
+   * - top-*    corner → popup grows downward, dropdown opens downward
+   * - *-right  corner → popup right-aligned, dropdown right-aligned
+   * - *-left   corner → popup left-aligned, dropdown left-aligned
+   */
+  .mobile-menu-wrapper[data-corner^='bottom-']
+    .popup-tools
+    :global(.lang-dropdown) {
+    top: auto;
+    bottom: calc(100% + var(--spacing-xs));
+    transform: translateY(4px);
+  }
+
+  .mobile-menu-wrapper[data-corner^='bottom-']
+    .popup-tools
+    :global(.lang-dropdown.open) {
+    transform: translateY(0);
+  }
+
+  .mobile-menu-wrapper[data-corner$='-left']
+    .popup-tools
+    :global(.lang-dropdown) {
+    right: auto;
+    left: 0;
   }
 </style>
