@@ -1,19 +1,30 @@
 ---
 import { getCollection } from 'astro:content';
-import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from '@/config/i18n';
+import { SUPPORTED_LANGUAGES } from '@/config/i18n';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 
-export const getStaticPaths = () => SUPPORTED_LANGUAGES.map((lang) => ({ params: { lang } }));
+/* Skip languages without a manifest page (no fallback hop). */
+export const getStaticPaths = async () => {
+  const findManifest = async (l: string) => {
+    const pages = await getCollection('pages', ({ data }) => data.lang === l);
+    return pages.find((p) => p.id.startsWith('manifest/'));
+  };
+  const filled = await Promise.all(
+    SUPPORTED_LANGUAGES.map(async (lang) => ({
+      lang,
+      has: (await findManifest(lang)) !== undefined,
+    })),
+  );
+  return filled.filter(({ has }) => has).map(({ lang }) => ({ params: { lang } }));
+};
 
 const { lang } = Astro.params;
 
-const manifestIn = async (l: string) => {
-  const pages = await getCollection('pages', ({ data }) => data.lang === l);
-  return pages.find((p) => p.id.startsWith('manifest/'));
-};
-const page = (await manifestIn(lang)) ?? (await manifestIn(DEFAULT_LANGUAGE));
+const pages = await getCollection('pages', ({ data }) => data.lang === lang);
+const page = pages.find((p) => p.id.startsWith('manifest/'));
 
-if (!page) return Astro.redirect(`/${DEFAULT_LANGUAGE}`);
+// Unreachable — getStaticPaths excludes empty langs.
+if (!page) throw new Error(`manifest page missing for ${lang}`);
 
 const { Content } = await page.render();
 ---
