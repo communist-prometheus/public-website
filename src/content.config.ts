@@ -10,7 +10,14 @@ const blogCollection = defineCollection({
       title: z.string(),
       description: z.string(),
       category: z.string(),
-      pubDate: z.date(),
+      /*
+       * `pubDate` is legacy; `publishDate` is the canonical publish
+       * timestamp set by the admin when the editor flips Published
+       * on. Both optional so an in-progress draft saves cleanly
+       * without forcing the editor to invent a date — public pages
+       * already tolerate missing dates via `?? new Date(0)` fallbacks.
+       */
+      pubDate: z.date().optional(),
       /*
        * Absent / non-true `published` means draft. The build does NOT
        * render drafts (see getBlogPosts). Editors must explicitly set
