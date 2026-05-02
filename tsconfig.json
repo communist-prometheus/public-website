@@ -17,5 +17,13 @@
     }
   },
   "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist", ".astro-cache", ".vite-cache", "node_modules", "src/sw"]
+  "exclude": [
+    "dist",
+    ".astro-cache",
+    ".vite-cache",
+    "node_modules",
+    "src/sw",
+    "src/**/*.test.ts",
+    "vitest.config.ts"
+  ]
 }
