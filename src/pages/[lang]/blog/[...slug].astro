@@ -4,6 +4,7 @@ import { type CollectionEntry, getCollection } from 'astro:content';
 import { DEFAULT_LANGUAGE, type Language, SUPPORTED_LANGUAGES } from '@/config/i18n';
 import BlogPicture from '@/features/blog/components/BlogPicture.astro';
 import { getArticleSlug } from '@/features/blog/helpers/getBlogPosts';
+import SuggestChangesLink from '@/features/content/components/SuggestChangesLink.astro';
 import { deriveDescription } from '@/features/content/helpers/deriveDescription';
 import MissingTranslation from '@/features/i18n/MissingTranslation.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
@@ -123,6 +124,7 @@ const newspaperRef = await (async () => {
         <div class="prose" itemprop="articleBody">
           <Content />
         </div>
+        <SuggestChangesLink collection="blog" entryId={post.id} />
       </div>
     </article>
   ) : (
