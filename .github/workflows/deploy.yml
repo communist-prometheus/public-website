@@ -49,9 +49,28 @@ jobs:
       # carries a smaller content set, so the same assertions don't
       # apply there. Skip E2E on develop deploys; master deploys still
       # gate on green E2E.
-      - name: Installing Playwright browsers
+      #
+      # Cache the Playwright browser bundle keyed by lockfile — without
+      # this, `playwright install --with-deps` re-downloads chromium
+      # + apt-installs system libs on every run, which can hang for
+      # 10+ minutes when the upstream mirrors are slow.
+      - name: Cache Playwright browsers
         if: ${{ github.ref_name == 'master' && !startsWith(github.event.head_commit.message, 'content:') }}
+        id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
+      - name: Installing Playwright browsers
+        if: ${{ github.ref_name == 'master' && !startsWith(github.event.head_commit.message, 'content:') && steps.pw-cache.outputs.cache-hit != 'true' }}
         run: bunx playwright install --with-deps chromium
+
+      - name: Installing Playwright system deps (cache hit)
+        if: ${{ github.ref_name == 'master' && !startsWith(github.event.head_commit.message, 'content:') && steps.pw-cache.outputs.cache-hit == 'true' }}
+        run: bunx playwright install-deps chromium
 
       - name: Running E2E tests (chromium, skip lighthouse/mobile)
         if: ${{ github.ref_name == 'master' && !startsWith(github.event.head_commit.message, 'content:') }}
