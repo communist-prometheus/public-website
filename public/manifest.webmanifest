@@ -1,0 +1,25 @@
+{
+  "name": "Communist Prometheus",
+  "short_name": "Comprom",
+  "description": "Communist Prometheus — a knowledge-sharing platform.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#ffffff",
+  "theme_color": "#cf3618",
+  "icons": [
+    {
+      "src": "/pwa-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
