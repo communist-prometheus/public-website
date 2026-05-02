@@ -28,19 +28,18 @@ const {
  * The card title now leads to the newspaper detail page (cover, TOC,
  * download). Direct PDF download stays as a side action so editors
  * who only want the file can still grab it from the listing. The
- * docx/fb2 links are only emitted when the editor actually attached
- * a docx — the newspaper-docx-fb2 build integration emits both
- * sibling files into dist when it finds one in src/content.
+ * FB2 link is only emitted when the editor uploaded a fb2 (either
+ * directly via Fb2Upload or via DocxUpload's client-side conversion)
+ * — newspaper-fb2 build integration copies it through to dist.
  */
 const detailPath = `/${lang}/newspaper/${slug}`;
 const pdfPath = `/newspaper/${slug}/assets/gazette.pdf`;
-const docxPath = `/newspaper/${slug}/assets/gazette.docx`;
 const fb2Path = `/newspaper/${slug}/assets/gazette.fb2`;
 
-const hasDocxSource = (() => {
+const hasFb2 = (() => {
   const dir = resolve(`src/content/newspaper/${slug}/assets`);
   if (!existsSync(dir)) return false;
-  return readdirSync(dir).some((f) => f.toLowerCase().endsWith('.docx'));
+  return readdirSync(dir).some((f) => f.toLowerCase().endsWith('.fb2'));
 })();
 ---
 
@@ -61,14 +60,9 @@ const hasDocxSource = (() => {
     <a href={pdfPath} download class="read-more">
       {downloadLabel} <span aria-hidden="true">↓</span>
     </a>
-    {hasDocxSource && (
+    {hasFb2 && (
       <a href={fb2Path} download class="read-more" data-testid="newspaper-fb2">
         FB2 <span aria-hidden="true">↓</span>
-      </a>
-    )}
-    {hasDocxSource && (
-      <a href={docxPath} download class="read-more" data-testid="newspaper-docx">
-        DOCX <span aria-hidden="true">↓</span>
       </a>
     )}
   </div>
