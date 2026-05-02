@@ -151,35 +151,40 @@ test.describe('Mobile menu controls', () => {
     await expectVisible(page, switcher);
   });
 
-  test('language dropdown stays inside the viewport when opened in mobile menu', async ({
-    page,
-  }) => {
-    /*
-     * The desktop dropdown opens downward; inside the FAB popup
-     * (anchored to the bottom-right corner by default) that puts
-     * the list off-screen. Mobile menu now flips the dropdown to
-     * open upward via [data-corner^=bottom-]. Asserts the dropdown
-     * box lands fully within the viewport rectangle.
-     */
-    await openMobileMenu(page);
-    const switcher = page.locator(
-      '[data-testid="mobile-menu-panel"] [data-testid="language-switcher"]',
-    );
-    await click(page, switcher.locator('.lang-trigger'));
-    const dropdown = switcher.locator('[data-testid="language-dropdown"]');
-    await expectVisible(page, dropdown);
-    const fitsViewport = await page.evaluate(() => {
-      const el = document.querySelector(
-        '[data-testid="mobile-menu-panel"] [data-testid="language-dropdown"]',
+  for (const corner of ['bottom-right', 'bottom-left', 'top-right', 'top-left'] as const) {
+    test(`language dropdown fits inside viewport when FAB is at ${corner}`, async ({ page }) => {
+      /*
+       * The FAB-corner persistence sits in localStorage. Pre-seed it
+       * before the page loads so the FAB lands in the requested
+       * corner and the popup anchors correspondingly. The dropdown
+       * is then opened and we assert its bounding box fits within
+       * the viewport rectangle. Drives every supported corner so a
+       * regression in pickPlacement fails loud.
+       */
+      await page.addInitScript((c: string) => {
+        localStorage.setItem('fab-corner', c);
+      }, corner);
+      await visit(page, BASE);
+      await openMobileMenu(page);
+      const switcher = page.locator(
+        '[data-testid="mobile-menu-panel"] [data-testid="language-switcher"]',
       );
-      if (!el) return false;
-      const r = el.getBoundingClientRect();
-      const vh = window.innerHeight;
-      const vw = window.innerWidth;
-      return r.top >= 0 && r.left >= 0 && r.bottom <= vh && r.right <= vw;
+      await click(page, switcher.locator('.lang-trigger'));
+      const dropdown = switcher.locator('[data-testid="language-dropdown"]');
+      await expectVisible(page, dropdown);
+      const fitsViewport = await page.evaluate(() => {
+        const el = document.querySelector(
+          '[data-testid="mobile-menu-panel"] [data-testid="language-dropdown"]',
+        );
+        if (!el) return false;
+        const r = el.getBoundingClientRect();
+        const vh = globalThis.innerHeight;
+        const vw = globalThis.innerWidth;
+        return r.top >= 0 && r.left >= 0 && r.bottom <= vh && r.right <= vw;
+      });
+      expect(fitsViewport).toBe(true);
     });
-    expect(fitsViewport).toBe(true);
-  });
+  }
 
   test('language switcher navigates to another language from mobile menu', async ({ page }) => {
     await openMobileMenu(page);
