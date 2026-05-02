@@ -151,13 +151,22 @@ test.describe('Mobile menu controls', () => {
     await expectVisible(page, switcher);
   });
 
-  test('language switcher opens dropdown in mobile menu', async ({ page }) => {
+  test('all language chips are visible in mobile menu (flat list, no dropdown)', async ({
+    page,
+  }) => {
+    /*
+     * The mobile FAB popup renders languages as a flat row of chips
+     * — no toggle, no overlay. The desktop header keeps the
+     * dropdown variant. This test guards against regressions where
+     * the dropdown variant slips back into the popup and chips
+     * fall off-screen.
+     */
     await openMobileMenu(page);
     const switcher = page.locator(
       '[data-testid="mobile-menu-panel"] [data-testid="language-switcher"]',
     );
-    await click(page, switcher.locator('.lang-trigger'));
-    await expectVisible(page, switcher.locator('[data-testid="language-dropdown"]'));
+    await expectVisible(page, switcher.locator('[data-testid="lang-option-en"]'));
+    await expectVisible(page, switcher.locator('[data-testid="lang-option-ru"]'));
   });
 
   test('language switcher navigates to another language from mobile menu', async ({ page }) => {
@@ -165,7 +174,6 @@ test.describe('Mobile menu controls', () => {
     const switcher = page.locator(
       '[data-testid="mobile-menu-panel"] [data-testid="language-switcher"]',
     );
-    await click(page, switcher.locator('.lang-trigger'));
     const ruOption = switcher.locator('[data-testid="lang-option-ru"]');
     await expectVisible(page, ruOption);
     await click(page, ruOption);
