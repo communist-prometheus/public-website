@@ -1,0 +1,174 @@
+---
+/*
+ * Reusable, accessible dropdown that picks its open direction at
+ * runtime so the panel always lands inside the viewport.
+ *
+ * Usage:
+ *   <SmartDropdown ariaLabel="Select language" testid="…">
+ *     <button slot="trigger" class="my-trigger">…</button>
+ *     <div slot="dropdown" role="listbox" class="my-dropdown">…</div>
+ *   </SmartDropdown>
+ *
+ * Contract for slotted children:
+ * - The trigger MUST be a single focusable element (button/anchor)
+ *   carrying `aria-haspopup` and the initial `aria-expanded="false"`.
+ * - The dropdown MUST carry the appropriate role (listbox/menu) and
+ *   should not include its own positioning style — this component
+ *   sets `position: absolute` + top/bottom/left/right at open time.
+ *
+ * Behavior:
+ * - First click on trigger → measure trigger + dropdown, compute
+ *   placement via `pickPlacement`, anchor accordingly, animate in.
+ * - Click outside, ESC, or click the trigger again → close.
+ * - The component does not steal focus or trap it; downstream
+ *   listbox keyboard logic stays in the caller.
+ */
+
+interface Props {
+  readonly ariaLabel: string;
+  readonly testid?: string | undefined;
+}
+
+const { ariaLabel, testid } = Astro.props;
+---
+
+<div
+  class="smart-dropdown"
+  data-smart-dropdown
+  data-testid={testid}
+  aria-label={ariaLabel}
+>
+  <slot name="trigger" />
+  <div class="smart-dropdown-panel" data-smart-dropdown-panel>
+    <slot name="dropdown" />
+  </div>
+</div>
+
+<script>
+  import {
+    pickPlacement,
+    PLACEMENT_GAP,
+  } from '@/features/ui/SmartDropdown/pick-placement';
+
+  const setupSmartDropdown = (root: HTMLElement) => {
+    if (root.dataset['ddInit'] === 'true') return;
+    root.dataset['ddInit'] = 'true';
+
+    const trigger = root.querySelector<HTMLElement>(
+      ':scope > button, :scope > a',
+    );
+    const panel = root.querySelector<HTMLElement>(
+      '[data-smart-dropdown-panel]',
+    );
+    if (!trigger || !panel) return;
+
+    const close = () => {
+      root.classList.remove('open');
+      trigger.setAttribute('aria-expanded', 'false');
+    };
+
+    const apply = () => {
+      const tRect = trigger.getBoundingClientRect();
+      const pRect = panel.getBoundingClientRect();
+      const v = { width: globalThis.innerWidth, height: globalThis.innerHeight };
+      const placement = pickPlacement(tRect, pRect, v);
+      panel.style.top = placement.vertical === 'down'
+        ? `${tRect.height + PLACEMENT_GAP}px`
+        : 'auto';
+      panel.style.bottom = placement.vertical === 'up'
+        ? `${tRect.height + PLACEMENT_GAP}px`
+        : 'auto';
+      panel.style.left = placement.horizontal === 'left' ? '0' : 'auto';
+      panel.style.right = placement.horizontal === 'right' ? '0' : 'auto';
+      root.dataset['placement'] =
+        `${placement.vertical}-${placement.horizontal}`;
+    };
+
+    const open = () => {
+      // Render the panel hidden first so getBoundingClientRect()
+      // returns the intrinsic size; only THEN we anchor it.
+      root.classList.add('measuring');
+      apply();
+      root.classList.remove('measuring');
+      root.classList.add('open');
+      trigger.setAttribute('aria-expanded', 'true');
+    };
+
+    const toggle = () => {
+      if (root.classList.contains('open')) close();
+      else open();
+    };
+
+    trigger.addEventListener('click', toggle);
+
+    document.addEventListener('click', (e: MouseEvent) => {
+      if (!(e.target instanceof Node) || !root.contains(e.target)) close();
+    });
+
+    document.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && root.classList.contains('open')) {
+        close();
+        trigger.focus();
+      }
+    });
+
+    globalThis.addEventListener('resize', () => {
+      if (root.classList.contains('open')) apply();
+    });
+  };
+
+  const setupAll = () => {
+    document
+      .querySelectorAll<HTMLElement>('[data-smart-dropdown]')
+      .forEach(setupSmartDropdown);
+  };
+
+  setupAll();
+  document.addEventListener('astro:after-swap', setupAll);
+</script>
+
+<style>
+  .smart-dropdown {
+    position: relative;
+    display: inline-block;
+  }
+
+  .smart-dropdown-panel {
+    /*
+     * Pre-staged hidden; the script flips visibility once it has
+     * computed the right anchoring corner. While `measuring` we
+     * render off-screen but laid out so getBoundingClientRect()
+     * returns the intrinsic size.
+     */
+    position: absolute;
+    z-index: 300;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-4px);
+    transition: opacity var(--transition-fast),
+      visibility var(--transition-fast),
+      transform var(--transition-fast);
+  }
+
+  .smart-dropdown.measuring .smart-dropdown-panel {
+    /* Visible to layout but invisible to the user during measurement. */
+    visibility: hidden;
+    opacity: 0;
+  }
+
+  .smart-dropdown.open .smart-dropdown-panel {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .smart-dropdown[data-placement^='up-'] .smart-dropdown-panel {
+    transform: translateY(4px);
+  }
+
+  .smart-dropdown.open[data-placement^='up-'] .smart-dropdown-panel {
+    transform: translateY(0);
+  }
+</style>
