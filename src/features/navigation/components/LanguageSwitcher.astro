@@ -1,6 +1,7 @@
 ---
 import type { Language } from '@/config/i18n';
 import { LANGUAGE_LABELS, SUPPORTED_LANGUAGES } from '@/config/i18n';
+import SmartDropdown from '@/features/ui/SmartDropdown/SmartDropdown.astro';
 
 interface Props {
   lang: Language;
@@ -16,8 +17,9 @@ const rest = Astro.url.pathname.replace(/^\/[a-z]{2}(?=\/|$)/, '');
 const hrefFor = (code: string) => (rest === '' ? `/${code}` : `/${code}${rest}`);
 ---
 
-<div class="lang-switcher" data-testid="language-switcher">
+<SmartDropdown ariaLabel="Select language" testid="language-switcher">
   <button
+    slot="trigger"
     class="lang-trigger"
     type="button"
     aria-expanded="false"
@@ -25,11 +27,23 @@ const hrefFor = (code: string) => (rest === '' ? `/${code}` : `/${code}${rest}`)
     aria-label="Select language"
   >
     <span class="lang-current">{lang.toUpperCase()}</span>
-    <svg class="lang-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <svg
+      class="lang-chevron"
+      width="12"
+      height="12"
+      viewBox="0 0 12 12"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
       <polyline points="3 5 6 8 9 5"></polyline>
     </svg>
   </button>
   <ul
+    slot="dropdown"
     class="lang-dropdown"
     role="listbox"
     aria-label="Available languages"
@@ -48,98 +62,46 @@ const hrefFor = (code: string) => (rest === '' ? `/${code}` : `/${code}${rest}`)
       </li>
     ))}
   </ul>
-</div>
+</SmartDropdown>
 
 <script>
-  const initSwitcher = (switcher: HTMLElement) => {
-    const trigger = switcher.querySelector<HTMLButtonElement>('.lang-trigger');
-    const dropdown = switcher.querySelector<HTMLElement>('.lang-dropdown');
-    const currentLabel = switcher.querySelector<HTMLElement>('.lang-current');
+  /*
+   * SmartDropdown handles open/close/positioning. This script keeps
+   * the in-place "current language" label + per-page hrefs in sync
+   * across SPA navigations.
+   */
+  const updateAllSwitchers = () => {
+    document
+      .querySelectorAll<HTMLElement>('[data-testid="language-switcher"]')
+      .forEach(updateSwitcher);
+  };
 
-    if (!trigger || !dropdown || !currentLabel) return;
+  const updateSwitcher = (switcher: HTMLElement) => {
+    const path = globalThis.location.pathname;
+    const langMatch = path.match(/^\/([a-z]{2})/);
+    const activeLang = langMatch?.[1] ?? 'en';
+    const rest = path.replace(/^\/[a-z]{2}(?=\/|$)/, '');
 
-    if (switcher.dataset['switcherInit'] === 'true') {
-      updateCurrentLang();
-      return;
-    }
-    switcher.dataset['switcherInit'] = 'true';
+    const label = switcher.querySelector<HTMLElement>('.lang-current');
+    if (label) label.textContent = activeLang.toUpperCase();
 
-    const open = () => {
-      trigger.setAttribute('aria-expanded', 'true');
-      dropdown.classList.add('open');
-    };
-
-    const close = () => {
-      trigger.setAttribute('aria-expanded', 'false');
-      dropdown.classList.remove('open');
-    };
-
-    const toggle = () => {
-      const isOpen = trigger.getAttribute('aria-expanded') === 'true';
-      if (isOpen) close();
-      else open();
-    };
-
-    trigger.addEventListener('click', toggle);
-
-    document.addEventListener('click', (e: MouseEvent) => {
-      if (!switcher.contains(e.target instanceof Node ? e.target : null)) {
-        close();
-      }
-    });
-
-    document.addEventListener('keydown', (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && trigger.getAttribute('aria-expanded') === 'true') {
-        close();
-        trigger.focus();
-      }
-    });
-
-    // The anchor href is server-rendered with the correct per-page
-    // path, so native navigation handles every flavour of click
-    // (left / middle / Ctrl / keyboard). We do NOT attach a click
-    // listener here: calling `close()` flips `visibility: hidden`
-    // on the dropdown mid-click, which can abort the left-click's
-    // default navigation on some browsers. The dropdown naturally
-    // disappears once the whole document swaps under us.
-
-    updateCurrentLang();
-
-    function updateCurrentLang() {
-      const path = globalThis.location.pathname;
-      const langMatch = path.match(/^\/([a-z]{2})/);
-      const activeLang = langMatch?.[1] ?? 'en';
-
-      // Rest of the path after the lang prefix. Keep the trailing
-      // slash that Astro uses so the anchor href matches the
-      // canonical static URL exactly (no extra 307 hop).
-      const rest = path.replace(/^\/[a-z]{2}(?=\/|$)/, '');
-
-      const label = switcher.querySelector<HTMLElement>('.lang-current');
-      if (label) label.textContent = activeLang.toUpperCase();
-
-      switcher.querySelectorAll<HTMLAnchorElement>('.lang-option').forEach((option) => {
-        const optionLang = option.dataset['lang'];
-        if (optionLang) option.href = rest === '' ? `/${optionLang}` : `/${optionLang}${rest}`;
-        option.classList.toggle('active', optionLang === activeLang);
-        option.closest('li')?.setAttribute('aria-selected', String(optionLang === activeLang));
+    switcher
+      .querySelectorAll<HTMLAnchorElement>('.lang-option')
+      .forEach((option) => {
+        const code = option.dataset['lang'];
+        if (code) option.href = rest === '' ? `/${code}` : `/${code}${rest}`;
+        option.classList.toggle('active', code === activeLang);
+        option
+          .closest('li')
+          ?.setAttribute('aria-selected', String(code === activeLang));
       });
-    }
   };
 
-  const setupAllSwitchers = () => {
-    document.querySelectorAll<HTMLElement>('[data-testid="language-switcher"]').forEach(initSwitcher);
-  };
-
-  setupAllSwitchers();
-  document.addEventListener('astro:after-swap', setupAllSwitchers);
+  updateAllSwitchers();
+  document.addEventListener('astro:after-swap', updateAllSwitchers);
 </script>
 
 <style>
-  .lang-switcher {
-    position: relative;
-  }
-
   .lang-trigger {
     display: inline-flex;
     align-items: center;
@@ -153,7 +115,9 @@ const hrefFor = (code: string) => (rest === '' ? `/${code}` : `/${code}${rest}`)
     font-size: 0.875rem;
     font-weight: 500;
     cursor: pointer;
-    transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+    transition: background-color var(--transition-fast),
+      color var(--transition-fast),
+      border-color var(--transition-fast);
   }
 
   .lang-trigger:hover,
@@ -173,9 +137,6 @@ const hrefFor = (code: string) => (rest === '' ? `/${code}` : `/${code}${rest}`)
   }
 
   .lang-dropdown {
-    position: absolute;
-    top: calc(100% + var(--spacing-xs));
-    right: 0;
     min-width: 140px;
     padding: var(--spacing-xs);
     margin: 0;
@@ -184,17 +145,6 @@ const hrefFor = (code: string) => (rest === '' ? `/${code}` : `/${code}${rest}`)
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
     box-shadow: var(--shadow-md);
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-4px);
-    transition: opacity var(--transition-fast), visibility var(--transition-fast), transform var(--transition-fast);
-    z-index: 300;
-  }
-
-  .lang-dropdown.open {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
   }
 
   .lang-option {
@@ -206,7 +156,8 @@ const hrefFor = (code: string) => (rest === '' ? `/${code}` : `/${code}${rest}`)
     text-decoration: none;
     border-radius: var(--radius-sm);
     font-size: 0.875rem;
-    transition: background-color var(--transition-fast), color var(--transition-fast);
+    transition: background-color var(--transition-fast),
+      color var(--transition-fast);
   }
 
   .lang-option:hover,
