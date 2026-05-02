@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import { SUPPORTED_LANGUAGES } from '@/config/i18n';
+import SuggestChangesLink from '@/features/content/components/SuggestChangesLink.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 
 /* Skip languages without a manifest page (no fallback hop). */
@@ -38,6 +39,7 @@ const { Content } = await page.render();
       <div class="prose">
         <Content />
       </div>
+      <SuggestChangesLink collection="pages" entryId={page.id} />
     </div>
   </article>
 </BaseLayout>

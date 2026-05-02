@@ -1,0 +1,92 @@
+---
+/*
+ * "Suggest changes" affordance on every article-like page.
+ *
+ * Clicking the link opens GitHub's web editor at the file's source
+ * path. If the visitor doesn't have write access (the common case
+ * for content contributors), GitHub auto-forks the content repo
+ * into their account and lands them on the editor in their fork.
+ * Saving the edit opens a PR back to the upstream master branch.
+ *
+ * Pre-req on the content repo: PRs from forks must be enabled
+ * (the default for public repos). The token-bearing admin keeps
+ * direct push access; this flow is for outside contributors.
+ */
+
+interface Props {
+  /**
+   * Collection directory inside the content repo
+   * (e.g. `blog`, `positions`, `newspaper`, `pages`).
+   */
+  readonly collection: string;
+  /**
+   * Path inside the collection directory — usually the Astro
+   * content entry id, e.g. `about-the-manifesto/index.ru.md`.
+   */
+  readonly entryId: string;
+  /**
+   * Visible label. Defaults to the English string; pass a
+   * translated label when the surrounding page has one available.
+   */
+  readonly label?: string;
+}
+
+const { collection, entryId, label = 'Suggest changes' } = Astro.props;
+
+const REPO = 'communist-prometheus/public-website-content';
+const BRANCH = 'master';
+
+const editUrl = `https://github.com/${REPO}/edit/${BRANCH}/${collection}/${entryId}`;
+---
+
+<p class="suggest-changes">
+  <a
+    href={editUrl}
+    target="_blank"
+    rel="noopener noreferrer"
+    class="suggest-changes-link"
+    data-testid="suggest-changes"
+  >
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="currentColor"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path
+        d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25c.082-.286.235-.547.445-.758l8.61-8.61Zm.176 4.823L9.75 4.81l-6.286 6.287a.253.253 0 0 0-.064.108l-.558 1.953 1.953-.558a.253.253 0 0 0 .108-.064Zm1.238-3.763a.25.25 0 0 0-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 0 0 0-.354Z"
+      />
+    </svg>
+    {label}
+    <span aria-hidden="true">↗</span>
+  </a>
+</p>
+
+<style>
+  .suggest-changes {
+    margin-top: var(--spacing-xl);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--color-border);
+    text-align: center;
+  }
+
+  .suggest-changes-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    font-size: 0.875rem;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    transition: color var(--transition-fast), background-color var(--transition-fast);
+  }
+
+  .suggest-changes-link:hover,
+  .suggest-changes-link:focus-visible {
+    color: var(--color-accent);
+    background: var(--color-surface);
+  }
+</style>
