@@ -69,15 +69,19 @@ export const getNavLinks = async (
 ): Promise<ReadonlyArray<{ readonly href: string; readonly label: string }>> => {
   const menu = await getMenuData(lang);
   if (!menu) return [];
+  const { getSectionAvailability } = await import('./section-availability');
+  const has = await getSectionAvailability(lang);
   const candidates = [
-    { href: `/${lang}`, label: menu.data.home },
-    { href: `/${lang}/blog`, label: menu.data.blog },
-    { href: `/${lang}/positions`, label: menu.data.positions },
-    { href: `/${lang}/manifest`, label: menu.data.manifest },
-    { href: `/${lang}/newspaper`, label: menu.data.newspaper },
-    { href: `/${lang}/about`, label: menu.data.about },
+    { key: 'home', href: `/${lang}`, label: menu.data.home },
+    { key: 'blog', href: `/${lang}/blog`, label: menu.data.blog },
+    { key: 'positions', href: `/${lang}/positions`, label: menu.data.positions },
+    { key: 'manifest', href: `/${lang}/manifest`, label: menu.data.manifest },
+    { key: 'newspaper', href: `/${lang}/newspaper`, label: menu.data.newspaper },
+    { key: 'about', href: `/${lang}/about`, label: menu.data.about },
   ] as const;
   return candidates.flatMap((c) =>
-    typeof c.label === 'string' && c.label.length > 0 ? [{ href: c.href, label: c.label }] : [],
+    typeof c.label === 'string' && c.label.length > 0 && has[c.key] === true
+      ? [{ href: c.href, label: c.label }]
+      : [],
   );
 };
