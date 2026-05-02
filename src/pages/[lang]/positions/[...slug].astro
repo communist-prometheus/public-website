@@ -57,25 +57,30 @@ const pageDescription = entry ? deriveDescription(entry.data.description, entry.
   {...(pageDescription ? { description: pageDescription } : {})}
   lang={lang}
 >
-  <div class="section">
-    <div class="container">
-      <a href={`/${lang}/positions`} class="back-link">{backLabel}</a>
-      {entry && Content ? (
-        <article>
+  {entry && Content ? (
+    <article class="section">
+      <div class="container">
+        <a href={`/${lang}/positions`} class="back-link">{backLabel}</a>
+        <header>
           <h1>{entry.data.title}</h1>
-          <div class="content">
-            <Content />
-          </div>
-        </article>
-      ) : (
+        </header>
+        <div class="content">
+          <Content />
+        </div>
+      </div>
+    </article>
+  ) : (
+    <div class="section">
+      <div class="container">
+        <a href={`/${lang}/positions`} class="back-link">{backLabel}</a>
         <MissingTranslation
           lang={lang}
           availableLangs={availableLangs}
           relativePath={`/positions/${slug}`}
         />
-      )}
+      </div>
     </div>
-  </div>
+  )}
 </BaseLayout>
 
 <style>

@@ -20,6 +20,7 @@
     "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
+    "@astrojs/rss": "^4.0.18",
     "astro": "^5.17.1"
   },
   "packageManager": "bun@latest",
