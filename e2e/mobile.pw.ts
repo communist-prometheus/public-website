@@ -151,22 +151,34 @@ test.describe('Mobile menu controls', () => {
     await expectVisible(page, switcher);
   });
 
-  test('all language chips are visible in mobile menu (flat list, no dropdown)', async ({
+  test('language dropdown stays inside the viewport when opened in mobile menu', async ({
     page,
   }) => {
     /*
-     * The mobile FAB popup renders languages as a flat row of chips
-     * — no toggle, no overlay. The desktop header keeps the
-     * dropdown variant. This test guards against regressions where
-     * the dropdown variant slips back into the popup and chips
-     * fall off-screen.
+     * The desktop dropdown opens downward; inside the FAB popup
+     * (anchored to the bottom-right corner by default) that puts
+     * the list off-screen. Mobile menu now flips the dropdown to
+     * open upward via [data-corner^=bottom-]. Asserts the dropdown
+     * box lands fully within the viewport rectangle.
      */
     await openMobileMenu(page);
     const switcher = page.locator(
       '[data-testid="mobile-menu-panel"] [data-testid="language-switcher"]',
     );
-    await expectVisible(page, switcher.locator('[data-testid="lang-option-en"]'));
-    await expectVisible(page, switcher.locator('[data-testid="lang-option-ru"]'));
+    await click(page, switcher.locator('.lang-trigger'));
+    const dropdown = switcher.locator('[data-testid="language-dropdown"]');
+    await expectVisible(page, dropdown);
+    const fitsViewport = await page.evaluate(() => {
+      const el = document.querySelector(
+        '[data-testid="mobile-menu-panel"] [data-testid="language-dropdown"]',
+      );
+      if (!el) return false;
+      const r = el.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const vw = window.innerWidth;
+      return r.top >= 0 && r.left >= 0 && r.bottom <= vh && r.right <= vw;
+    });
+    expect(fitsViewport).toBe(true);
   });
 
   test('language switcher navigates to another language from mobile menu', async ({ page }) => {
@@ -174,6 +186,7 @@ test.describe('Mobile menu controls', () => {
     const switcher = page.locator(
       '[data-testid="mobile-menu-panel"] [data-testid="language-switcher"]',
     );
+    await click(page, switcher.locator('.lang-trigger'));
     const ruOption = switcher.locator('[data-testid="lang-option-ru"]');
     await expectVisible(page, ruOption);
     await click(page, ruOption);
