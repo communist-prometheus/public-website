@@ -8,7 +8,14 @@ const blogCollection = defineCollection({
   schema: ({ image }) =>
     z.object({
       title: z.string(),
-      description: z.string(),
+      /*
+       * Description is optional now: editors stopped filling it in
+       * the admin (the field was retired). Listings derive their
+       * card preview from the body's first paragraph; the article
+       * page renders description as a lead block when an old entry
+       * still carries one.
+       */
+      description: z.string().optional(),
       category: z.string(),
       /*
        * `pubDate` is legacy; `publishDate` is the canonical publish
@@ -55,7 +62,8 @@ const positionsCollection = defineCollection({
   type: 'content',
   schema: z.object({
     title: z.string(),
-    description: z.string(),
+    /* Optional: see blogCollection. Listings derive a body preview. */
+    description: z.string().optional(),
     pubDate: z.date().optional(),
     /* See blog: absent / non-true is draft. */
     published: z.boolean().optional(),
@@ -88,7 +96,8 @@ const newspaperCollection = defineCollection({
   schema: ({ image }) =>
     z.object({
       title: z.string(),
-      description: z.string(),
+      /* Optional: see blogCollection. */
+      description: z.string().optional(),
       pubDate: z.date().optional(),
       // See blog: absent / non-true is draft.
       published: z.boolean().optional(),

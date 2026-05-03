@@ -121,6 +121,9 @@ const newspaperRef = await (async () => {
             <BlogPicture image={post.data.image} alt={post.data.title} preset="featured" loading="eager" />
           </div>
         )}
+        {post.data.description && post.data.description.trim() !== '' && (
+          <p class="lead" itemprop="abstract">{post.data.description}</p>
+        )}
         <div class="prose" itemprop="articleBody">
           <Content />
         </div>
@@ -219,6 +222,22 @@ const newspaperRef = await (async () => {
     width: 100%;
     height: auto;
     border-radius: var(--radius-lg);
+  }
+
+  /*
+   * Description-as-preface: a slightly larger, secondary-colour
+   * lead paragraph above the article body. The surrounding article
+   * `.prose` keeps regular paragraph styling, but the lead block is
+   * visually distinct so readers spot the editor-written summary.
+   */
+  .lead {
+    max-width: 800px;
+    margin: 0 auto var(--spacing-lg);
+    color: var(--color-text-secondary);
+    font-size: 1.125rem;
+    line-height: 1.65;
+    border-left: 3px solid var(--color-accent);
+    padding-left: var(--spacing-md);
   }
 
   .prose {
