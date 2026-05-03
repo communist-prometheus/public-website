@@ -8,7 +8,7 @@ import {
   getBlogPosts,
   getUniqueCategories,
 } from '@/features/blog/helpers/getBlogPosts';
-import { deriveDescription } from '@/features/content/helpers/deriveDescription';
+import { deriveSummary } from '@/features/content/helpers/deriveSummary';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 
 /*
@@ -57,7 +57,7 @@ const readMore = labels?.data.readMore ?? 'Read more';
               <div data-category={post.data.category}>
                 <PostCard
                   title={post.data.title}
-                  description={deriveDescription(post.data.description, post.body) ?? ''}
+                  description={deriveSummary(post.body) ?? ''}
                   category={post.data.category}
                   slug={getArticleSlug(post)}
                   image={post.data.image}
