@@ -4,6 +4,7 @@ import CpButton from '@/components/cp/CpButton.astro';
 import type { Language } from '@/config/i18n';
 import PostCard from '@/features/blog/components/PostCard.astro';
 import { getArticleSlug } from '@/features/blog/helpers/getBlogPosts';
+import { deriveSummary } from '@/features/content/helpers/deriveSummary';
 
 interface Props {
   posts: CollectionEntry<'blog'>[];
@@ -29,7 +30,7 @@ const { posts, lang, latestNewsLabel, viewAllLabel } = Astro.props;
           {posts.map((post) => (
             <PostCard
               title={post.data.title}
-              description={post.data.description}
+              description={deriveSummary(post.body) ?? ''}
               category={post.data.category}
               slug={getArticleSlug(post)}
               image={post.data.image}
