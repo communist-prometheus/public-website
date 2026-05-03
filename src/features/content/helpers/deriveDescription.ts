@@ -21,27 +21,31 @@
  *   5. ![alt](url)  — drop entirely
  *   6. [text](url)  — keep the visible text only
  */
-const STRIP_PATTERNS: ReadonlyArray<RegExp> = [
+/* Patterns that drop the match entirely (no capture group). */
+const DROP_PATTERNS: ReadonlyArray<RegExp> = [
   /^---[\s\S]*?\n---\s*/,
   /^#{1,6}\s+.*$/gm,
   /^>\s*/gm,
   /^\s*[-*+]\s+/gm,
   /^\s*\d+\.\s+/gm,
   /<\/?[a-z][^>]*>/gi,
+  /!\[[^\]]*\]\([^)]*\)/g,
+];
+
+/* Patterns that keep the visible text inside the capture group. */
+const KEEP_PATTERNS: ReadonlyArray<RegExp> = [
   /\*\*([^*]+)\*\*/g,
   /__([^_]+)__/g,
   /\*([^*]+)\*/g,
   /_([^_]+)_/g,
   /`([^`]+)`/g,
-  /!\[[^\]]*\]\([^)]*\)/g,
   /\[([^\]]+)\]\([^)]*\)/g,
 ];
 
 const stripMarkdown = (raw: string): string => {
   let out = raw;
-  for (const re of STRIP_PATTERNS) {
-    out = out.replace(re, (_, captured?: string) => captured ?? '');
-  }
+  for (const re of DROP_PATTERNS) out = out.replace(re, '');
+  for (const re of KEEP_PATTERNS) out = out.replace(re, (_, captured: string) => captured);
   return out;
 };
 

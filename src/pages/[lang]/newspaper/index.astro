@@ -1,6 +1,7 @@
 ---
 import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from '@/config/i18n';
 import { getLabelsData } from '@/config/translations';
+import { deriveSummary } from '@/features/content/helpers/deriveSummary';
 import NewspaperCard from '@/features/newspaper/components/NewspaperCard.astro';
 import { getNewspaperItems } from '@/features/newspaper/helpers/getNewspaperItems';
 import BaseLayout from '@/layouts/BaseLayout.astro';
@@ -36,7 +37,7 @@ const readMore = labels?.data.readMore ?? 'Download PDF';
           {items.map((item) => (
             <NewspaperCard
               title={item.data.title}
-              description={item.data.description}
+              description={deriveSummary(item.body) ?? item.data.description ?? ''}
               slug={item.id.split('/').at(0) ?? item.id}
               lang={lang}
               image={item.data.image ?? undefined}
