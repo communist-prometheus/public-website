@@ -2,8 +2,10 @@
 import { Picture } from 'astro:assets';
 import { type CollectionEntry, getCollection } from 'astro:content';
 import { DEFAULT_LANGUAGE, type Language, SUPPORTED_LANGUAGES } from '@/config/i18n';
+import { getLabelsData } from '@/config/translations';
 import BlogPicture from '@/features/blog/components/BlogPicture.astro';
 import { getArticleSlug } from '@/features/blog/helpers/getBlogPosts';
+import ArticleToc from '@/features/content/components/ArticleToc.astro';
 import SuggestChangesLink from '@/features/content/components/SuggestChangesLink.astro';
 import { deriveDescription } from '@/features/content/helpers/deriveDescription';
 import MissingTranslation from '@/features/i18n/MissingTranslation.astro';
@@ -46,7 +48,11 @@ interface Props {
 
 const { post, availableLangs } = Astro.props as Props;
 const { lang, slug } = Astro.params;
-const Content = post ? (await post.render()).Content : undefined;
+const rendered = post ? await post.render() : undefined;
+const Content = rendered?.Content;
+const headings = rendered?.headings ?? [];
+const labels = (await getLabelsData(lang)) ?? (await getLabelsData(DEFAULT_LANGUAGE));
+const tocLabel = labels?.data.tableOfContents ?? 'Contents';
 
 const pageTitle = post ? `${post.data.title} - Communist Prometheus` : 'Communist Prometheus';
 /*
@@ -85,6 +91,7 @@ const newspaperRef = await (async () => {
     <article class="section" itemscope itemtype="https://schema.org/Article">
       <meta itemprop="headline" content={post.data.title} />
       {pageDescription && <meta itemprop="description" content={pageDescription} />}
+      <ArticleToc headings={headings} label={tocLabel} />
       <div class="container">
         <header class="post-header">
           <span class="category">{post.data.category}</span>
