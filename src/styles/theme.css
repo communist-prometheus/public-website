@@ -129,7 +129,16 @@ html {
   color: var(--color-text-primary);
   background: var(--color-background);
   scrollbar-gutter: stable;
-  overflow-x: hidden;
+  /*
+   * `overflow-x: clip` instead of `hidden` keeps the page free of
+   * horizontal scroll (some article media pushes the natural width
+   * past the viewport on narrow screens) without making <html> its
+   * own scroll container. `hidden` quietly forces `overflow-y: auto`
+   * on the same element — that broke `position: sticky` for the
+   * header because body became the sticky scope but actual scroll
+   * still happens on html.
+   */
+  overflow-x: clip;
   /*
    * Mobile Safari / Android Chrome paint a translucent grey square
    * over every tappable element on tap. Override globally to
@@ -142,7 +151,8 @@ html {
 body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  /* See html — clip avoids the implicit `overflow-y: auto`. */
+  overflow-x: clip;
 }
 
 img,

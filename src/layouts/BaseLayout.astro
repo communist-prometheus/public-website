@@ -3,6 +3,7 @@ import { ClientRouter } from 'astro:transitions';
 import type { Language } from '@/config/i18n';
 import Footer from '@/features/navigation/components/Footer.astro';
 import Header from '@/features/navigation/components/Header.astro';
+import MobileMenu from '@/features/navigation/components/MobileMenu.astro';
 import '@/styles/theme.css';
 import '@/styles/utilities.css';
 
@@ -98,6 +99,14 @@ const absoluteImage = shareImage.startsWith('http') ? shareImage : `${SITE_URL}$
       <slot />
     </main>
     <Footer lang={lang} />
+    {/*
+      MobileMenu sits as a body-level sibling of <header> so the
+      header's scroll-reveal transform never makes it the containing
+      block for the menu's fixed FAB / panel / overlay. On desktop
+      the wrapper hides itself (>=768px), so this only paints on
+      mobile.
+    */}
+    <MobileMenu lang={lang} />
     <script is:inline>
       if ('serviceWorker' in navigator && location.hostname !== 'localhost') {
         navigator.serviceWorker.register('/sw.js');
