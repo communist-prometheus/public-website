@@ -59,6 +59,64 @@ test.describe('Article TOC — desktop rail', () => {
     await click(page, firstLink);
     expect(new URL(page.url()).hash).toBe(href);
   });
+
+  test('scroll-spy highlights the link for the current section', async ({ page }) => {
+    await visit(page, ARTICLE);
+    /*
+     * At the very top no heading has been passed yet — nothing
+     * highlighted.
+     */
+    const initial = await page.locator(`${TOC} .article-toc-link--active`).count();
+    expect(initial).toBe(0);
+
+    /*
+     * Scroll until the highlight settles, then capture which slug
+     * won. We don't assert a specific heading text — different
+     * articles have different headings; what matters is that the
+     * active link's href matches a heading whose y is now above the
+     * trigger line.
+     */
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve) => {
+          window.scrollTo(0, 1500);
+          const start = performance.now();
+          const tick = (): void => {
+            const active = document.querySelector(
+              '[data-testid="article-toc"] .article-toc-link--active',
+            );
+            if (active || performance.now() - start > 1500) {
+              resolve();
+              return;
+            }
+            requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        }),
+    );
+    const active = page.locator(`${TOC} .article-toc-link--active`);
+    await expect(active).toHaveCount(1);
+    const href = await active.getAttribute('href');
+    expect(href).toMatch(/^#.+/);
+    await expect(active).toHaveAttribute('aria-current', 'location');
+
+    /*
+     * Verify the highlighted heading is actually one the reader has
+     * passed (its y is above the trigger line near the top of
+     * viewport).
+     */
+    const passed = await page.evaluate((h) => {
+      const id = (h ?? '').slice(1);
+      const heading = document.getElementById(id);
+      if (!heading) return false;
+      const headerH =
+        parseFloat(
+          getComputedStyle(document.documentElement).getPropertyValue('--header-height') || '60',
+        ) || 60;
+      return heading.getBoundingClientRect().top <= headerH * 1.5;
+    }, href);
+    expect(passed).toBe(true);
+  });
 });
 
 test.describe('Article TOC — mobile slide-in', () => {

@@ -120,6 +120,91 @@ const visible = headings.filter((h) => h.depth >= 2 && h.depth <= 4);
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && root.classList.contains('is-open')) close();
     });
+
+    /*
+     * Scroll-spy: highlight the link whose heading the reader has
+     * just passed. We use a position-based pass instead of
+     * IntersectionObserver because the observer's `isIntersecting`
+     * doesn't help when the heading sits *above* the viewport — and
+     * "the section the reader is currently in" is exactly that case
+     * once they've scrolled past the heading.
+     *
+     * Bias by 1.5× the header height so the active marker switches
+     * a beat *before* the next heading reaches the very top, which
+     * matches reading rhythm (the eye is on the body text, not on
+     * the heading line itself).
+     */
+    const links = Array.from(
+      root.querySelectorAll<HTMLAnchorElement>('a.article-toc-link')
+    );
+    const linkBySlug = new Map<string, HTMLAnchorElement>();
+    const slugs: string[] = [];
+    for (const a of links) {
+      const id = decodeURIComponent(
+        (a.getAttribute('href') ?? '').replace(/^#/, '')
+      );
+      if (id) {
+        linkBySlug.set(id, a);
+        slugs.push(id);
+      }
+    }
+    const headings = slugs
+      .map((slug) => document.getElementById(slug))
+      .filter((el): el is HTMLElement => el !== null);
+
+    let activeSlug: string | undefined;
+    const setActive = (slug: string | undefined): void => {
+      if (slug === activeSlug) return;
+      if (activeSlug) {
+        linkBySlug
+          .get(activeSlug)
+          ?.classList.remove('article-toc-link--active');
+        linkBySlug.get(activeSlug)?.removeAttribute('aria-current');
+      }
+      if (slug) {
+        linkBySlug.get(slug)?.classList.add('article-toc-link--active');
+        linkBySlug.get(slug)?.setAttribute('aria-current', 'location');
+      }
+      activeSlug = slug;
+    };
+
+    let spyTicking = false;
+    const computeActive = (): void => {
+      spyTicking = false;
+      if (headings.length === 0) return;
+      const headerH =
+        parseFloat(
+          getComputedStyle(document.documentElement).getPropertyValue(
+            '--header-height'
+          ) || '60'
+        ) || 60;
+      const trigger = window.scrollY + headerH * 1.5;
+      let next: string | undefined;
+      for (const h of headings) {
+        const top = h.getBoundingClientRect().top + window.scrollY;
+        if (top <= trigger) next = h.id;
+        else break;
+      }
+      /*
+       * Near the very top of the page no heading has been passed
+       * yet — leave nothing highlighted. At the bottom of the page
+       * the last heading wins even if it never crossed the trigger.
+       */
+      const atBottom =
+        window.scrollY + window.innerHeight >=
+        document.documentElement.scrollHeight - 4;
+      if (atBottom && headings.length > 0) {
+        next = headings[headings.length - 1]?.id;
+      }
+      setActive(next);
+    };
+    const onSpyScroll = (): void => {
+      if (spyTicking) return;
+      spyTicking = true;
+      requestAnimationFrame(computeActive);
+    };
+    computeActive();
+    window.addEventListener('scroll', onSpyScroll, { passive: true });
   }
 </script>
 
@@ -237,6 +322,18 @@ const visible = headings.filter((h) => h.depth >= 2 && h.depth <= 4);
   .article-toc-link:focus-visible {
     background: var(--color-surface);
     color: var(--color-accent);
+  }
+
+  .article-toc-link--active {
+    color: var(--color-accent);
+    font-weight: 600;
+    border-left: 2px solid var(--color-accent);
+    margin-left: -0.5rem;
+    padding-left: calc(0.5rem - 2px);
+  }
+
+  .article-toc-link--active:hover {
+    background: transparent;
   }
 
   /*
