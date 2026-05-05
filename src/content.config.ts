@@ -88,6 +88,7 @@ const commonCollection = defineCollection({
     readMore: z.string().optional(),
     viewAll: z.string().optional(),
     backToList: z.string().optional(),
+    tableOfContents: z.string().optional(),
   }),
 });
 
