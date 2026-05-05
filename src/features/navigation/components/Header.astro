@@ -2,7 +2,6 @@
 import type { Language } from '@/config/i18n';
 import ThemeToggle from '@/features/theme/components/ThemeToggle.astro';
 import LanguageSwitcher from './LanguageSwitcher.astro';
-import MobileMenu from './MobileMenu.astro';
 import Nav from './Nav.astro';
 
 interface Props {
@@ -29,7 +28,6 @@ const { lang } = Astro.props;
         <div class="desktop-only">
           <ThemeToggle />
         </div>
-        <MobileMenu lang={lang} />
       </div>
     </div>
   </div>
@@ -37,35 +35,41 @@ const { lang } = Astro.props;
 
 <script is:inline>
   /*
-   * Sticky-with-reveal header — desktop only. On mobile the header
-   * contains the MobileMenu hamburger AND the panel/overlay, and a
-   * `transform` on `<header>` would make the header the containing
-   * block for those `position: fixed` panel elements (CSS spec).
-   * The panel + overlay then float over the article instead of the
-   * viewport — which is exactly what broke the mobile UX after the
-   * scroll-reveal first shipped. So gate the script to desktop.
+   * Sticky-with-reveal header — mirrors admin's AppHeader. Active on
+   * every viewport including mobile. Mobile is safe now because the
+   * MobileMenu lives outside <header> (rendered as a sibling in the
+   * BaseLayout) so its `position: fixed` panel + overlay no longer
+   * use the header as their containing block when the header
+   * transforms on scroll.
+   *
+   * The translateY offset is also published as `--header-offset` on
+   * <html> so any sibling component can react (e.g. a TOC pinned
+   * below the header line could subtract this offset to follow the
+   * reveal). Header height is published as `--header-height`.
    */
   (function () {
     var header = document.querySelector('[data-scroll-header]');
     if (!header) return;
-    var DESKTOP_QUERY = '(min-width: 768px)';
     var lastY = window.scrollY;
     var offset = 0;
     var ticking = false;
-    function isDesktop() {
-      return window.matchMedia(DESKTOP_QUERY).matches;
+
+    function publishHeight() {
+      var h = header.getBoundingClientRect().height || 60;
+      document.documentElement.style.setProperty(
+        '--header-height',
+        h + 'px'
+      );
     }
     function applyOffset(o) {
-      header.style.transform = isDesktop() ? 'translateY(' + o + 'px)' : '';
+      header.style.transform = 'translateY(' + o + 'px)';
+      document.documentElement.style.setProperty(
+        '--header-offset',
+        o + 'px'
+      );
     }
     function handleScroll() {
       ticking = false;
-      if (!isDesktop()) {
-        offset = 0;
-        applyOffset(0);
-        lastY = window.scrollY;
-        return;
-      }
       var height = header.getBoundingClientRect().height || 60;
       var y = window.scrollY;
       var dy = y - lastY;
@@ -77,26 +81,21 @@ const { lang } = Astro.props;
       }
       applyOffset(offset);
     }
+
+    publishHeight();
+    applyOffset(0);
     window.addEventListener('scroll', function () {
       if (ticking) return;
       ticking = true;
       window.requestAnimationFrame(handleScroll);
     }, { passive: true });
-    /*
-     * Resize / orientation changes can flip the breakpoint. Reset
-     * inline transform when we leave desktop so mobile gets the
-     * untransformed header back, even if a previous scroll left
-     * a non-zero offset behind.
-     */
-    window.matchMedia(DESKTOP_QUERY).addEventListener('change', function () {
-      offset = 0;
-      applyOffset(0);
-    });
+    window.addEventListener('resize', publishHeight);
     document.addEventListener('astro:before-swap', function () {
       offset = 0;
       lastY = 0;
       applyOffset(0);
     });
+    document.addEventListener('astro:after-swap', publishHeight);
   })();
 </script>
 
@@ -107,22 +106,20 @@ const { lang } = Astro.props;
     background: var(--color-surface-elevated);
     border-bottom: 1px solid var(--color-border);
     z-index: 100;
+    transition: transform var(--transition-fast);
+    will-change: transform;
   }
 
   /*
-   * The scroll-hide reveal lives on desktop only — the JS guards
-   * its `transform` mutations behind a matchMedia gate. The
-   * transition + will-change live in the SAME media query so they
-   * never apply on mobile; otherwise either property would make
-   * `<header>` a containing block for `position: fixed` descendants
-   * (CSS spec) and trap the MobileMenu panel inside the header
-   * box, which is exactly what broke the menu on prod.
+   * Blur stays desktop-only — on mobile it's pure overhead. Header
+   * transform is now safe on every viewport because MobileMenu is
+   * rendered as a BaseLayout sibling, not inside <header>, so a
+   * transformed header is no longer the containing block for the
+   * menu's fixed FAB / panel / overlay.
    */
   @media (min-width: 768px) {
     header {
       backdrop-filter: blur(10px);
-      transition: transform var(--transition-fast);
-      will-change: transform;
     }
   }
 
