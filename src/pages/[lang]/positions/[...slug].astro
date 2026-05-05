@@ -2,6 +2,7 @@
 import { type CollectionEntry, getCollection } from 'astro:content';
 import { DEFAULT_LANGUAGE, type Language, SUPPORTED_LANGUAGES } from '@/config/i18n';
 import { getLabelsData } from '@/config/translations';
+import ArticleToc from '@/features/content/components/ArticleToc.astro';
 import SuggestChangesLink from '@/features/content/components/SuggestChangesLink.astro';
 import { deriveDescription } from '@/features/content/helpers/deriveDescription';
 import MissingTranslation from '@/features/i18n/MissingTranslation.astro';
@@ -44,9 +45,12 @@ interface Props {
 
 const { entry, availableLangs } = Astro.props as Props;
 const { lang, slug } = Astro.params;
-const Content = entry ? (await entry.render()).Content : undefined;
+const rendered = entry ? await entry.render() : undefined;
+const Content = rendered?.Content;
+const headings = rendered?.headings ?? [];
 const labels = (await getLabelsData(lang)) ?? (await getLabelsData(DEFAULT_LANGUAGE));
 const backLabel = labels?.data.backToList ?? '← Back';
+const tocLabel = labels?.data.tableOfContents ?? 'Contents';
 
 const pageTitle = entry ? `${entry.data.title} - Communist Prometheus` : 'Communist Prometheus';
 /* See deriveDescription — falls back to body's first paragraph when frontmatter description is empty. */
@@ -60,6 +64,7 @@ const pageDescription = entry ? deriveDescription(entry.data.description, entry.
 >
   {entry && Content ? (
     <article class="section">
+      <ArticleToc headings={headings} label={tocLabel} />
       <div class="container">
         <a href={`/${lang}/positions`} class="back-link">{backLabel}</a>
         <header>

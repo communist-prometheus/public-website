@@ -1,0 +1,381 @@
+---
+/*
+ * Article table of contents.
+ *
+ * Desktop (≥1280px): pinned to the left of the article, always open,
+ * follows scroll via `position: fixed`. Layout is non-disruptive — the
+ * article column stays centred and unchanged; the TOC sits in the
+ * unused space to its left.
+ *
+ * Mobile / narrow desktop: collapses to a floating "Contents" pill in
+ * the bottom-left corner. Tapping it slides a panel in from the left
+ * edge with the same heading list. Tapping a link or pressing Escape
+ * dismisses the panel.
+ *
+ * Headings are sourced from `await entry.render()`'s `.headings` —
+ * Astro auto-generates anchor `id`s on headings via github-slugger so
+ * the `#${slug}` hrefs land on the right section without us having to
+ * rewrite the article HTML.
+ *
+ * h1 is the article title (rendered separately) and h≥5 is rare and
+ * noisy in a TOC, so we keep h2–h4 only.
+ */
+
+interface Heading {
+  readonly depth: number;
+  readonly slug: string;
+  readonly text: string;
+}
+
+interface Props {
+  readonly headings: readonly Heading[];
+  readonly label?: string;
+}
+
+const { headings, label = 'Contents' } = Astro.props as Props;
+const visible = headings.filter((h) => h.depth >= 2 && h.depth <= 4);
+---
+
+{visible.length > 0 && (
+  <aside class="article-toc" data-testid="article-toc">
+    <button
+      type="button"
+      class="article-toc-toggle"
+      aria-expanded="false"
+      aria-controls="article-toc-nav"
+      data-testid="article-toc-toggle"
+    >
+      <svg
+        class="article-toc-icon"
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <path
+          fill="currentColor"
+          d="M2 3h12v2H2zM2 7h12v2H2zM2 11h8v2H2z"
+        />
+      </svg>
+      <span>{label}</span>
+    </button>
+    <button
+      type="button"
+      class="article-toc-backdrop"
+      aria-label="Close contents"
+      data-testid="article-toc-backdrop"
+      tabindex="-1"
+    ></button>
+    <nav id="article-toc-nav" class="article-toc-nav" aria-label={label}>
+      <span class="article-toc-heading">{label}</span>
+      <ol class="article-toc-list">
+        {visible.map((h) => (
+          <li class={`article-toc-item article-toc-item--depth-${h.depth}`}>
+            <a href={`#${h.slug}`} class="article-toc-link">{h.text}</a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  </aside>
+)}
+
+<script>
+  /*
+   * Teleport the TOC to <body>. The article-page <main> carries
+   * `view-transition-name: main-content`, which creates a stacking
+   * context AND a containing block — so a `position: fixed` element
+   * that lives inside <main> is anchored to <main>, not the viewport,
+   * and ends up painted *under* the sticky site header. Moving the
+   * TOC to be a direct child of <body> puts it back at the root
+   * stacking context where its z-index can compete fairly.
+   */
+  const root = document.querySelector<HTMLElement>(
+    '[data-testid="article-toc"]'
+  );
+  if (root && root.parentElement !== document.body) {
+    document.body.appendChild(root);
+  }
+  if (root) {
+    const toggle = root.querySelector<HTMLButtonElement>(
+      '[data-testid="article-toc-toggle"]'
+    );
+    const close = (): void => {
+      root.classList.remove('is-open');
+      toggle?.setAttribute('aria-expanded', 'false');
+    };
+    toggle?.addEventListener('click', () => {
+      const next = !root.classList.contains('is-open');
+      root.classList.toggle('is-open', next);
+      toggle.setAttribute('aria-expanded', String(next));
+    });
+    root.querySelectorAll('a').forEach((a) => {
+      a.addEventListener('click', close);
+    });
+    root
+      .querySelector<HTMLButtonElement>(
+        '[data-testid="article-toc-backdrop"]'
+      )
+      ?.addEventListener('click', close);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && root.classList.contains('is-open')) close();
+    });
+
+    /*
+     * Scroll-spy: highlight the link whose heading the reader has
+     * just passed. We use a position-based pass instead of
+     * IntersectionObserver because the observer's `isIntersecting`
+     * doesn't help when the heading sits *above* the viewport — and
+     * "the section the reader is currently in" is exactly that case
+     * once they've scrolled past the heading.
+     *
+     * Bias by 1.5× the header height so the active marker switches
+     * a beat *before* the next heading reaches the very top, which
+     * matches reading rhythm (the eye is on the body text, not on
+     * the heading line itself).
+     */
+    const links = Array.from(
+      root.querySelectorAll<HTMLAnchorElement>('a.article-toc-link')
+    );
+    const linkBySlug = new Map<string, HTMLAnchorElement>();
+    const slugs: string[] = [];
+    for (const a of links) {
+      const id = decodeURIComponent(
+        (a.getAttribute('href') ?? '').replace(/^#/, '')
+      );
+      if (id) {
+        linkBySlug.set(id, a);
+        slugs.push(id);
+      }
+    }
+    const headings = slugs
+      .map((slug) => document.getElementById(slug))
+      .filter((el): el is HTMLElement => el !== null);
+
+    let activeSlug: string | undefined;
+    const setActive = (slug: string | undefined): void => {
+      if (slug === activeSlug) return;
+      if (activeSlug) {
+        linkBySlug
+          .get(activeSlug)
+          ?.classList.remove('article-toc-link--active');
+        linkBySlug.get(activeSlug)?.removeAttribute('aria-current');
+      }
+      if (slug) {
+        linkBySlug.get(slug)?.classList.add('article-toc-link--active');
+        linkBySlug.get(slug)?.setAttribute('aria-current', 'location');
+      }
+      activeSlug = slug;
+    };
+
+    let spyTicking = false;
+    const computeActive = (): void => {
+      spyTicking = false;
+      if (headings.length === 0) return;
+      const headerH =
+        parseFloat(
+          getComputedStyle(document.documentElement).getPropertyValue(
+            '--header-height'
+          ) || '60'
+        ) || 60;
+      const trigger = window.scrollY + headerH * 1.5;
+      let next: string | undefined;
+      for (const h of headings) {
+        const top = h.getBoundingClientRect().top + window.scrollY;
+        if (top <= trigger) next = h.id;
+        else break;
+      }
+      /*
+       * Near the very top of the page no heading has been passed
+       * yet — leave nothing highlighted. At the bottom of the page
+       * the last heading wins even if it never crossed the trigger.
+       */
+      const atBottom =
+        window.scrollY + window.innerHeight >=
+        document.documentElement.scrollHeight - 4;
+      if (atBottom && headings.length > 0) {
+        next = headings[headings.length - 1]?.id;
+      }
+      setActive(next);
+    };
+    const onSpyScroll = (): void => {
+      if (spyTicking) return;
+      spyTicking = true;
+      requestAnimationFrame(computeActive);
+    };
+    computeActive();
+    window.addEventListener('scroll', onSpyScroll, { passive: true });
+  }
+</script>
+
+<style>
+  .article-toc {
+    --toc-bg: var(--color-surface-elevated, var(--color-surface));
+  }
+
+  .article-toc-toggle {
+    position: fixed;
+    bottom: var(--spacing-md);
+    left: var(--spacing-md);
+    z-index: var(--z-fab, 100);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.875rem;
+    border: 1px solid var(--color-border);
+    background: var(--toc-bg);
+    color: var(--color-text-primary);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.875rem;
+    line-height: 1;
+  }
+
+  .article-toc-toggle:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .article-toc-icon {
+    flex-shrink: 0;
+  }
+
+  .article-toc-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    background: rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+    z-index: calc(var(--z-modal, 1000) - 1);
+    opacity: 0;
+    transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .article-toc.is-open .article-toc-backdrop {
+    display: block;
+    opacity: 1;
+  }
+
+  .article-toc-nav {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: min(85vw, 320px);
+    background: var(--toc-bg);
+    border-right: 1px solid var(--color-border);
+    box-shadow: var(--shadow-lg);
+    padding: var(--spacing-lg) var(--spacing-md);
+    overflow-y: auto;
+    transform: translateX(-100%);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: var(--z-modal, 1000);
+  }
+
+  .article-toc.is-open .article-toc-nav {
+    transform: translateX(0);
+  }
+
+  .article-toc-heading {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .article-toc-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .article-toc-item {
+    line-height: 1.4;
+    margin-bottom: 0.125rem;
+  }
+
+  .article-toc-item--depth-3 {
+    padding-left: var(--spacing-md);
+  }
+
+  .article-toc-item--depth-4 {
+    padding-left: var(--spacing-lg);
+  }
+
+  .article-toc-link {
+    display: block;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+  }
+
+  .article-toc-link:hover,
+  .article-toc-link:focus-visible {
+    background: var(--color-surface);
+    color: var(--color-accent);
+  }
+
+  .article-toc-link--active {
+    color: var(--color-accent);
+    font-weight: 600;
+    border-left: 2px solid var(--color-accent);
+    margin-left: -0.5rem;
+    padding-left: calc(0.5rem - 2px);
+  }
+
+  .article-toc-link--active:hover {
+    background: transparent;
+  }
+
+  /*
+   * Desktop pinned rail kicks in once there's enough room to the left
+   * of the centred 800px article. 1280px viewport leaves ~240px of
+   * gutter on each side, which fits the rail without crowding the
+   * article column.
+   */
+  @media (min-width: 1280px) {
+    .article-toc {
+      position: fixed;
+      top: clamp(5rem, 12vh, 7rem);
+      left: clamp(1rem, 2vw, 1.5rem);
+      width: clamp(180px, 16vw, 240px);
+      max-height: calc(100vh - 8rem);
+    }
+
+    .article-toc-toggle,
+    .article-toc-backdrop {
+      display: none;
+    }
+
+    .article-toc.is-open .article-toc-backdrop {
+      display: none;
+    }
+
+    .article-toc-nav {
+      position: static;
+      width: auto;
+      transform: none;
+      background: transparent;
+      border: 0;
+      box-shadow: none;
+      padding: 0;
+      max-height: 100%;
+      overflow-y: auto;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .article-toc-nav {
+      transition: none;
+    }
+  }
+</style>
