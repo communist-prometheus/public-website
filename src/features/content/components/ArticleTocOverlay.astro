@@ -70,19 +70,22 @@ const visible: readonly Heading[] =
       aria-label={label}
     >
       <span class="article-toc-heading">{label}</span>
-      <ol class="article-toc-list">
-        {visible.map((h) => (
-          <li class={`article-toc-item article-toc-item--depth-${h.depth}`}>
-            <a
-              href={`#${h.slug}`}
-              class="article-toc-link"
-              data-article-toc-link
-            >
-              {h.text}
-            </a>
-          </li>
-        ))}
-      </ol>
+      <div class="article-toc-list-wrap">
+        <span class="article-toc-indicator" aria-hidden="true"></span>
+        <ol class="article-toc-list">
+          {visible.map((h) => (
+            <li class={`article-toc-item article-toc-item--depth-${h.depth}`}>
+              <a
+                href={`#${h.slug}`}
+                class="article-toc-link"
+                data-article-toc-link
+              >
+                {h.text}
+              </a>
+            </li>
+          ))}
+        </ol>
+      </div>
     </nav>
   </div>
 )}
@@ -216,6 +219,35 @@ const visible: readonly Heading[] =
     margin-bottom: var(--spacing-sm);
   }
 
+  /*
+   * Magnifying-slider indicator wrap — see ArticleTocSidebar.astro
+   * for the full rationale. The active link's offsetTop / offsetHeight
+   * (relative to this wrap) drive the indicator's CSS transition.
+   */
+  .article-toc-list-wrap {
+    position: relative;
+  }
+
+  .article-toc-indicator {
+    position: absolute;
+    left: -0.5rem;
+    top: var(--active-top, 0);
+    width: 2px;
+    height: var(--active-height, 0);
+    background: var(--color-accent);
+    border-radius: 2px;
+    opacity: 0;
+    transition:
+      top 220ms cubic-bezier(0.4, 0, 0.2, 1),
+      height 220ms cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 160ms ease-out;
+    pointer-events: none;
+  }
+
+  .article-toc-list-wrap.has-active .article-toc-indicator {
+    opacity: 1;
+  }
+
   .article-toc-list {
     margin: 0;
     padding: 0;
@@ -256,9 +288,6 @@ const visible: readonly Heading[] =
   .article-toc-link--active {
     color: var(--color-accent);
     font-weight: 600;
-    border-left: 2px solid var(--color-accent);
-    margin-left: -0.5rem;
-    padding-left: calc(0.5rem - 2px);
   }
 
   .article-toc-link--active:hover {
@@ -281,7 +310,8 @@ const visible: readonly Heading[] =
 
   @media (prefers-reduced-motion: reduce) {
     .article-toc-overlay-nav,
-    .article-toc-backdrop {
+    .article-toc-backdrop,
+    .article-toc-indicator {
       transition: none;
     }
   }
