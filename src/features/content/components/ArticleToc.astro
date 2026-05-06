@@ -128,27 +128,44 @@ const visible: readonly Heading[] = [
       root.classList.toggle('is-open', next);
       toggle.setAttribute('aria-expanded', String(next));
     });
+    /*
+     * Read the published `--header-height` (set by Header.astro on
+     * mount + resize) and add a small breathing room so the heading
+     * lands cleanly below the sticky header instead of half-cut.
+     */
+    const headerOffsetPx = (): number => {
+      const raw = getComputedStyle(
+        document.documentElement
+      ).getPropertyValue('--header-height');
+      const px = parseFloat(raw || '60') || 60;
+      return px + 12;
+    };
+
     root.querySelectorAll('a').forEach((a) => {
       a.addEventListener('click', (e) => {
         const href = a.getAttribute('href') ?? '';
         if (href.startsWith('#')) {
           /*
            * Bypass Astro's ClientRouter and any other interceptor:
-           * resolve the target id, scroll smoothly, and update the
-           * URL hash explicitly. `scroll-behavior: smooth` on <html>
-           * isn't always enough — when overflow rules push the
-           * scroll container down to <body> the html-level rule
-           * doesn't apply, and view-transition setups sometimes
-           * eat the click before the native anchor jump fires.
+           * resolve the target id, compute the offset that clears
+           * the sticky header, and scroll the window manually.
+           *
+           * `scrollIntoView({ block: 'start' })` is supposed to honour
+           * `scroll-padding-top` on the scroll container, but
+           * browsers vary — and when overflow rules push the scroll
+           * container off <html>, the html-level padding is moot.
+           * Computing the offset here is what makes the heading
+           * actually land under the header instead of cropped by it.
            */
           e.preventDefault();
           const id = decodeURIComponent(href.slice(1));
           const target = document.getElementById(id);
           if (target) {
-            target.scrollIntoView({
-              behavior: 'smooth',
-              block: 'start',
-            });
+            const top =
+              target.getBoundingClientRect().top +
+              window.scrollY -
+              headerOffsetPx();
+            window.scrollTo({ top, behavior: 'smooth' });
             history.pushState(null, '', href);
           }
         }
