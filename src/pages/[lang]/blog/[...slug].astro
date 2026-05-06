@@ -91,9 +91,9 @@ const newspaperRef = await (async () => {
     <article class="section" itemscope itemtype="https://schema.org/Article">
       <meta itemprop="headline" content={post.data.title} />
       {pageDescription && <meta itemprop="description" content={pageDescription} />}
-      <ArticleToc headings={headings} label={tocLabel} />
+      <ArticleToc headings={headings} label={tocLabel} articleTitle={post.data.title} />
       <div class="container">
-        <header class="post-header">
+        <header class="post-header" id="article-top">
           <span class="category">{post.data.category}</span>
           <h1 itemprop="name">{post.data.title}</h1>
           <p class="post-meta">
