@@ -8,6 +8,7 @@ import { getArticleSlug } from '@/features/blog/helpers/getBlogPosts';
 import ArticleToc from '@/features/content/components/ArticleToc.astro';
 import SuggestChangesLink from '@/features/content/components/SuggestChangesLink.astro';
 import { deriveDescription } from '@/features/content/helpers/deriveDescription';
+import { formatArticleDate } from '@/features/i18n/format-date';
 import MissingTranslation from '@/features/i18n/MissingTranslation.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 
@@ -98,11 +99,7 @@ const newspaperRef = await (async () => {
           <h1 itemprop="name">{post.data.title}</h1>
           <p class="post-meta">
             <time datetime={isoDate} itemprop="datePublished">
-              {publishedDate?.toLocaleDateString(lang, {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
+              {publishedDate && formatArticleDate(publishedDate, lang)}
             </time>
           </p>
           {newspaperRef && (
