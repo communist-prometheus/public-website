@@ -56,19 +56,22 @@ const visible: readonly Heading[] =
     >
       <nav class="article-toc-sidebar-nav" aria-label={label}>
         <span class="article-toc-heading">{label}</span>
-        <ol class="article-toc-list">
-          {visible.map((h) => (
-            <li class={`article-toc-item article-toc-item--depth-${h.depth}`}>
-              <a
-                href={`#${h.slug}`}
-                class="article-toc-link"
-                data-article-toc-link
-              >
-                {h.text}
-              </a>
-            </li>
-          ))}
-        </ol>
+        <div class="article-toc-list-wrap">
+          <span class="article-toc-indicator" aria-hidden="true"></span>
+          <ol class="article-toc-list">
+            {visible.map((h) => (
+              <li class={`article-toc-item article-toc-item--depth-${h.depth}`}>
+                <a
+                  href={`#${h.slug}`}
+                  class="article-toc-link"
+                  data-article-toc-link
+                >
+                  {h.text}
+                </a>
+              </li>
+            ))}
+          </ol>
+        </div>
       </nav>
     </aside>
   </div>
@@ -172,6 +175,29 @@ const visible: readonly Heading[] =
       .map((slug) => document.getElementById(slug))
       .filter((el): el is HTMLElement => el !== null);
 
+    /*
+     * Magnifying-slider indicator. Each TOC root contains a single
+     * `.article-toc-list-wrap` whose `--active-top` / `--active-height`
+     * custom properties drive an absolutely-positioned indicator. We
+     * measure the active link's `offsetTop` / `offsetHeight` relative
+     * to the wrap (its `offsetParent`) and write the values; CSS then
+     * transitions the indicator's `top` / `height` into place.
+     *
+     * Pure layout discovery — the slide animation itself is a CSS
+     * transition.
+     */
+    const writeIndicator = (link: HTMLAnchorElement): void => {
+      const wrap = link.closest<HTMLElement>('.article-toc-list-wrap');
+      if (!wrap) return;
+      const li = link.closest<HTMLElement>('.article-toc-item');
+      const measured = li ?? link;
+      const top = measured.offsetTop;
+      const height = measured.offsetHeight;
+      wrap.style.setProperty('--active-top', `${top}px`);
+      wrap.style.setProperty('--active-height', `${height}px`);
+      wrap.classList.add('has-active');
+    };
+
     let activeSlug: string | undefined;
     const setActive = (slug: string | undefined): void => {
       if (slug === activeSlug) return;
@@ -185,6 +211,7 @@ const visible: readonly Heading[] =
         for (const a of linksBySlug.get(slug) ?? []) {
           a.classList.add('article-toc-link--active');
           a.setAttribute('aria-current', 'location');
+          writeIndicator(a);
         }
       }
       activeSlug = slug;
@@ -263,6 +290,36 @@ const visible: readonly Heading[] =
     margin-bottom: var(--spacing-sm);
   }
 
+  /*
+   * Wrap establishes the positioning context for the magnifying-slider
+   * indicator. The indicator is absolutely positioned with `top` and
+   * `height` driven by CSS variables that the scroll-spy writes when
+   * the active link changes. The transition does the actual animating.
+   */
+  .article-toc-list-wrap {
+    position: relative;
+  }
+
+  .article-toc-indicator {
+    position: absolute;
+    left: -0.5rem;
+    top: var(--active-top, 0);
+    width: 2px;
+    height: var(--active-height, 0);
+    background: var(--color-accent);
+    border-radius: 2px;
+    opacity: 0;
+    transition:
+      top 220ms cubic-bezier(0.4, 0, 0.2, 1),
+      height 220ms cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 160ms ease-out;
+    pointer-events: none;
+  }
+
+  .article-toc-list-wrap.has-active .article-toc-indicator {
+    opacity: 1;
+  }
+
   .article-toc-list {
     margin: 0;
     padding: 0;
@@ -303,13 +360,16 @@ const visible: readonly Heading[] =
   .article-toc-link--active {
     color: var(--color-accent);
     font-weight: 600;
-    border-left: 2px solid var(--color-accent);
-    margin-left: -0.5rem;
-    padding-left: calc(0.5rem - 2px);
   }
 
   .article-toc-link--active:hover {
     background: transparent;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .article-toc-indicator {
+      transition: none;
+    }
   }
 
   /*
