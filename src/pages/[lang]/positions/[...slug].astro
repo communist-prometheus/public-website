@@ -64,7 +64,7 @@ const pageDescription = entry ? deriveDescription(entry.data.description, entry.
 >
   {entry && Content ? (
     <article class="section">
-      <ArticleToc headings={headings} label={tocLabel} fallbackTitle={entry.data.title} />
+      <ArticleToc headings={headings} label={tocLabel} articleTitle={entry.data.title} />
       <div class="container">
         <a href={`/${lang}/positions`} class="back-link">{backLabel}</a>
         <header id="article-top">

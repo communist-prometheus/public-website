@@ -32,7 +32,7 @@ const tocLabel = labels?.data.tableOfContents ?? 'Contents';
 
 <BaseLayout title={`${page.data.title} - Prometheus`} {...(page.data.description ? { description: page.data.description } : {})} lang={lang}>
   <article class="section">
-    <ArticleToc headings={headings} label={tocLabel} fallbackTitle={page.data.title} />
+    <ArticleToc headings={headings} label={tocLabel} articleTitle={page.data.title} />
     <div class="container">
       <div class="about-header" id="article-top">
         <h1>{page.data.title}</h1>

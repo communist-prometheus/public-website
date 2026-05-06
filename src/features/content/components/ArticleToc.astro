@@ -12,21 +12,27 @@
  * edge with the same heading list. Tapping a link or pressing Escape
  * dismisses the panel.
  *
- * Headings are sourced from `await entry.render()`'s `.headings` —
- * Astro auto-generates anchor `id`s on headings via github-slugger so
- * the `#${slug}` hrefs land on the right section without us having to
- * rewrite the article HTML.
+ * Headings come from `await entry.render()`'s `.headings`. Astro
+ * auto-generates anchor ids on every heading via github-slugger so
+ * the `#${slug}` hrefs land on the right section without us having
+ * to rewrite the article HTML.
  *
- * The TOC always renders — for articles with no markdown headings we
- * fall back to a single synthetic "back to top" entry that points at
- * the `#article-top` anchor (the host page sets it on its `<article>`
- * wrapper). Editors should still mark up real headings; the
- * synthetic case is a guard rail, not a substitute.
+ * The TOC always opens with the article *title*, anchored to
+ * `#article-top` — the host page sets that id on the title header.
+ * That gives readers a stable "back to top" entry on every article,
+ * regardless of whether the markdown body has its own headings, and
+ * matches reading rhythm: on long pieces the cursor naturally drifts
+ * away from the navigation chrome and the title pin reels it back.
  *
- * h≥5 is rare and noisy in a TOC, so we keep h1–h4 only. Including
- * h1 lets articles WITH subheadings start with the title as a
- * "scrolled past everything, take me back" anchor — matches reading
- * rhythm better than relying on the browser's native top-of-page.
+ * Body h1s are dropped from the heading list. They almost always
+ * duplicate the article title, and showing both creates an
+ * "Article Title / Article Title" doublet at the top of the TOC.
+ * h2-h4 are kept; h≥5 is rare and noisy.
+ *
+ * Smooth scroll on click is implemented in JS rather than relying
+ * on `scroll-behavior: smooth` alone, because Astro's ClientRouter
+ * sometimes intercepts the click before the browser's default
+ * anchor jump fires, killing the smooth easing.
  */
 
 interface Heading {
@@ -38,15 +44,17 @@ interface Heading {
 interface Props {
   readonly headings: readonly Heading[];
   readonly label?: string;
-  /** Title rendered as the synthetic entry when no headings exist. */
-  readonly fallbackTitle: string;
+  /** Article title — always rendered as the top TOC entry. */
+  readonly articleTitle: string;
 }
 
-const { headings, label = 'Contents', fallbackTitle } = Astro.props as Props;
-const real = headings.filter((h) => h.depth >= 1 && h.depth <= 4);
-const FALLBACK_SLUG = 'article-top';
-const visible: readonly Heading[] =
-  real.length > 0 ? real : [{ depth: 1, slug: FALLBACK_SLUG, text: fallbackTitle }];
+const { headings, label = 'Contents', articleTitle } = Astro.props as Props;
+const TOP_SLUG = 'article-top';
+const subHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= 4);
+const visible: readonly Heading[] = [
+  { depth: 1, slug: TOP_SLUG, text: articleTitle },
+  ...subHeadings,
+];
 ---
 
 <aside class="article-toc" data-testid="article-toc">
@@ -121,7 +129,31 @@ const visible: readonly Heading[] =
       toggle.setAttribute('aria-expanded', String(next));
     });
     root.querySelectorAll('a').forEach((a) => {
-      a.addEventListener('click', close);
+      a.addEventListener('click', (e) => {
+        const href = a.getAttribute('href') ?? '';
+        if (href.startsWith('#')) {
+          /*
+           * Bypass Astro's ClientRouter and any other interceptor:
+           * resolve the target id, scroll smoothly, and update the
+           * URL hash explicitly. `scroll-behavior: smooth` on <html>
+           * isn't always enough — when overflow rules push the
+           * scroll container down to <body> the html-level rule
+           * doesn't apply, and view-transition setups sometimes
+           * eat the click before the native anchor jump fires.
+           */
+          e.preventDefault();
+          const id = decodeURIComponent(href.slice(1));
+          const target = document.getElementById(id);
+          if (target) {
+            target.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start',
+            });
+            history.pushState(null, '', href);
+          }
+        }
+        close();
+      });
     });
     root
       .querySelector<HTMLButtonElement>(
