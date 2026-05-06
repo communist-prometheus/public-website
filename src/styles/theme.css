@@ -130,6 +130,15 @@ html {
   background: var(--color-background);
   scrollbar-gutter: stable;
   /*
+   * Smooth-scroll TOC anchor jumps + offset the landing point past
+   * the sticky header. `--header-height` is published by Header.astro
+   * on first paint and refreshed on resize, so the offset stays in
+   * sync with the header's actual measured height. Falls back to 5rem
+   * before the script runs.
+   */
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--header-height, 5rem) + 0.5rem);
+  /*
    * `overflow-x: clip` instead of `hidden` keeps the page free of
    * horizontal scroll (some article media pushes the natural width
    * past the viewport on narrow screens) without making <html> its
@@ -201,6 +210,10 @@ h6 {
   *::after {
     animation-duration: 0.01ms;
     transition-duration: 0.01ms;
+  }
+
+  html {
+    scroll-behavior: auto;
   }
 }
 
