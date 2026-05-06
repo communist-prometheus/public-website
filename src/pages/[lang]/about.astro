@@ -1,6 +1,7 @@
 ---
-import { SUPPORTED_LANGUAGES } from '@/config/i18n';
-import { getPageData } from '@/config/translations';
+import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from '@/config/i18n';
+import { getLabelsData, getPageData } from '@/config/translations';
+import ArticleToc from '@/features/content/components/ArticleToc.astro';
 import SuggestChangesLink from '@/features/content/components/SuggestChangesLink.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 
@@ -22,13 +23,18 @@ const page = await getPageData('about', lang);
 // but Astro requires `page` to be narrowed for the render below.
 if (!page) throw new Error(`about page missing for ${lang}`);
 
-const { Content } = await page.render();
+const rendered = await page.render();
+const Content = rendered.Content;
+const headings = rendered.headings ?? [];
+const labels = (await getLabelsData(lang)) ?? (await getLabelsData(DEFAULT_LANGUAGE));
+const tocLabel = labels?.data.tableOfContents ?? 'Contents';
 ---
 
 <BaseLayout title={`${page.data.title} - Prometheus`} {...(page.data.description ? { description: page.data.description } : {})} lang={lang}>
   <article class="section">
+    <ArticleToc headings={headings} label={tocLabel} articleTitle={page.data.title} />
     <div class="container">
-      <div class="about-header">
+      <div class="about-header" id="article-top">
         <h1>{page.data.title}</h1>
         {page.data.subtitle ? <p class="lead">{page.data.subtitle}</p> : null}
       </div>
