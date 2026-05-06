@@ -17,6 +17,7 @@
 .grid {
   display: grid;
   gap: var(--spacing-lg);
+  grid-auto-rows: 1fr;
 }
 
 .grid-2 {
@@ -25,6 +26,21 @@
 
 .grid-3 {
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+}
+
+/*
+ * Wrappers that the CategoryFilter toggles via [data-category] need to
+ * stretch to the row track, otherwise the inner card's height: 100%
+ * collapses against an auto-sized div.
+ */
+.grid > [data-category] {
+  height: 100%;
+  display: flex;
+}
+
+.grid > [data-category] > * {
+  flex: 1;
+  min-height: 0;
 }
 
 .flex {
