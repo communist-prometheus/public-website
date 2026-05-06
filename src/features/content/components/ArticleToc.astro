@@ -51,53 +51,61 @@ interface Props {
 const { headings, label = 'Contents', articleTitle } = Astro.props as Props;
 const TOP_SLUG = 'article-top';
 const subHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= 4);
-const visible: readonly Heading[] = [
-  { depth: 1, slug: TOP_SLUG, text: articleTitle },
-  ...subHeadings,
-];
+/*
+ * Only render the TOC when the body has real sub-headings (h2-h4).
+ * For prose-only articles the synthetic article-title entry would
+ * be the *only* row, which looks worse than no TOC at all — a
+ * one-item list is useless navigation. Editors should add proper
+ * `## H2` markers to long articles; that's what makes the TOC
+ * earn its spot.
+ */
+const visible: readonly Heading[] =
+  subHeadings.length > 0 ? [{ depth: 1, slug: TOP_SLUG, text: articleTitle }, ...subHeadings] : [];
 ---
 
-<aside class="article-toc" data-testid="article-toc">
-  <button
-    type="button"
-    class="article-toc-toggle"
-    aria-expanded="false"
-    aria-controls="article-toc-nav"
-    data-testid="article-toc-toggle"
-  >
-    <svg
-      class="article-toc-icon"
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      aria-hidden="true"
-      focusable="false"
+{visible.length > 0 && (
+  <aside class="article-toc" data-testid="article-toc">
+    <button
+      type="button"
+      class="article-toc-toggle"
+      aria-expanded="false"
+      aria-controls="article-toc-nav"
+      data-testid="article-toc-toggle"
     >
-      <path
-        fill="currentColor"
-        d="M2 3h12v2H2zM2 7h12v2H2zM2 11h8v2H2z"
-      />
-    </svg>
-    <span>{label}</span>
-  </button>
-  <button
-    type="button"
-    class="article-toc-backdrop"
-    aria-label="Close contents"
-    data-testid="article-toc-backdrop"
-    tabindex="-1"
-  ></button>
-  <nav id="article-toc-nav" class="article-toc-nav" aria-label={label}>
-    <span class="article-toc-heading">{label}</span>
-    <ol class="article-toc-list">
-      {visible.map((h) => (
-        <li class={`article-toc-item article-toc-item--depth-${h.depth}`}>
-          <a href={`#${h.slug}`} class="article-toc-link">{h.text}</a>
-        </li>
-      ))}
-    </ol>
-  </nav>
-</aside>
+      <svg
+        class="article-toc-icon"
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <path
+          fill="currentColor"
+          d="M2 3h12v2H2zM2 7h12v2H2zM2 11h8v2H2z"
+        />
+      </svg>
+      <span>{label}</span>
+    </button>
+    <button
+      type="button"
+      class="article-toc-backdrop"
+      aria-label="Close contents"
+      data-testid="article-toc-backdrop"
+      tabindex="-1"
+    ></button>
+    <nav id="article-toc-nav" class="article-toc-nav" aria-label={label}>
+      <span class="article-toc-heading">{label}</span>
+      <ol class="article-toc-list">
+        {visible.map((h) => (
+          <li class={`article-toc-item article-toc-item--depth-${h.depth}`}>
+            <a href={`#${h.slug}`} class="article-toc-link">{h.text}</a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  </aside>
+)}
 
 <script>
   /*
