@@ -2,7 +2,8 @@
 import { type CollectionEntry, getCollection } from 'astro:content';
 import { DEFAULT_LANGUAGE, type Language, SUPPORTED_LANGUAGES } from '@/config/i18n';
 import { getLabelsData } from '@/config/translations';
-import ArticleToc from '@/features/content/components/ArticleToc.astro';
+import ArticleTocOverlay from '@/features/content/components/ArticleTocOverlay.astro';
+import ArticleTocSidebar from '@/features/content/components/ArticleTocSidebar.astro';
 import SuggestChangesLink from '@/features/content/components/SuggestChangesLink.astro';
 import { deriveDescription } from '@/features/content/helpers/deriveDescription';
 import MissingTranslation from '@/features/i18n/MissingTranslation.astro';
@@ -64,7 +65,7 @@ const pageDescription = entry ? deriveDescription(entry.data.description, entry.
 >
   {entry && Content ? (
     <article class="section">
-      <ArticleToc headings={headings} label={tocLabel} articleTitle={entry.data.title} />
+      <ArticleTocSidebar headings={headings} label={tocLabel} articleTitle={entry.data.title} />
       <div class="container">
         <a href={`/${lang}/positions`} class="back-link">{backLabel}</a>
         <header id="article-top">
@@ -88,9 +89,25 @@ const pageDescription = entry ? deriveDescription(entry.data.description, entry.
       </div>
     </div>
   )}
+  {entry && Content && (
+    <ArticleTocOverlay
+      slot="floating"
+      headings={headings}
+      label={tocLabel}
+      articleTitle={entry.data.title}
+    />
+  )}
 </BaseLayout>
 
 <style>
+  /*
+   * Positioning context for the absolute TOC sidebar rail — see
+   * ArticleTocSidebar.astro for the layout strategy.
+   */
+  article.section {
+    position: relative;
+  }
+
   .back-link {
     display: inline-block;
     margin-bottom: var(--spacing-lg);

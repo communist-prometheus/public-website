@@ -1,0 +1,288 @@
+---
+/*
+ * Article table of contents — mobile / narrow-desktop overlay.
+ *
+ * Rendered as a sibling of `<main>` via BaseLayout's `floating` slot
+ * so the FAB / panel / backdrop escape `<main>`'s view-transition
+ * containing block. That's what lets `position: fixed` actually
+ * pin to the viewport instead of being clipped to <main>'s box.
+ *
+ * Hidden at ≥1280px — the desktop sidebar takes over there.
+ */
+
+interface Heading {
+  readonly depth: number;
+  readonly slug: string;
+  readonly text: string;
+}
+
+interface Props {
+  readonly headings: readonly Heading[];
+  readonly label?: string;
+  readonly articleTitle: string;
+}
+
+const { headings, label = 'Contents', articleTitle } = Astro.props as Props;
+const TOP_SLUG = 'article-top';
+const subHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= 4);
+const visible: readonly Heading[] =
+  subHeadings.length > 0 ? [{ depth: 1, slug: TOP_SLUG, text: articleTitle }, ...subHeadings] : [];
+---
+
+{visible.length > 0 && (
+  <div
+    class="article-toc-overlay"
+    data-testid="article-toc"
+    data-article-toc
+  >
+    <button
+      type="button"
+      class="article-toc-toggle"
+      aria-expanded="false"
+      aria-controls="article-toc-overlay-nav"
+      data-testid="article-toc-toggle"
+    >
+      <svg
+        class="article-toc-icon"
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <path
+          fill="currentColor"
+          d="M2 3h12v2H2zM2 7h12v2H2zM2 11h8v2H2z"
+        />
+      </svg>
+      <span>{label}</span>
+    </button>
+    <button
+      type="button"
+      class="article-toc-backdrop"
+      aria-label="Close contents"
+      data-testid="article-toc-backdrop"
+      tabindex="-1"
+    ></button>
+    <nav
+      id="article-toc-overlay-nav"
+      class="article-toc-overlay-nav"
+      aria-label={label}
+    >
+      <span class="article-toc-heading">{label}</span>
+      <ol class="article-toc-list">
+        {visible.map((h) => (
+          <li class={`article-toc-item article-toc-item--depth-${h.depth}`}>
+            <a
+              href={`#${h.slug}`}
+              class="article-toc-link"
+              data-article-toc-link
+            >
+              {h.text}
+            </a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  </div>
+)}
+
+<script>
+  /*
+   * Overlay-specific behaviour: FAB toggle + backdrop / Escape close.
+   * Smooth-scroll click + scroll-spy live in ArticleTocSidebar.astro
+   * (Astro hoists + dedupes scripts across components, so importing
+   * either component bootstraps the shared TOC behaviour).
+   */
+  const init = (): void => {
+    const root = document.querySelector<HTMLElement>(
+      '.article-toc-overlay',
+    );
+    if (!root) return;
+    const toggle = root.querySelector<HTMLButtonElement>(
+      '[data-testid="article-toc-toggle"]',
+    );
+    const backdrop = root.querySelector<HTMLButtonElement>(
+      '[data-testid="article-toc-backdrop"]',
+    );
+    const close = (): void => {
+      root.classList.remove('is-open');
+      toggle?.setAttribute('aria-expanded', 'false');
+    };
+    /*
+     * Expose the close hook on the root so the shared link-click
+     * handler in ArticleTocSidebar.astro can dismiss the panel after
+     * a tap without knowing overlay-specific markup.
+     */
+    (root as HTMLElement & { _articleTocClose?: () => void })
+      ._articleTocClose = close;
+
+    toggle?.addEventListener('click', () => {
+      const next = !root.classList.contains('is-open');
+      root.classList.toggle('is-open', next);
+      toggle.setAttribute('aria-expanded', String(next));
+    });
+    backdrop?.addEventListener('click', close);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && root.classList.contains('is-open')) {
+        close();
+      }
+    });
+  };
+
+  init();
+  document.addEventListener('astro:page-load', init);
+</script>
+
+<style>
+  .article-toc-overlay {
+    --toc-bg: var(--color-surface-elevated, var(--color-surface));
+  }
+
+  .article-toc-toggle {
+    position: fixed;
+    bottom: var(--spacing-md);
+    left: var(--spacing-md);
+    z-index: var(--z-fab, 100);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.875rem;
+    border: 1px solid var(--color-border);
+    background: var(--toc-bg);
+    color: var(--color-text-primary);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.875rem;
+    line-height: 1;
+  }
+
+  .article-toc-toggle:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .article-toc-icon {
+    flex-shrink: 0;
+  }
+
+  .article-toc-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    background: rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+    z-index: calc(var(--z-modal, 1000) - 1);
+    opacity: 0;
+    transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .article-toc-overlay.is-open .article-toc-backdrop {
+    display: block;
+    opacity: 1;
+  }
+
+  .article-toc-overlay-nav {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: min(85vw, 320px);
+    background: var(--toc-bg);
+    border-right: 1px solid var(--color-border);
+    box-shadow: var(--shadow-lg);
+    padding: var(--spacing-lg) var(--spacing-md);
+    overflow-y: auto;
+    transform: translateX(-100%);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: var(--z-modal, 1000);
+  }
+
+  .article-toc-overlay.is-open .article-toc-overlay-nav {
+    transform: translateX(0);
+  }
+
+  .article-toc-heading {
+    display: block;
+    padding-left: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .article-toc-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .article-toc-item {
+    line-height: 1.4;
+    margin-bottom: 0.125rem;
+  }
+
+  .article-toc-item--depth-3 {
+    padding-left: var(--spacing-md);
+  }
+
+  .article-toc-item--depth-4 {
+    padding-left: var(--spacing-lg);
+  }
+
+  .article-toc-link {
+    display: block;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition:
+      background-color var(--transition-fast),
+      color var(--transition-fast);
+  }
+
+  .article-toc-link:hover,
+  .article-toc-link:focus-visible {
+    background: var(--color-surface);
+    color: var(--color-accent);
+  }
+
+  .article-toc-link--active {
+    color: var(--color-accent);
+    font-weight: 600;
+    border-left: 2px solid var(--color-accent);
+    margin-left: -0.5rem;
+    padding-left: calc(0.5rem - 2px);
+  }
+
+  .article-toc-link--active:hover {
+    background: transparent;
+  }
+
+  /*
+   * Hide the overlay entirely on desktop — the sidebar takes over
+   * at ≥1280px. Hidden via `display: none` on every part so no
+   * fixed-position remnants leak into desktop viewports.
+   */
+  @media (min-width: 1280px) {
+    .article-toc-overlay,
+    .article-toc-toggle,
+    .article-toc-backdrop,
+    .article-toc-overlay-nav {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .article-toc-overlay-nav,
+    .article-toc-backdrop {
+      transition: none;
+    }
+  }
+</style>

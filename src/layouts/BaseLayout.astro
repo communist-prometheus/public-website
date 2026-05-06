@@ -107,6 +107,13 @@ const absoluteImage = shareImage.startsWith('http') ? shareImage : `${SITE_URL}$
       mobile.
     */}
     <MobileMenu lang={lang} />
+    {/*
+      `floating` slot for body-level fixed-position chrome (article
+      TOC overlay, etc.). Sibling of <main>, so a `position: fixed`
+      element here pins to the viewport instead of being clipped to
+      <main>'s view-transition containing block.
+    */}
+    <slot name="floating" />
     <script is:inline>
       if ('serviceWorker' in navigator && location.hostname !== 'localhost') {
         navigator.serviceWorker.register('/sw.js');

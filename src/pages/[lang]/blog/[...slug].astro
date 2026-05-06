@@ -5,7 +5,8 @@ import { DEFAULT_LANGUAGE, type Language, SUPPORTED_LANGUAGES } from '@/config/i
 import { getLabelsData } from '@/config/translations';
 import BlogPicture from '@/features/blog/components/BlogPicture.astro';
 import { getArticleSlug } from '@/features/blog/helpers/getBlogPosts';
-import ArticleToc from '@/features/content/components/ArticleToc.astro';
+import ArticleTocOverlay from '@/features/content/components/ArticleTocOverlay.astro';
+import ArticleTocSidebar from '@/features/content/components/ArticleTocSidebar.astro';
 import SuggestChangesLink from '@/features/content/components/SuggestChangesLink.astro';
 import { deriveDescription } from '@/features/content/helpers/deriveDescription';
 import { formatArticleDate } from '@/features/i18n/format-date';
@@ -92,7 +93,7 @@ const newspaperRef = await (async () => {
     <article class="section" itemscope itemtype="https://schema.org/Article">
       <meta itemprop="headline" content={post.data.title} />
       {pageDescription && <meta itemprop="description" content={pageDescription} />}
-      <ArticleToc headings={headings} label={tocLabel} articleTitle={post.data.title} />
+      <ArticleTocSidebar headings={headings} label={tocLabel} articleTitle={post.data.title} />
       <div class="container">
         <header class="post-header" id="article-top">
           <span class="category">{post.data.category}</span>
@@ -145,9 +146,29 @@ const newspaperRef = await (async () => {
       </div>
     </div>
   )}
+  {post && Content && (
+    <ArticleTocOverlay
+      slot="floating"
+      headings={headings}
+      label={tocLabel}
+      articleTitle={post.data.title}
+    />
+  )}
 </BaseLayout>
 
 <style>
+  /*
+   * Establish the article as the positioning context for the
+   * absolutely-laid-out TOC sidebar rail. Without this, the rail
+   * (`.article-toc-sidebar-rail`) would resolve `position: absolute`
+   * against the next-up positioned ancestor — usually <body> — and
+   * span the full document height instead of releasing at the
+   * article footer.
+   */
+  article.section {
+    position: relative;
+  }
+
   .post-header {
     max-width: 800px;
     margin-inline: auto;

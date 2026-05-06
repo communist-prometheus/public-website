@@ -1,0 +1,351 @@
+---
+/*
+ * Article table of contents — desktop sidebar.
+ *
+ * Rendered INSIDE the `<article>` element so the article wrapper is
+ * the sticky containing block. Uses `position: sticky` so the rail
+ * follows the reader as they scroll the article body, then naturally
+ * releases when the article wrapper's bottom passes the viewport —
+ * the rail scrolls up out of view "под шапку" instead of overlapping
+ * the footer.
+ *
+ * No JavaScript is involved in the layout. The scroll-spy script
+ * (shipped via this component, deduped by Astro across pages) only
+ * toggles active-link CSS classes; positioning is pure CSS.
+ *
+ * Hidden below 1280px viewport — the mobile overlay component handles
+ * narrow screens and ships its own FAB / panel chrome.
+ */
+
+interface Heading {
+  readonly depth: number;
+  readonly slug: string;
+  readonly text: string;
+}
+
+interface Props {
+  readonly headings: readonly Heading[];
+  readonly label?: string;
+  /** Article title — always rendered as the top TOC entry. */
+  readonly articleTitle: string;
+}
+
+const { headings, label = 'Contents', articleTitle } = Astro.props as Props;
+const TOP_SLUG = 'article-top';
+const subHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= 4);
+/*
+ * Only render when the body has real sub-headings (h2-h4). For
+ * prose-only articles the synthetic title entry would be the *only*
+ * row, which looks worse than no TOC at all.
+ */
+const visible: readonly Heading[] =
+  subHeadings.length > 0 ? [{ depth: 1, slug: TOP_SLUG, text: articleTitle }, ...subHeadings] : [];
+---
+
+{visible.length > 0 && (
+  <div
+    class="article-toc-sidebar-rail"
+    data-testid="article-toc-sidebar-rail"
+    aria-hidden="false"
+  >
+    <aside
+      class="article-toc-sidebar"
+      data-testid="article-toc-sidebar"
+      data-article-toc
+      aria-label={label}
+    >
+      <nav class="article-toc-sidebar-nav" aria-label={label}>
+        <span class="article-toc-heading">{label}</span>
+        <ol class="article-toc-list">
+          {visible.map((h) => (
+            <li class={`article-toc-item article-toc-item--depth-${h.depth}`}>
+              <a
+                href={`#${h.slug}`}
+                class="article-toc-link"
+                data-article-toc-link
+              >
+                {h.text}
+              </a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+    </aside>
+  </div>
+)}
+
+<script>
+  /*
+   * Shared TOC behaviour — wires every `[data-article-toc]` root on
+   * the page (both sidebar and overlay). Astro hoists + dedupes this
+   * script so emitting it from two components doesn't duplicate it
+   * at runtime.
+   *
+   * Responsibilities:
+   * 1. Smooth-scroll click handler — bypasses Astro's ClientRouter
+   *    and computes a header-aware offset so anchored headings land
+   *    cleanly below the sticky chrome.
+   * 2. Scroll-spy active-link highlight — position-based pass driven
+   *    by `requestAnimationFrame`, biased so the active link flips a
+   *    beat *before* the next heading reaches the very top.
+   */
+  type Cleanup = () => void;
+  const cleanups: Cleanup[] = [];
+
+  const init = (): void => {
+    while (cleanups.length > 0) cleanups.pop()?.();
+
+    const roots = Array.from(
+      document.querySelectorAll<HTMLElement>('[data-article-toc]'),
+    );
+    if (roots.length === 0) return;
+
+    const headerOffsetPx = (): number => {
+      const raw = getComputedStyle(
+        document.documentElement,
+      ).getPropertyValue('--header-height');
+      const px = parseFloat(raw || '60') || 60;
+      return px + 12;
+    };
+
+    /*
+     * Close any open overlay panel (mobile slide-in). The overlay
+     * exposes a `[data-article-toc-close]` hook on its root; calling
+     * it lets the click handler dismiss the panel after a link tap
+     * without this script needing to know overlay-specific markup.
+     */
+    const closeOverlays = (): void => {
+      for (const root of roots) {
+        const close = (root as HTMLElement & {
+          _articleTocClose?: () => void;
+        })._articleTocClose;
+        close?.();
+      }
+    };
+
+    const links = Array.from(
+      document.querySelectorAll<HTMLAnchorElement>(
+        'a[data-article-toc-link]',
+      ),
+    );
+
+    for (const a of links) {
+      const onClick = (e: MouseEvent): void => {
+        const href = a.getAttribute('href') ?? '';
+        if (href.startsWith('#')) {
+          e.preventDefault();
+          const id = decodeURIComponent(href.slice(1));
+          const target = document.getElementById(id);
+          if (target) {
+            const top =
+              target.getBoundingClientRect().top +
+              globalThis.scrollY -
+              headerOffsetPx();
+            globalThis.scrollTo({ top, behavior: 'smooth' });
+            history.pushState(undefined, '', href);
+          }
+        }
+        closeOverlays();
+      };
+      a.addEventListener('click', onClick);
+      cleanups.push(() => a.removeEventListener('click', onClick));
+    }
+
+    /*
+     * Scroll-spy. Build a single (slug → link) map across every TOC
+     * root so the same heading lights the matching link in BOTH the
+     * sidebar and the overlay simultaneously.
+     */
+    const linksBySlug = new Map<string, HTMLAnchorElement[]>();
+    const slugs: string[] = [];
+    for (const a of links) {
+      const id = decodeURIComponent(
+        (a.getAttribute('href') ?? '').replace(/^#/, ''),
+      );
+      if (!id) continue;
+      const bucket = linksBySlug.get(id) ?? [];
+      bucket.push(a);
+      linksBySlug.set(id, bucket);
+      if (!slugs.includes(id)) slugs.push(id);
+    }
+    const headings = slugs
+      .map((slug) => document.getElementById(slug))
+      .filter((el): el is HTMLElement => el !== null);
+
+    let activeSlug: string | undefined;
+    const setActive = (slug: string | undefined): void => {
+      if (slug === activeSlug) return;
+      if (activeSlug) {
+        for (const a of linksBySlug.get(activeSlug) ?? []) {
+          a.classList.remove('article-toc-link--active');
+          a.removeAttribute('aria-current');
+        }
+      }
+      if (slug) {
+        for (const a of linksBySlug.get(slug) ?? []) {
+          a.classList.add('article-toc-link--active');
+          a.setAttribute('aria-current', 'location');
+        }
+      }
+      activeSlug = slug;
+    };
+
+    let spyTicking = false;
+    const computeActive = (): void => {
+      spyTicking = false;
+      if (headings.length === 0) return;
+      const headerH =
+        parseFloat(
+          getComputedStyle(document.documentElement).getPropertyValue(
+            '--header-height',
+          ) || '60',
+        ) || 60;
+      const trigger = globalThis.scrollY + headerH * 1.5;
+      let next: string | undefined;
+      for (const h of headings) {
+        const top =
+          h.getBoundingClientRect().top + globalThis.scrollY;
+        if (top <= trigger) next = h.id;
+        else break;
+      }
+      const atBottom =
+        globalThis.scrollY + globalThis.innerHeight >=
+        document.documentElement.scrollHeight - 4;
+      if (atBottom && headings.length > 0) {
+        next = headings[headings.length - 1]?.id;
+      }
+      setActive(next);
+    };
+    const onSpyScroll = (): void => {
+      if (spyTicking) return;
+      spyTicking = true;
+      requestAnimationFrame(computeActive);
+    };
+    computeActive();
+    globalThis.addEventListener('scroll', onSpyScroll, {
+      passive: true,
+    });
+    cleanups.push(() =>
+      globalThis.removeEventListener('scroll', onSpyScroll),
+    );
+  };
+
+  init();
+  document.addEventListener('astro:page-load', init);
+</script>
+
+<style>
+  /*
+   * Outer rail: absolutely positioned in the article's left gutter
+   * so it doesn't take horizontal space (the centred .container
+   * stays centred). It spans the article's full height — its
+   * `position: relative` ancestor `<article>` becomes the bounding
+   * box for the sticky child.
+   *
+   * Hidden by default; the desktop media query toggles it on.
+   */
+  .article-toc-sidebar-rail {
+    display: none;
+  }
+
+  .article-toc-sidebar-nav {
+    display: block;
+  }
+
+  .article-toc-heading {
+    display: block;
+    padding-left: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .article-toc-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .article-toc-item {
+    line-height: 1.4;
+    margin-bottom: 0.125rem;
+  }
+
+  .article-toc-item--depth-3 {
+    padding-left: var(--spacing-md);
+  }
+
+  .article-toc-item--depth-4 {
+    padding-left: var(--spacing-lg);
+  }
+
+  .article-toc-link {
+    display: block;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition:
+      background-color var(--transition-fast),
+      color var(--transition-fast);
+  }
+
+  .article-toc-link:hover,
+  .article-toc-link:focus-visible {
+    background: var(--color-surface);
+    color: var(--color-accent);
+  }
+
+  .article-toc-link--active {
+    color: var(--color-accent);
+    font-weight: 600;
+    border-left: 2px solid var(--color-accent);
+    margin-left: -0.5rem;
+    padding-left: calc(0.5rem - 2px);
+  }
+
+  .article-toc-link--active:hover {
+    background: transparent;
+  }
+
+  /*
+   * Desktop layout (≥1280px). Viewport leaves ~240px of gutter on
+   * each side of the centred article column; the rail tucks into
+   * the left gutter without competing with prose for horizontal
+   * space.
+   *
+   * Layout strategy:
+   * - `.article-toc-sidebar-rail` is absolutely positioned at the
+   *   article's left edge, spanning its full height. This is what
+   *   bounds the sticky child: when the article ends, the rail's
+   *   bottom passes through the viewport and the sticky child
+   *   scrolls up "под шапку" with it, leaving the site footer
+   *   unobstructed.
+   * - `.article-toc-sidebar` (the sticky child) follows the reader
+   *   from `top: header-height + 8px` until the rail's bottom
+   *   pushes it out — pure CSS, zero JS.
+   */
+  @media (min-width: 1280px) {
+    .article-toc-sidebar-rail {
+      display: block;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: clamp(1rem, 2vw, 1.5rem);
+      width: clamp(180px, 16vw, 240px);
+      pointer-events: none;
+    }
+
+    .article-toc-sidebar {
+      position: sticky;
+      top: calc(var(--header-height, 5rem) + 0.5rem);
+      max-height: calc(100vh - var(--header-height, 5rem) - 2rem);
+      overflow-y: auto;
+      pointer-events: auto;
+    }
+  }
+</style>

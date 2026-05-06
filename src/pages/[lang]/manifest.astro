@@ -2,7 +2,8 @@
 import { getCollection } from 'astro:content';
 import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from '@/config/i18n';
 import { getLabelsData } from '@/config/translations';
-import ArticleToc from '@/features/content/components/ArticleToc.astro';
+import ArticleTocOverlay from '@/features/content/components/ArticleTocOverlay.astro';
+import ArticleTocSidebar from '@/features/content/components/ArticleTocSidebar.astro';
 import SuggestChangesLink from '@/features/content/components/SuggestChangesLink.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 
@@ -38,7 +39,7 @@ const tocLabel = labels?.data.tableOfContents ?? 'Contents';
 
 <BaseLayout title={`${page.data.title} - Prometheus`} {...(page.data.description ? { description: page.data.description } : {})} lang={lang}>
   <article class="section">
-    <ArticleToc headings={headings} label={tocLabel} articleTitle={page.data.title} />
+    <ArticleTocSidebar headings={headings} label={tocLabel} articleTitle={page.data.title} />
     <div class="container">
       <div class="manifest-header" id="article-top">
         <h1>{page.data.title}</h1>
@@ -49,9 +50,23 @@ const tocLabel = labels?.data.tableOfContents ?? 'Contents';
       <SuggestChangesLink collection="pages" entryId={page.id} />
     </div>
   </article>
+  <ArticleTocOverlay
+    slot="floating"
+    headings={headings}
+    label={tocLabel}
+    articleTitle={page.data.title}
+  />
 </BaseLayout>
 
 <style>
+  /*
+   * Positioning context for the absolute TOC sidebar rail — see
+   * ArticleTocSidebar.astro for the layout strategy.
+   */
+  article.section {
+    position: relative;
+  }
+
   .manifest-header {
     max-width: 800px;
     margin-inline: auto;
