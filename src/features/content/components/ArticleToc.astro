@@ -17,8 +17,13 @@
  * the `#${slug}` hrefs land on the right section without us having to
  * rewrite the article HTML.
  *
- * h1 is the article title (rendered separately) and h≥5 is rare and
- * noisy in a TOC, so we keep h2–h4 only.
+ * h≥5 is rare and noisy in a TOC, so we keep h1–h4. Including h1
+ * matters: many editorial articles are long-form prose with no
+ * subheadings, and previously got no TOC at all. With h1 included
+ * they at least get a one-entry "back to top" affordance, and
+ * articles WITH subheadings start with the title as the anchor for
+ * "I've scrolled past everything, take me back" — matches reading
+ * rhythm better than relying on the browser's native top-of-page.
  */
 
 interface Heading {
@@ -33,7 +38,7 @@ interface Props {
 }
 
 const { headings, label = 'Contents' } = Astro.props as Props;
-const visible = headings.filter((h) => h.depth >= 2 && h.depth <= 4);
+const visible = headings.filter((h) => h.depth >= 1 && h.depth <= 4);
 ---
 
 {visible.length > 0 && (
