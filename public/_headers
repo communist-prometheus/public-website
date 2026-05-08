@@ -1,0 +1,19 @@
+# Cloudflare Pages / Workers static-assets header rules.
+# https://developers.cloudflare.com/pages/configuration/headers/
+
+# Force .fb2 (FictionBook) downloads instead of inline XML preview.
+# Without these, CF infers `application/xml` for the unknown
+# extension; the browser then opens the XML viewer and "Save as"
+# proposes `.xml` because it trusts the response Content-Type
+# over the URL/`download` attribute. Setting an explicit MIME +
+# Content-Disposition: attachment fixes both.
+/newspaper/*/assets/*.fb2
+  Content-Type: application/x-fictionbook+xml
+  Content-Disposition: attachment
+
+# Same for any incidentally-served *.docx (the editor never
+# persists docx, but be defensive — saves a "broken file" support
+# ticket if one ever leaks through).
+/newspaper/*/assets/*.docx
+  Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document
+  Content-Disposition: attachment
