@@ -86,6 +86,14 @@ const commonCollection = defineCollection({
     menu: z.string().optional(),
     copyright: z.string().optional(),
     readMore: z.string().optional(),
+    /*
+     * Newspaper-issue download labels. Distinct keys so editors can
+     * localise PDF and FB2 buttons separately and so the layout no
+     * longer reuses `readMore` (which was visually wrong: a "Read
+     * more" button that actually downloads a binary).
+     */
+    downloadPdf: z.string().optional(),
+    downloadFb2: z.string().optional(),
     viewAll: z.string().optional(),
     backToList: z.string().optional(),
     tableOfContents: z.string().optional(),
