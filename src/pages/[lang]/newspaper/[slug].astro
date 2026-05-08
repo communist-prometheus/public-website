@@ -5,6 +5,8 @@ import { getLabelsData } from '@/config/translations';
 import { getArticleSlug } from '@/features/blog/helpers/getBlogPosts';
 import SuggestChangesLink from '@/features/content/components/SuggestChangesLink.astro';
 import MissingTranslation from '@/features/i18n/MissingTranslation.astro';
+import DownloadLink from '@/features/newspaper/components/DownloadLink.astro';
+import { findIssueAsset } from '@/features/newspaper/helpers/findIssueAsset';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 
 /*
@@ -47,7 +49,8 @@ const { lang, slug } = Astro.params;
 
 const labels = (await getLabelsData(lang)) ?? (await getLabelsData('en'));
 const backLabel = labels?.data.backToList ?? '← Back';
-const downloadLabel = labels?.data.readMore ?? 'Download PDF';
+const pdfLabel = labels?.data.downloadPdf ?? 'Download PDF';
+const fb2Label = labels?.data.downloadFb2 ?? 'Download FB2';
 
 interface TocEntry {
   readonly slug: string;
@@ -69,7 +72,8 @@ const tocEntries = await (async (): Promise<ReadonlyArray<TocEntry>> => {
   });
 })();
 
-const pdfPath = issue ? `/newspaper/${slug}/assets/gazette.pdf` : undefined;
+const pdfAsset = issue ? findIssueAsset(slug, '.pdf') : undefined;
+const fb2Asset = issue ? findIssueAsset(slug, '.fb2') : undefined;
 ---
 
 <BaseLayout
@@ -89,11 +93,26 @@ const pdfPath = issue ? `/newspaper/${slug}/assets/gazette.pdf` : undefined;
           <header class="issue-header">
             <h1>{issue.data.title}</h1>
             <p class="issue-description">{issue.data.description}</p>
-            {pdfPath && (
-              <a href={pdfPath} download class="download-cta">
-                {downloadLabel} <span aria-hidden="true">↓</span>
-              </a>
-            )}
+            <div class="downloads">
+              {pdfAsset && (
+                <DownloadLink
+                  url={pdfAsset.url}
+                  label={pdfLabel}
+                  format="pdf"
+                  size={pdfAsset.size}
+                  testId="newspaper-pdf"
+                />
+              )}
+              {fb2Asset && (
+                <DownloadLink
+                  url={fb2Asset.url}
+                  label={fb2Label}
+                  format="fb2"
+                  size={fb2Asset.size}
+                  testId="newspaper-fb2"
+                />
+              )}
+            </div>
           </header>
           {tocEntries.length > 0 && (
             <section class="toc" aria-label="Issue contents">
@@ -160,21 +179,12 @@ const pdfPath = issue ? `/newspaper/${slug}/assets/gazette.pdf` : undefined;
     margin-bottom: var(--spacing-lg);
   }
 
-  .download-cta {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-    padding: var(--spacing-sm) var(--spacing-lg);
-    background: var(--color-accent);
-    color: var(--color-on-accent);
-    border-radius: var(--radius-sm);
-    text-decoration: none;
-    font-weight: 500;
-    min-height: 44px;
-  }
-
-  .download-cta:hover {
-    background: var(--color-accent-hover);
+  .downloads {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
   }
 
   .toc {

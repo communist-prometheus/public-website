@@ -1,0 +1,88 @@
+---
+import { formatBytes } from '../helpers/formatBytes';
+
+interface Props {
+  readonly url: string;
+  readonly label: string;
+  readonly format: 'pdf' | 'fb2';
+  readonly size: number;
+  readonly testId?: string;
+}
+
+const { url, label, format, size, testId } = Astro.props;
+---
+
+<a
+  href={url}
+  download
+  class={`download-link format-${format}`}
+  {...(testId ? { 'data-testid': testId } : {})}
+>
+  <span class="format-badge" aria-hidden="true">{format.toUpperCase()}</span>
+  <span class="download-text">
+    <span class="download-label">{label}</span>
+    <span class="download-size">{formatBytes(size)}</span>
+  </span>
+</a>
+
+<style>
+  .download-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-xs) var(--spacing-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-elevated);
+    color: var(--color-text-primary);
+    text-decoration: none;
+    min-height: 44px;
+    transition: border-color var(--transition-fast),
+      background var(--transition-fast);
+  }
+
+  .download-link:hover {
+    border-color: var(--color-accent);
+    background: var(--color-surface);
+  }
+
+  .format-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+  }
+
+  .format-pdf .format-badge {
+    background: #d83b3b;
+  }
+
+  .format-fb2 .format-badge {
+    background: #2f7d32;
+  }
+
+  .download-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+    min-width: 0;
+  }
+
+  .download-label {
+    font-weight: 500;
+    font-size: 0.9375rem;
+  }
+
+  .download-size {
+    color: var(--color-text-secondary);
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+  }
+</style>

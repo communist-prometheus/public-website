@@ -21,7 +21,8 @@ const { lang } = Astro.params;
 
 const items = await getNewspaperItems(lang);
 const labels = (await getLabelsData(lang)) ?? (await getLabelsData(DEFAULT_LANGUAGE));
-const readMore = labels?.data.readMore ?? 'Download PDF';
+const pdfLabel = labels?.data.downloadPdf ?? 'Download PDF';
+const fb2Label = labels?.data.downloadFb2 ?? 'Download FB2';
 ---
 
 <BaseLayout
@@ -42,7 +43,8 @@ const readMore = labels?.data.readMore ?? 'Download PDF';
               lang={lang}
               image={item.data.image ?? undefined}
               headingLevel={2}
-              downloadLabel={readMore}
+              pdfLabel={pdfLabel}
+              fb2Label={fb2Label}
             />
           ))}
         </div>
