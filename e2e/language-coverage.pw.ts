@@ -47,14 +47,24 @@ test.describe('Language coverage — every code in settings must work', () => {
   for (const { code, label } of languages) {
     test.describe(`${label} (${code})`, () => {
       /*
-       * After PR #74 (empty-section gating) sections without
-       * published content for this lang 404 by design — that's the
-       * editor's contract. Skip those tuples; the existing-section
-       * tuples still assert the lang attr + h1 is rendered.
+       * The listing routes (`/blog`, `/positions`, `/newspaper`)
+       * must serve a 200 for EVERY supported language even when no
+       * issues are published in that lang yet — the listing page
+       * shows an empty-state instead of 404. Pre-fix the user hit
+       * `/en/newspaper` (no English issues yet) and got the
+       * site-wide "This page does not exist" 404; the deploy gate
+       * had no failing test because the suite skipped empty langs
+       * by design.
+       *
+       * `manifest` is the exception: it renders the article body
+       * directly (no empty-state branch), so the route only exists
+       * for langs that have a manifest translation. Skip those.
        */
       for (const p of pages) {
         const section = sectionByPath[p] ?? 'home';
-        const exists = hasSection(availability, code, section);
+        const isListingOrHome =
+          p === '' || p === '/blog' || p === '/positions' || p === '/newspaper';
+        const exists = isListingOrHome || hasSection(availability, code, section);
         const variant = exists ? test : test.skip;
         variant(`/${code}${p} renders with lang="${code}"`, async ({ page }) => {
           const res = await visit(page, `/${code}${p}`);

@@ -6,16 +6,8 @@ import PositionCard from '@/features/positions/components/PositionCard.astro';
 import { getPositions } from '@/features/positions/helpers/getPositions';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 
-/* Skip languages with no published positions — see blog/index.astro. */
-export const getStaticPaths = async () => {
-  const filled = await Promise.all(
-    SUPPORTED_LANGUAGES.map(async (lang) => ({
-      lang,
-      has: (await getPositions(lang)).length > 0,
-    })),
-  );
-  return filled.filter(({ has }) => has).map(({ lang }) => ({ params: { lang } }));
-};
+/* Generate every supported language — see blog/index.astro. */
+export const getStaticPaths = async () => SUPPORTED_LANGUAGES.map((lang) => ({ params: { lang } }));
 
 const { lang } = Astro.params;
 

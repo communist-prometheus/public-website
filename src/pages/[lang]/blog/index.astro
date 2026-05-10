@@ -12,22 +12,13 @@ import { deriveSummary } from '@/features/content/helpers/deriveSummary';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 
 /*
- * Only emit the listing route for languages that have at least one
- * published blog post. The nav drops the link when the section is
- * empty (see getSectionAvailability); skipping the route here means
- * the URL itself 404s rather than serving an empty list.
+ * Generate the listing for every supported language. The nav drops
+ * the link when the section is empty (see getSectionAvailability),
+ * but a user who reaches the URL directly (RSS / external link /
+ * shared URL / manual) must still get the empty-state page rather
+ * than a 404.
  */
-export const getStaticPaths = async () => {
-  const langsWithPosts = await Promise.all(
-    SUPPORTED_LANGUAGES.map(async (lang) => ({
-      lang,
-      hasPosts: (await getBlogPosts(lang)).length > 0,
-    })),
-  );
-  return langsWithPosts
-    .filter(({ hasPosts }) => hasPosts)
-    .map(({ lang }) => ({ params: { lang } }));
-};
+export const getStaticPaths = async () => SUPPORTED_LANGUAGES.map((lang) => ({ params: { lang } }));
 
 const { lang } = Astro.params;
 
