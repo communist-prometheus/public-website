@@ -36,8 +36,8 @@ const {
  * to dist as-is.
  */
 const detailPath = `/${lang}/newspaper/${slug}`;
-const pdfAsset = findIssueAsset(slug, '.pdf');
-const fb2Asset = findIssueAsset(slug, '.fb2');
+const pdfAsset = findIssueAsset(slug, lang, '.pdf');
+const fb2Asset = findIssueAsset(slug, lang, '.fb2');
 ---
 
 <article class="newspaper-card" data-testid="newspaper-card">
