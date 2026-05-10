@@ -2,6 +2,8 @@
 import { Picture } from 'astro:assets';
 import { type CollectionEntry, getCollection } from 'astro:content';
 import { DEFAULT_LANGUAGE, type Language, SUPPORTED_LANGUAGES } from '@/config/i18n';
+import { SITE_URL } from '@/config/seo';
+import { buildBlogPostingLD } from '@/config/structured-data';
 import { getLabelsData } from '@/config/translations';
 import BlogPicture from '@/features/blog/components/BlogPicture.astro';
 import { getArticleSlug } from '@/features/blog/helpers/getBlogPosts';
@@ -67,6 +69,23 @@ const pageDescription = post ? deriveDescription(post.data.description, post.bod
 const publishedDate = post ? (post.data.publishDate ?? post.data.pubDate) : undefined;
 const isoDate = publishedDate?.toISOString();
 
+/*
+ * Article-level JSON-LD triggers Google's "Article" rich result and
+ * lets the publisher (Organization) anchor cleanly to the global
+ * Organization block in BaseLayout. Microdata `itemscope` further
+ * down is kept for legacy crawlers; modern crawlers prefer JSON-LD.
+ */
+const articleLD = post
+  ? buildBlogPostingLD({
+      title: post.data.title,
+      ...(pageDescription ? { description: pageDescription } : {}),
+      lang,
+      ...(publishedDate ? { publishDate: publishedDate } : {}),
+      url: `${SITE_URL}/${lang}/blog/${slug}`,
+      ...(post.data.category ? { category: post.data.category } : {}),
+    })
+  : undefined;
+
 const newspaperRef = await (async () => {
   if (!post?.data.newspaper) return undefined;
   const issues = await getCollection('newspaper');
@@ -89,6 +108,13 @@ const newspaperRef = await (async () => {
   {...(pageDescription ? { description: pageDescription } : {})}
   lang={lang}
 >
+  {articleLD && (
+    <script
+      slot="head"
+      type="application/ld+json"
+      set:html={JSON.stringify(articleLD)}
+    />
+  )}
   {post && Content ? (
     <article class="section" itemscope itemtype="https://schema.org/Article">
       <meta itemprop="headline" content={post.data.title} />
