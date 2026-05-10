@@ -6,16 +6,15 @@ import NewspaperCard from '@/features/newspaper/components/NewspaperCard.astro';
 import { getNewspaperItems } from '@/features/newspaper/helpers/getNewspaperItems';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 
-/* Skip languages with no published newspaper issues. */
-export const getStaticPaths = async () => {
-  const filled = await Promise.all(
-    SUPPORTED_LANGUAGES.map(async (lang) => ({
-      lang,
-      has: (await getNewspaperItems(lang)).length > 0,
-    })),
-  );
-  return filled.filter(({ has }) => has).map(({ lang }) => ({ params: { lang } }));
-};
+/*
+ * Generate the listing for every supported language, even when no
+ * issues are published in that language yet — the empty state below
+ * shows "No newspaper editions yet" instead of a 404. The previous
+ * "skip empty langs" filter meant `/en/newspaper` 404'd on master
+ * because only the Russian edition had been published, even though
+ * the EN nav linked to it.
+ */
+export const getStaticPaths = async () => SUPPORTED_LANGUAGES.map((lang) => ({ params: { lang } }));
 
 const { lang } = Astro.params;
 
