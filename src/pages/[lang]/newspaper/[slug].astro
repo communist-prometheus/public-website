@@ -72,8 +72,8 @@ const tocEntries = await (async (): Promise<ReadonlyArray<TocEntry>> => {
   });
 })();
 
-const pdfAsset = issue ? findIssueAsset(slug, '.pdf') : undefined;
-const fb2Asset = issue ? findIssueAsset(slug, '.fb2') : undefined;
+const pdfAsset = issue ? findIssueAsset(slug, lang, '.pdf') : undefined;
+const fb2Asset = issue ? findIssueAsset(slug, lang, '.fb2') : undefined;
 ---
 
 <BaseLayout
