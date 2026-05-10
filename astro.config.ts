@@ -1,13 +1,42 @@
+import sitemap from '@astrojs/sitemap';
 import { defineConfig } from 'astro/config';
 import contentMedia from './src/integrations/content-media';
 import newspaperFb2 from './src/integrations/newspaper-fb2';
 import newspaperPdfs from './src/integrations/newspaper-pdfs';
 import swManifest from './src/integrations/sw-manifest';
 
+/*
+ * `@astrojs/sitemap` emits sitemap-index.xml + sitemap-0.xml at the
+ * site root and inlines `<xhtml:link rel="alternate" hreflang="…">`
+ * for every locale that owns the same path. Without these pairings
+ * Google treats `/en/blog/foo` and `/ru/blog/foo` as duplicate
+ * content and only ranks one of them. The locale codes follow the
+ * project's existing `settings/languages.json` (bl → bg-BG since
+ * Bulgarian's BCP-47 tag is `bg`; the route still uses `bl`).
+ */
 export default defineConfig({
   site: 'https://comprom.org',
   cacheDir: './.astro-cache',
-  integrations: [contentMedia(), newspaperPdfs(), newspaperFb2(), swManifest()],
+  integrations: [
+    contentMedia(),
+    newspaperPdfs(),
+    newspaperFb2(),
+    swManifest(),
+    sitemap({
+      i18n: {
+        defaultLocale: 'en',
+        locales: {
+          en: 'en-US',
+          ru: 'ru-RU',
+          it: 'it-IT',
+          es: 'es-ES',
+          bl: 'bg-BG',
+          pl: 'pl-PL',
+          uk: 'uk-UA',
+        },
+      },
+    }),
+  ],
   vite: {
     cacheDir: './.vite-cache',
     resolve: {

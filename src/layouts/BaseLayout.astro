@@ -1,6 +1,8 @@
 ---
 import { ClientRouter } from 'astro:transitions';
 import type { Language } from '@/config/i18n';
+import { buildHreflangAlternates, SITE_URL } from '@/config/seo';
+import { buildOrganizationLD, buildWebSiteLD } from '@/config/structured-data';
 import Footer from '@/features/navigation/components/Footer.astro';
 import Header from '@/features/navigation/components/Header.astro';
 import MobileMenu from '@/features/navigation/components/MobileMenu.astro';
@@ -31,7 +33,6 @@ const { title, description, lang, ogImage } = Astro.props;
  * here means every page now gets a deterministic share preview
  * regardless of cache state.
  */
-const SITE_URL = 'https://comprom.org';
 const ogLocaleMap: Readonly<Record<string, string>> = {
   en: 'en_US',
   ru: 'ru_RU',
@@ -44,6 +45,16 @@ const ogLocaleMap: Readonly<Record<string, string>> = {
 const canonical = `${SITE_URL}${Astro.url.pathname}`;
 const shareImage = ogImage ?? '/logo-light.svg';
 const absoluteImage = shareImage.startsWith('http') ? shareImage : `${SITE_URL}${shareImage}`;
+
+/*
+ * `hreflang` alternates tell Google these are translations of the
+ * same canonical content, not duplicate pages competing for the
+ * same query. Without them only one locale ranks per query and the
+ * other six effectively don't exist for search.
+ */
+const hreflangAlternates = buildHreflangAlternates(Astro.url.pathname);
+const organizationLD = buildOrganizationLD();
+const websiteLD = buildWebSiteLD(lang);
 ---
 
 <!doctype html>
@@ -57,6 +68,9 @@ const absoluteImage = shareImage.startsWith('http') ? shareImage : `${SITE_URL}$
     <meta name="theme-color" content="#cf3618" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#ef6e3d" media="(prefers-color-scheme: dark)" />
     <link rel="canonical" href={canonical} />
+    {hreflangAlternates.map(({ hreflang, href }) => (
+      <link rel="alternate" hreflang={hreflang} href={href} />
+    ))}
     <link
       rel="alternate"
       type="application/rss+xml"
@@ -76,6 +90,15 @@ const absoluteImage = shareImage.startsWith('http') ? shareImage : `${SITE_URL}$
     <meta name="twitter:title" content={title} />
     {description && <meta name="twitter:description" content={description} />}
     <meta name="twitter:image" content={absoluteImage} />
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify(organizationLD)}
+    />
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify(websiteLD)}
+    />
+    <slot name="head" />
     <ClientRouter />
     <script is:inline>
       (function () {
