@@ -19,12 +19,19 @@ import {
  * - Mobile / narrow desktop: floating FAB visible, nav hidden until
  * FAB tap; backdrop, Escape and link click all dismiss the panel.
  *
- * `astro-framework` is used because it has a known h1/h2/h3 hierarchy
- * in EN; if that file moves, point at any other published EN blog
- * post that ships ≥2 sub-headings.
+ * Target article: `programme-outline` (RU) — the only currently
+ * published article in the content repo with ≥5 h2/h3 sections,
+ * which `expectMinCount(..., 5)` below requires. The previous
+ * target `/en/blog/astro-framework` was removed from the content
+ * repo months ago; the test suite still pointed at it because the
+ * deploy gate had been silently bypassed by `content:`-prefixed
+ * commits. If `programme-outline` moves, repoint at any published
+ * article that ships ≥5 sub-headings (count via
+ * `git ls-tree -r origin/master --name-only | grep '^blog/.*\\.md$'`
+ * + `grep -cE '^#{2,3}\\s'`).
  */
 
-const ARTICLE = '/en/blog/astro-framework';
+const ARTICLE = '/ru/blog/programme-outline';
 
 const TOC = '[data-testid="article-toc"]';
 const TOGGLE = '[data-testid="article-toc-toggle"]';

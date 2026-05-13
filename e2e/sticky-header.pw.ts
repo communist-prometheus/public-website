@@ -17,7 +17,16 @@ import { expect, type Page, test, visit } from '@prometheus/e2e-toolkit';
  *   is unaffected by the header's transform.
  */
 
-const ARTICLE = '/en/blog/astro-framework';
+/*
+ * Any tall article URL works — the suite scrolls 500–1000 px so the
+ * page just needs to be scrollable. `programme-outline` is the only
+ * currently published article with enough body to scroll past the
+ * header. The prior target `/en/blog/astro-framework` was deleted
+ * from the content repo; the gap stayed latent because every push
+ * since then was a `content:`-prefixed commit (deploy.yml skips e2e
+ * for content syncs).
+ */
+const ARTICLE = '/ru/blog/programme-outline';
 
 const readState = (page: Page) =>
   page.evaluate(() => ({
