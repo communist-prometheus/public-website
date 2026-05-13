@@ -1,4 +1,4 @@
-import { expectText, expectVisible, test, visit } from '@prometheus/e2e-toolkit';
+import { expectText, test, visit } from '@prometheus/e2e-toolkit';
 
 /*
  * Positions are an editorial-only feature: editors can publish or
