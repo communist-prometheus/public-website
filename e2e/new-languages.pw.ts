@@ -17,12 +17,12 @@ const languages = [
   {
     code: 'it',
     label: 'Italiano',
-    nav: { home: 'Home', blog: 'Blog', positions: 'Posizioni', manifest: 'Manifesto' },
+    nav: { home: 'Home', blog: 'Blog', manifest: 'Manifesto' },
   },
   {
     code: 'es',
     label: 'Español',
-    nav: { home: 'Inicio', blog: 'Blog', positions: 'Posiciones', manifest: 'Manifiesto' },
+    nav: { home: 'Inicio', blog: 'Blog', manifest: 'Manifiesto' },
   },
 ] as const;
 
@@ -62,12 +62,18 @@ for (const lang of languages) {
       await expectVisible(page, page.locator('h1').first());
     });
 
+    /*
+     * Nav contains only links to sections that have published
+     * content for the active language — see
+     * `src/config/section-availability.ts`. Positions is currently
+     * empty in prod and so is dropped from nav; assert only the
+     * always-present chrome links (home, blog, manifest).
+     */
     test('navigation renders translated labels', async ({ page }) => {
       await visit(page, `/${lang.code}`);
       const nav = page.locator('[data-testid="desktop-nav"]');
       await expectText(page, nav.locator(`a[href="/${lang.code}"]`), lang.nav.home);
       await expectText(page, nav.locator(`a[href="/${lang.code}/blog"]`), lang.nav.blog);
-      await expectText(page, nav.locator(`a[href="/${lang.code}/positions"]`), lang.nav.positions);
       await expectText(page, nav.locator(`a[href="/${lang.code}/manifest"]`), lang.nav.manifest);
     });
 
