@@ -45,7 +45,23 @@ const TOC_MOBILE = '[data-testid="article-toc"]';
 const TOGGLE = '[data-testid="article-toc-toggle"]';
 const BACKDROP = '[data-testid="article-toc-backdrop"]';
 
+/*
+ * `ArticleTocOverlay.astro` stamps `data-toc-ready="true"` on its
+ * root once the FAB / backdrop / Escape listeners are attached.
+ * Wait on that signal before driving the FAB so the test never
+ * races the hoisted module script (which historically did an
+ * early sweep and silently dropped the toggle listener when the
+ * inner button hadn't been parsed yet).
+ */
+const waitForOverlayReady = async (page: Page): Promise<void> => {
+  await page.locator(`${TOC_MOBILE}[data-toc-ready="true"]`).waitFor({
+    state: 'attached',
+    timeout: 5000,
+  });
+};
+
 const openMobilePanel = async (page: Page): Promise<void> => {
+  await waitForOverlayReady(page);
   await click(page, page.locator(TOGGLE));
   await expectAttribute(page, page.locator(TOGGLE), 'aria-expanded', 'true');
 };
@@ -143,29 +159,13 @@ test.describe('Article TOC — mobile slide-in', () => {
     await expectAttribute(page, page.locator(TOGGLE), 'aria-expanded', 'false');
   });
 
-  /*
-   * TODO(#__): the four panel-open scenarios below race the
-   * overlay's init() script — playwright's `click()` lands before
-   * the module script has attached the toggle's listener, so the
-   * test observes the FAB visible but no `aria-expanded='true'` ever
-   * fires. The contract under test is real (FAB tap → panel opens,
-   * backdrop/Escape/link tap → close) but the harness needs a
-   * better wait. Options:
-   *  - have ArticleTocOverlay.astro stamp a `data-toc-ready` on the
-   *    root once init() runs and have the test wait on that;
-   *  - move the listener out of an Astro-hoisted module script;
-   *  - convert these to a `page.waitForFunction` that checks
-   *    `_articleTocClose` is set, then dispatch a synthetic click.
-   * Skipping until then so the deploy gate stays meaningful for
-   * everything else.
-   */
-  test.skip('tapping FAB opens the panel', async ({ page }) => {
+  test('tapping FAB opens the panel', async ({ page }) => {
     await visit(page, ARTICLE);
     await openMobilePanel(page);
     await expectVisible(page, page.locator('#article-toc-overlay-nav'));
   });
 
-  test.skip('backdrop click dismisses the panel', async ({ page }) => {
+  test('backdrop click dismisses the panel', async ({ page }) => {
     await visit(page, ARTICLE);
     await openMobilePanel(page);
     /*
@@ -180,14 +180,14 @@ test.describe('Article TOC — mobile slide-in', () => {
     await expectAttribute(page, page.locator(TOGGLE), 'aria-expanded', 'false');
   });
 
-  test.skip('Escape dismisses the panel', async ({ page }) => {
+  test('Escape dismisses the panel', async ({ page }) => {
     await visit(page, ARTICLE);
     await openMobilePanel(page);
     await pressKey(page, 'Escape');
     await expectAttribute(page, page.locator(TOGGLE), 'aria-expanded', 'false');
   });
 
-  test.skip('tapping a link dismisses the panel and updates hash', async ({ page }) => {
+  test('tapping a link dismisses the panel and updates hash', async ({ page }) => {
     await visit(page, ARTICLE);
     await openMobilePanel(page);
     const firstLink = page.locator(`${TOC_MOBILE} .article-toc-link`).first();
