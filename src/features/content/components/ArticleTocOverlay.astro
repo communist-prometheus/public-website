@@ -96,41 +96,71 @@ const visible: readonly Heading[] =
    * Smooth-scroll click + scroll-spy live in ArticleTocSidebar.astro
    * (Astro hoists + dedupes scripts across components, so importing
    * either component bootstraps the shared TOC behaviour).
+   *
+   * Astro hoists this module into a separate file with `defer`/module
+   * semantics; on the first page load that file can execute against a
+   * server-rendered overlay whose subtree is still being inserted
+   * piece-by-piece. The historical race was: `init()` runs, finds the
+   * `<div.article-toc-overlay>`, but `root.querySelector('[data-
+   * testid="article-toc-toggle"]')` returns null because the inner
+   * button hasn't been parsed yet — so `_articleTocClose` is set on
+   * the root, the test sees "init has run", but the click listener
+   * was never attached. `astro:page-load` fires later (with view
+   * transitions enabled) and `init()` re-runs successfully, but
+   * e2e tests beat that event.
+   *
+   * Two changes make init reliable:
+   *  - If `init()` doesn't find the toggle, re-arm via `MutationObserver`
+   *    so the listener attaches the moment the toggle appears.
+   *  - On success, stamp `data-toc-ready="true"` on the root so tests
+   *    have a deterministic signal to wait on instead of guessing
+   *    that "the script must have run by now".
    */
-  const init = (): void => {
-    const root = document.querySelector<HTMLElement>(
-      '.article-toc-overlay',
-    );
-    if (!root) return;
+  type Wired = HTMLElement & { _articleTocInit?: true; _articleTocClose?: () => void };
+  const READY = 'data-toc-ready';
+
+  const wire = (root: Wired): void => {
+    if (root._articleTocInit) return;
     const toggle = root.querySelector<HTMLButtonElement>(
       '[data-testid="article-toc-toggle"]',
     );
     const backdrop = root.querySelector<HTMLButtonElement>(
       '[data-testid="article-toc-backdrop"]',
     );
+    if (!toggle) return; // wait — caller will retry via MutationObserver
     const close = (): void => {
       root.classList.remove('is-open');
-      toggle?.setAttribute('aria-expanded', 'false');
+      toggle.setAttribute('aria-expanded', 'false');
     };
-    /*
-     * Expose the close hook on the root so the shared link-click
-     * handler in ArticleTocSidebar.astro can dismiss the panel after
-     * a tap without knowing overlay-specific markup.
-     */
-    (root as HTMLElement & { _articleTocClose?: () => void })
-      ._articleTocClose = close;
-
-    toggle?.addEventListener('click', () => {
+    root._articleTocClose = close;
+    toggle.addEventListener('click', () => {
       const next = !root.classList.contains('is-open');
       root.classList.toggle('is-open', next);
       toggle.setAttribute('aria-expanded', String(next));
     });
     backdrop?.addEventListener('click', close);
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && root.classList.contains('is-open')) {
-        close();
-      }
+      if (e.key === 'Escape' && root.classList.contains('is-open')) close();
     });
+    root._articleTocInit = true;
+    root.setAttribute(READY, 'true');
+  };
+
+  const init = (): void => {
+    const root = document.querySelector<Wired>('.article-toc-overlay');
+    if (!root) return;
+    wire(root);
+    if (root._articleTocInit) return;
+    /*
+     * Toggle wasn't in DOM at first sweep — observe the root until it
+     * arrives. Disconnect on success so we don't leak observers
+     * across view transitions.
+     */
+    const observer = new MutationObserver(() => {
+      wire(root);
+      if (root._articleTocInit) observer.disconnect();
+    });
+    observer.observe(root, { childList: true, subtree: true });
   };
 
   init();

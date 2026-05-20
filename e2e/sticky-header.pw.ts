@@ -39,17 +39,21 @@ const readState = (page: Page) =>
 
 const scrollAndSettle = async (page: Page, y: number): Promise<void> => {
   /*
-   * Scroll, then poll until the rAF-throttled scroll handler in
-   * Header.astro publishes a `--header-offset` value matching the
-   * new scroll direction. Polling beats waiting on a fixed number
-   * of rAF callbacks because the handler can land in either of the
-   * next two frames depending on browser scheduling.
+   * `html { scroll-behavior: smooth }` is applied globally for human
+   * UX, but a smooth scroll inside `page.evaluate()` runs for
+   * 100-200 ms BEFORE the rAF tick observes the new scrollY — and in
+   * headless chromium it occasionally fails to start at all when
+   * the same task scheduled the scroll. Force an instant scroll so
+   * the `--header-offset` observation begins from the new position
+   * immediately, then poll until the rAF-throttled handler in
+   * `Header.astro` publishes a `--header-offset` matching the new
+   * direction.
    */
   await page.evaluate(
     (target) =>
       new Promise<void>((resolve) => {
         const before = window.scrollY;
-        window.scrollTo(0, target);
+        window.scrollTo({ top: target, behavior: 'instant' as ScrollBehavior });
         const goingDown = target > before;
         const goingUp = target < before;
         const start = performance.now();
@@ -74,20 +78,7 @@ const scrollAndSettle = async (page: Page, y: number): Promise<void> => {
 test.describe('Sticky header — desktop', () => {
   test.use({ viewport: { width: 1400, height: 900 } });
 
-  /*
-   * TODO(#__): these three scenarios all assume the article page is
-   * scrollable past 500-800 px in the chromium headless viewport.
-   * Locally `window.scrollTo(0, 500)` is a no-op on the new target
-   * article — `window.scrollY` stays 0 — so the scroll-driven
-   * header retract/reveal handler never publishes the values the
-   * assertions check. The behaviour under test is real (sticky +
-   * reveal works in a real browser) but the harness needs a tall-
-   * enough page or a synthetic-scroll injection. Skipping until
-   * either the test fixture is replaced with a guaranteed-tall page
-   * or the scroll helper switches to driving `--header-offset`
-   * directly via JS.
-   */
-  test.skip('engages position:sticky so header stays near the viewport top', async ({ page }) => {
+  test('engages position:sticky so header stays near the viewport top', async ({ page }) => {
     await visit(page, ARTICLE);
     await scrollAndSettle(page, 500);
     const s = await readState(page);
@@ -105,7 +96,7 @@ test.describe('Sticky header — desktop', () => {
     expect(parseFloat(scrolled.offset)).toBeLessThan(0);
   });
 
-  test.skip('reveals on scroll-up', async ({ page }) => {
+  test('reveals on scroll-up', async ({ page }) => {
     await visit(page, ARTICLE);
     await scrollAndSettle(page, 800);
     const hidden = await readState(page);
