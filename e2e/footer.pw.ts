@@ -30,6 +30,14 @@ test.describe('Footer widgets', () => {
     await expect(gh).toHaveAttribute('rel', /noopener/);
   });
 
+  test('public email is exposed as a mailto: link', async ({ page }) => {
+    await visit(page, '/en');
+    const email = page.getByTestId('footer-email');
+    await expectVisible(page, email);
+    await expect(email).toHaveAttribute('href', 'mailto:public@comprom.org');
+    await expect(email).toContainText('public@comprom.org');
+  });
+
   test('copyright still renders in Russian locale', async ({ page }) => {
     await visit(page, '/ru');
     await expectVisible(page, page.locator('footer').getByText('Communist Prometheus'));

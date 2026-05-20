@@ -14,6 +14,8 @@ const copyright = nav?.data.copyright ?? '© All rights reserved';
 
 const rssHref = `/${lang}/rss.xml`;
 const githubHref = 'https://github.com/communist-prometheus';
+const PUBLIC_EMAIL = 'public@comprom.org';
+const mailtoHref = `mailto:${PUBLIC_EMAIL}`;
 ---
 
 <footer transition:persist="footer">
@@ -42,6 +44,32 @@ const githubHref = 'https://github.com/communist-prometheus';
             />
           </svg>
           <span>RSS</span>
+        </a>
+      </li>
+      <li>
+        <a
+          href={mailtoHref}
+          class="footer-link"
+          aria-label={`Contact: ${PUBLIC_EMAIL}`}
+          data-testid="footer-email"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M3 7l9 6l9-6M3 7v10a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V7M3 7a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1"
+            />
+          </svg>
+          <span>{PUBLIC_EMAIL}</span>
         </a>
       </li>
       <li>
