@@ -1,6 +1,6 @@
 ---
 import type { Language } from '@/config/i18n';
-import { LANGUAGE_LABELS, SUPPORTED_LANGUAGES } from '@/config/i18n';
+import { LANGUAGE_LABELS, SUPPORTED_LANGUAGES, shortLabel } from '@/config/i18n';
 import SmartDropdown from '@/features/ui/SmartDropdown/SmartDropdown.astro';
 
 interface Props {
@@ -26,7 +26,7 @@ const hrefFor = (code: string) => (rest === '' ? `/${code}` : `/${code}${rest}`)
     aria-haspopup="listbox"
     aria-label="Select language"
   >
-    <span class="lang-current">{lang.toUpperCase()}</span>
+    <span class="lang-current">{shortLabel(lang)}</span>
     <svg
       class="lang-chevron"
       width="12"
@@ -65,6 +65,8 @@ const hrefFor = (code: string) => (rest === '' ? `/${code}` : `/${code}${rest}`)
 </SmartDropdown>
 
 <script>
+  import { shortLabel } from '@/config/i18n';
+
   /*
    * SmartDropdown handles open/close/positioning. This script keeps
    * the in-place "current language" label + per-page hrefs in sync
@@ -83,7 +85,7 @@ const hrefFor = (code: string) => (rest === '' ? `/${code}` : `/${code}${rest}`)
     const rest = path.replace(/^\/[a-z]{2}(?=\/|$)/, '');
 
     const label = switcher.querySelector<HTMLElement>('.lang-current');
-    if (label) label.textContent = activeLang.toUpperCase();
+    if (label) label.textContent = shortLabel(activeLang);
 
     switcher
       .querySelectorAll<HTMLAnchorElement>('.lang-option')

@@ -25,6 +25,18 @@ test.describe('Language switcher - Desktop', () => {
     await expectText(page, page.locator(switcherSel), 'EN');
   });
 
+  /*
+   * Ticket #20: the Ukrainian route code is `uk` (ISO 639-1), which
+   * uppercases to "UK" — the United Kingdom country code. Editors
+   * asked for the abbreviation "UKR" instead. The trigger must show
+   * UKR, not UK, on /uk.
+   */
+  test('shows UKR (not UK) as the abbreviation on the Ukrainian page', async ({ page }) => {
+    await visit(page, '/uk');
+    const trigger = page.locator(`${switcherSel} .lang-current`);
+    await expectText(page, trigger, 'UKR');
+  });
+
   test('switches from EN to RU and navigates to equivalent page', async ({ page }) => {
     await visit(page, '/en/blog');
     const switcher = page.locator(switcherSel);
