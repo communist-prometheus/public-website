@@ -97,7 +97,18 @@ const mailtoHref = `mailto:${PUBLIC_EMAIL}`;
         </a>
       </li>
     </ul>
+    <div class="webring" data-testid="footer-webring">
+      <span class="webring-label text-secondary text-sm">
+        Revolutionary Internationalists webring
+      </span>
+      <revint-webring lang={lang}></revint-webring>
+    </div>
   </div>
+  <script
+    is:inline
+    type="module"
+    src="https://cdn.comprom.org/webring.js"
+  ></script>
 </footer>
 
 <style>
@@ -109,6 +120,20 @@ const mailtoHref = `mailto:${PUBLIC_EMAIL}`;
 
   p {
     text-align: center;
+  }
+
+  .webring {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-xs);
+    margin-top: var(--spacing-md);
+  }
+
+  /* Tint the ring button to the site's accent for visual cohesion. */
+  .webring revint-webring {
+    --revint-accent: var(--color-accent, #b3231d);
+    --revint-fg: #fff;
   }
 
   /*
