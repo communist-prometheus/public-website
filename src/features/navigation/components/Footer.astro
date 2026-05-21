@@ -111,8 +111,18 @@ const mailtoHref = `mailto:${PUBLIC_EMAIL}`;
     text-align: center;
   }
 
+  /*
+   * Default: all three widgets on a single centered row (desktop /
+   * tablet). On narrow viewports the email's visible text
+   * (`public@comprom.org`, ~22 chars) blows the row past 375 px and
+   * pushes RSS off the left edge and GitHub past the right.
+   * `flex-wrap: wrap` lets the row break; on `< 480px` the email
+   * gets `order: 1` + full-width so it lands on its own row BELOW
+   * RSS+GitHub instead of between them.
+   */
   .footer-links {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     gap: var(--spacing-md);
     list-style: none;
@@ -135,5 +145,14 @@ const mailtoHref = `mailto:${PUBLIC_EMAIL}`;
   .footer-link:hover,
   .footer-link:focus-visible {
     color: var(--color-accent);
+  }
+
+  @media (max-width: 480px) {
+    .footer-links li:has([data-testid='footer-email']) {
+      order: 1;
+      flex-basis: 100%;
+      display: flex;
+      justify-content: center;
+    }
   }
 </style>
