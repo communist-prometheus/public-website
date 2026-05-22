@@ -83,6 +83,7 @@ const commonCollection = defineCollection({
     positions: z.string().optional(),
     manifest: z.string().optional(),
     newspaper: z.string().optional(),
+    links: z.string().optional(),
     menu: z.string().optional(),
     copyright: z.string().optional(),
     readMore: z.string().optional(),
