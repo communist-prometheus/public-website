@@ -271,3 +271,41 @@ test.describe('Responsive layout', () => {
     }
   });
 });
+
+/*
+ * Regression: without these CSS rules the FAB has no initial inset
+ * and renders at the default flow position (top-left) until the
+ * draggable-FAB script runs and snaps it to bottom-right. On
+ * incognito-mobile reload this is visible as a flash. Asserting
+ * the JS-disabled placement proves the CSS fallback alone covers
+ * the most common case (first visit, no localStorage).
+ */
+test.describe('Mobile menu first-paint placement', () => {
+  test.use({ javaScriptEnabled: false });
+
+  test('FAB lands bottom-right from CSS alone, no flash', async ({ page }) => {
+    await visit(page, BASE);
+    const fab = page.locator('[data-testid="mobile-menu-toggle"]');
+    await expectVisible(page, fab);
+    /*
+     * The meaningful assertion is that the painted box sits at the
+     * bottom-right of the viewport — that's what the user sees on
+     * first paint. Computed-style equality (`right === "16px"`) is
+     * brittle across engines so we test the rendered geometry.
+     */
+    const placement = await fab.evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      return {
+        distFromRight: globalThis.innerWidth - r.right,
+        distFromBottom: globalThis.innerHeight - r.bottom,
+        distFromLeft: r.left,
+        distFromTop: r.top,
+      };
+    });
+    expect(placement.distFromRight).toBeLessThan(32);
+    expect(placement.distFromBottom).toBeLessThan(32);
+    /* And it must NOT be glued to the top-left (the broken state). */
+    expect(placement.distFromLeft).toBeGreaterThan(100);
+    expect(placement.distFromTop).toBeGreaterThan(100);
+  });
+});

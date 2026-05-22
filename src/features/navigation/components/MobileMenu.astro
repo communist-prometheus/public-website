@@ -30,6 +30,33 @@ const menuLabel = nav?.data.menu ?? 'Menu';
   data-testid="mobile-menu-wrapper"
   data-corner="bottom-right"
 >
+  <!--
+    Sync hydration of the FAB corner from localStorage BEFORE the
+    button paints. Without this, the FAB briefly renders in its
+    default flow position (top-left) and the main script later
+    snaps it to the saved corner — visible as a flash on first
+    paint, most obvious in incognito on mobile. Keeping the corner
+    on the wrapper means the CSS rules below pick the right insets
+    on the very first paint; the main script still owns runtime
+    behaviour (drag, snap, open/close).
+  -->
+  <script is:inline>
+    (() => {
+      try {
+        const v = localStorage.getItem('fab-corner')
+        if (
+          v === 'top-left' ||
+          v === 'top-right' ||
+          v === 'bottom-left' ||
+          v === 'bottom-right'
+        ) {
+          document.currentScript.parentElement.dataset.corner = v
+        }
+      } catch {
+        /* localStorage may be blocked; fall back to default corner. */
+      }
+    })()
+  </script>
   <button
     type="button"
     class="mobile-fab"
@@ -257,6 +284,30 @@ const menuLabel = nav?.data.menu ?? 'Menu';
     box-shadow: var(--shadow-md);
     -webkit-tap-highlight-color: transparent;
     user-select: none;
+  }
+
+  /*
+    First-paint insets driven by the wrapper's data-corner. Without
+    these the FAB has no left/top/right/bottom until the main script
+    runs, which produced the briefly-top-left flash on incognito-mobile
+    reload. Once the main script runs it sets inline `left`/`top` (px),
+    which override these rules and own the position thereafter.
+  */
+  .mobile-menu-wrapper[data-corner='bottom-right'] .mobile-fab {
+    right: 16px;
+    bottom: 16px;
+  }
+  .mobile-menu-wrapper[data-corner='bottom-left'] .mobile-fab {
+    left: 16px;
+    bottom: 16px;
+  }
+  .mobile-menu-wrapper[data-corner='top-right'] .mobile-fab {
+    right: 16px;
+    top: 16px;
+  }
+  .mobile-menu-wrapper[data-corner='top-left'] .mobile-fab {
+    left: 16px;
+    top: 16px;
   }
 
   .mobile-fab:active {
