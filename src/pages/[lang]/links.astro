@@ -104,15 +104,17 @@ const groups = getLinkGroups();
                       <path fill="none" stroke="currentColor" stroke-width="2" d="M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18m-9 9h18M12 3c2.5 2.5 3.5 6 3.5 9s-1 6.5-3.5 9c-2.5-2.5-3.5-6-3.5-9s1-6.5 3.5-9"/>
                     </svg>
                   )}
-                  <a
-                    class="link-name"
-                    href={e.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {e.name}
-                  </a>
-                  <span class="link-lang" aria-hidden="true">{e.siteLang.toUpperCase()}</span>
+                  <span class="link-head">
+                    <a
+                      class="link-name"
+                      href={e.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {e.name}
+                    </a>
+                    <span class="link-lang" aria-hidden="true">{e.siteLang.toUpperCase()}</span>
+                  </span>
                   <span class="link-desc">{describe(e, lang)}</span>
                 </li>
               );
@@ -154,19 +156,36 @@ const groups = getLinkGroups();
     gap: var(--spacing-md);
   }
 
+  /*
+   * 2 columns: [favicon] [content]. Name + lang badge live together
+   * in `.link-head` (a flex row) so the badge sits immediately after
+   * each name — not aligned to the widest name in the group, which
+   * is what a shared `auto` grid column would do.
+   */
   .link-item {
     display: grid;
-    grid-template-columns: 16px auto auto;
-    align-items: baseline;
-    gap: 0.25rem 0.5rem;
+    grid-template-columns: 16px 1fr;
+    column-gap: 0.5rem;
+    row-gap: 0.25rem;
   }
 
   .link-favicon {
+    grid-column: 1;
+    grid-row: 1;
     width: 16px;
     height: 16px;
     object-fit: contain;
     align-self: center;
     color: var(--color-text-secondary);
+  }
+
+  .link-head {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
   }
 
   .link-name {
@@ -181,6 +200,7 @@ const groups = getLinkGroups();
   }
 
   .link-lang {
+    flex-shrink: 0;
     font-size: 0.6875rem;
     font-weight: 700;
     letter-spacing: 0.05em;
@@ -188,11 +208,11 @@ const groups = getLinkGroups();
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
     padding: 0.05rem 0.35rem;
-    justify-self: start;
   }
 
   .link-desc {
-    grid-column: 2 / -1;
+    grid-column: 2;
+    grid-row: 2;
     color: var(--color-text-secondary);
     font-size: 0.9375rem;
     line-height: 1.5;
