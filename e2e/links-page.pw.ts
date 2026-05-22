@@ -2,7 +2,7 @@ import { expect, expectVisible, test, visit } from '@prometheus/e2e-toolkit';
 
 /*
  * `/[lang]/links` — the "Resources & allies" directory built from
- * src/data/links.ts. Asserts the page renders, the three groups
+ * content settings/links.json. Asserts the page renders, the three groups
  * are present, a known organisation + a known archive resolve, and
  * external links open safely. The footer link is covered in
  * footer.pw.ts.
@@ -38,5 +38,15 @@ test.describe('Links page', () => {
     const footerLink = page.getByTestId('footer-links-page');
     await expectVisible(page, footerLink);
     await expect(footerLink).toHaveAttribute('href', '/en/links');
+  });
+
+  test('appears in the main nav (localised)', async ({ page }) => {
+    await visit(page, '/en');
+    const nav = page.locator('[data-testid="desktop-nav"]');
+    await expect(nav.locator('a[href="/en/links"]')).toHaveText('Links');
+    await visit(page, '/ru');
+    await expect(page.locator('[data-testid="desktop-nav"] a[href="/ru/links"]')).toHaveText(
+      'Ссылки',
+    );
   });
 });
