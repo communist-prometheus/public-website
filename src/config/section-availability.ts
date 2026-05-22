@@ -57,5 +57,6 @@ export const getSectionAvailability = async (lang: Language): Promise<AvailableM
     pageHas('manifest', lang),
     pageHas('about', lang),
   ]);
-  return { home: true, blog, positions, newspaper, manifest, about };
+  // `links` is a curated static page — always available.
+  return { home: true, blog, positions, newspaper, manifest, about, links: true };
 };

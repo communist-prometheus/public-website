@@ -3,9 +3,10 @@
   "version": "0.0.1",
   "scripts": {
     "fetch-content": "bun scripts/fetch-content.ts",
+    "fetch-favicons": "bun scripts/fetch-favicons.ts",
     "check-frontmatter": "bun scripts/check-frontmatter-yaml.ts",
-    "predev": "bun run fetch-content && bun run check-frontmatter",
-    "prebuild": "bun run fetch-content && bun run check-frontmatter",
+    "predev": "bun run fetch-content && bun run check-frontmatter && bun run fetch-favicons",
+    "prebuild": "bun run fetch-content && bun run check-frontmatter && bun run fetch-favicons",
     "dev": "astro dev",
     "build": "biome format . && biome check . && eslint . && astro check && astro build",
     "preview": "astro preview",

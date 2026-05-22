@@ -1,6 +1,6 @@
 ---
 import { SUPPORTED_LANGUAGES } from '@/config/i18n';
-import { LINK_GROUPS } from '@/data/links';
+import { describe, faviconFor, getLinkGroups } from '@/features/links/get-links';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 
 /* One static page per supported language (see blog/index.astro). */
@@ -11,7 +11,8 @@ const { lang } = Astro.params;
 /*
  * Inline i18n for the page chrome only — headings + intro. The link
  * entries themselves are language-neutral names + a per-site lang
- * badge (descriptions are RU for now; see src/data/links.ts).
+ * badge. Data + per-lang descriptions come from the content repo
+ * (settings/links.json), editable from the admin.
  */
 type Strings = {
   readonly title: string;
@@ -78,6 +79,8 @@ const I18N: Readonly<Record<string, Strings>> = {
 const t: Strings = I18N[lang] ?? EN;
 const groupTitle = (id: string): string =>
   id === 'resources' ? t.resources : id === 'friendly' ? t.friendly : t.organizations;
+
+const groups = getLinkGroups();
 ---
 
 <BaseLayout title={t.title} description={t.intro} lang={lang}>
@@ -86,24 +89,34 @@ const groupTitle = (id: string): string =>
       <h1>{t.title}</h1>
       <p class="intro">{t.intro}</p>
 
-      {LINK_GROUPS.map((group) => (
+      {groups.map((group) => (
         <section class="link-group">
           <h2>{groupTitle(group.id)}</h2>
           <ul class="link-list">
-            {group.entries.map((e) => (
-              <li class="link-item">
-                <a
-                  class="link-name"
-                  href={e.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {e.name}
-                </a>
-                <span class="link-lang" aria-hidden="true">{e.lang.toUpperCase()}</span>
-                <span class="link-desc">{e.description}</span>
-              </li>
-            ))}
+            {group.entries.map((e) => {
+              const favicon = faviconFor(e.url);
+              return (
+                <li class="link-item">
+                  {favicon ? (
+                    <img class="link-favicon" src={favicon} alt="" width="16" height="16" loading="lazy" />
+                  ) : (
+                    <svg class="link-favicon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                      <path fill="none" stroke="currentColor" stroke-width="2" d="M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18m-9 9h18M12 3c2.5 2.5 3.5 6 3.5 9s-1 6.5-3.5 9c-2.5-2.5-3.5-6-3.5-9s1-6.5 3.5-9"/>
+                    </svg>
+                  )}
+                  <a
+                    class="link-name"
+                    href={e.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {e.name}
+                  </a>
+                  <span class="link-lang" aria-hidden="true">{e.siteLang.toUpperCase()}</span>
+                  <span class="link-desc">{describe(e, lang)}</span>
+                </li>
+              );
+            })}
           </ul>
         </section>
       ))}
@@ -143,9 +156,17 @@ const groupTitle = (id: string): string =>
 
   .link-item {
     display: grid;
-    grid-template-columns: auto auto;
+    grid-template-columns: 16px auto auto;
     align-items: baseline;
     gap: 0.25rem 0.5rem;
+  }
+
+  .link-favicon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    align-self: center;
+    color: var(--color-text-secondary);
   }
 
   .link-name {
@@ -171,7 +192,7 @@ const groupTitle = (id: string): string =>
   }
 
   .link-desc {
-    grid-column: 1 / -1;
+    grid-column: 2 / -1;
     color: var(--color-text-secondary);
     font-size: 0.9375rem;
     line-height: 1.5;

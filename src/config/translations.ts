@@ -78,6 +78,7 @@ export const getNavLinks = async (
     { key: 'manifest', href: `/${lang}/manifest`, label: menu.data.manifest },
     { key: 'newspaper', href: `/${lang}/newspaper`, label: menu.data.newspaper },
     { key: 'about', href: `/${lang}/about`, label: menu.data.about },
+    { key: 'links', href: `/${lang}/links`, label: menu.data.links },
   ] as const;
   return candidates.flatMap((c) =>
     typeof c.label === 'string' && c.label.length > 0 && has[c.key] === true
