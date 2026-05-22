@@ -12,6 +12,20 @@
 # The single splat is greedy across `/`, so `/newspaper/*.fb2`
 # captures both the slug and the per-lang suffix.
 
+# Content-hashed build assets are immutable — the filename changes
+# whenever the bytes change, so cache them forever. Without this, CF
+# Workers Static Assets serves them `max-age=0, must-revalidate`
+# (the default), making the render-blocking `_astro/*.css`
+# revalidate on EVERY navigation — a visible white-screen stall on
+# slow connections / cold loads.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Build-time fetched favicons (stable per-host filenames, not
+# hashed) — a day's cache is safe.
+/favicons/*
+  Cache-Control: public, max-age=86400
+
 # Force .fb2 (FictionBook) downloads instead of inline XML preview.
 /newspaper/*.fb2
   Content-Type: application/x-fictionbook+xml
