@@ -16,6 +16,18 @@ const rssHref = `/${lang}/rss.xml`;
 const githubHref = 'https://github.com/communist-prometheus';
 const PUBLIC_EMAIL = 'public@comprom.org';
 const mailtoHref = `mailto:${PUBLIC_EMAIL}`;
+
+const linksHref = `/${lang}/links`;
+const LINKS_LABELS: Readonly<Record<string, string>> = {
+  en: 'Links',
+  ru: 'Ссылки',
+  it: 'Link',
+  es: 'Enlaces',
+  uk: 'Посилання',
+  pl: 'Linki',
+  bl: 'Връзки',
+};
+const linksLabel = LINKS_LABELS[lang] ?? 'Links';
 ---
 
 <footer transition:persist="footer">
@@ -24,6 +36,31 @@ const mailtoHref = `mailto:${PUBLIC_EMAIL}`;
       {currentYear} Communist Prometheus. {copyright}
     </p>
     <ul class="footer-links" data-testid="footer-links">
+      <li>
+        <a
+          href={linksHref}
+          class="footer-link"
+          data-testid="footer-links-page"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1m1 7a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"
+            />
+          </svg>
+          <span>{linksLabel}</span>
+        </a>
+      </li>
       <li>
         <a
           href={rssHref}
