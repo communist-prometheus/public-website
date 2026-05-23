@@ -141,9 +141,24 @@ const websiteLD = buildWebSiteLD(lang);
     */}
     <slot name="floating" />
     <FootnoteEnhancer />
-    <script is:inline>
+    <script>
+      /*
+       * Service-worker registration with forced rollover on new
+       * deploys. Logic lives in `@/features/sw-update/register-sw`
+       * for unit-testability; the bindings below adapt the real
+       * `navigator.serviceWorker` to that module's injectable IO.
+       */
+      import { setupSwUpdate } from '@/features/sw-update/register-sw';
       if ('serviceWorker' in navigator && location.hostname !== 'localhost') {
-        navigator.serviceWorker.register('/sw.js');
+        setupSwUpdate(
+          {
+            hasController: () => !!navigator.serviceWorker.controller,
+            register: () => navigator.serviceWorker.register('/sw.js'),
+            onControllerChange: (h) =>
+              navigator.serviceWorker.addEventListener('controllerchange', h),
+          },
+          { reload: () => location.reload() }
+        );
       }
     </script>
   </body>
