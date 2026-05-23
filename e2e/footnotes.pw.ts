@@ -111,3 +111,55 @@ test.describe('Footnote popover enhancer — legacy hash on GFM article', () => 
     await expect(page.locator('#user-content-fn-1')).toBeInViewport();
   });
 });
+
+/*
+ * Highlight the target so the reader sees where they landed.
+ * Driven by `:target` + a CSS animation in `styles.css`; we verify
+ * the animation actually attaches via the Web Animations API.
+ */
+test.describe('Footnote popover enhancer — target flash', () => {
+  test('a deep-link to a footnote body runs the flash animation', async ({ page }) => {
+    await page.goto(`${TEST_URL}#user-content-fn-1`);
+    const animations = await page
+      .locator('#user-content-fn-1')
+      .evaluate((el) =>
+        el
+          .getAnimations()
+          .map((a) => (a as Animation & { animationName?: string }).animationName ?? ''),
+      );
+    expect(animations.some((n) => n === 'footnote-target-flash')).toBe(true);
+  });
+
+  test('browser-back to the marker also flashes it', async ({ page }) => {
+    /*
+     * Open popover → jump to footnote → back. The back transition
+     * lands on `#user-content-fnref-1`; CSS `:target` re-evaluates
+     * and the marker button picks up the flash animation.
+     */
+    await page.goto(TEST_URL);
+    await page.locator('button[data-footnote-ref]').first().click();
+    await page.locator('#user-content-fn-popover-1 a.footnote-jump').click();
+    await page.goBack();
+    await expect(page).toHaveURL(/#user-content-fnref-1$/);
+    const animations = await page
+      .locator('#user-content-fnref-1')
+      .evaluate((el) =>
+        el
+          .getAnimations()
+          .map((a) => (a as Animation & { animationName?: string }).animationName ?? ''),
+      );
+    expect(animations.some((n) => n === 'footnote-target-flash')).toBe(true);
+  });
+
+  test('flash also fires on the legacy bottom-list <li>', async ({ page }) => {
+    await page.goto(`${LEGACY_URL}#endnote-1`);
+    const animations = await page
+      .locator('li#endnote-1')
+      .evaluate((el) =>
+        el
+          .getAnimations()
+          .map((a) => (a as Animation & { animationName?: string }).animationName ?? ''),
+      );
+    expect(animations.some((n) => n === 'footnote-target-flash')).toBe(true);
+  });
+});
