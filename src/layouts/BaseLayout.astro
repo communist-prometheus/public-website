@@ -3,6 +3,7 @@ import { ClientRouter } from 'astro:transitions';
 import type { Language } from '@/config/i18n';
 import { buildHreflangAlternates, SITE_URL } from '@/config/seo';
 import { buildOrganizationLD, buildWebSiteLD } from '@/config/structured-data';
+import FootnoteEnhancer from '@/features/footnotes/FootnoteEnhancer.astro';
 import Footer from '@/features/navigation/components/Footer.astro';
 import Header from '@/features/navigation/components/Header.astro';
 import MobileMenu from '@/features/navigation/components/MobileMenu.astro';
@@ -139,6 +140,7 @@ const websiteLD = buildWebSiteLD(lang);
       <main>'s view-transition containing block.
     */}
     <slot name="floating" />
+    <FootnoteEnhancer />
     <script is:inline>
       if ('serviceWorker' in navigator && location.hostname !== 'localhost') {
         navigator.serviceWorker.register('/sw.js');

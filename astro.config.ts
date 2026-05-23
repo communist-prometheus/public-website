@@ -23,6 +23,12 @@ export default defineConfig({
     newspaperFb2(),
     swManifest(),
     sitemap({
+      /*
+       * `/test-*` pages exist in the build so e2e can exercise
+       * client-side scripts against the production bundle. Filter
+       * them out of the sitemap so they never reach search results.
+       */
+      filter: (page) => !page.includes('/test-'),
       i18n: {
         defaultLocale: 'en',
         locales: {

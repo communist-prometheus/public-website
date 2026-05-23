@@ -1,0 +1,20 @@
+---
+/*
+ * Mount the footnote-popover enhancer on every page that renders
+ * markdown content. The script is idempotent and listens to both
+ * the initial page load and Astro ClientRouter navigation events,
+ * so it survives view transitions.
+ *
+ * Stylesheet ships next to the module so a route that doesn't
+ * include this component (e.g. plain landing pages) doesn't pay
+ * for the popover CSS either.
+ */
+import './styles.css';
+---
+
+<script>
+  import { enhanceFootnotes, resetFootnotes } from './setup';
+  enhanceFootnotes();
+  document.addEventListener('astro:page-load', enhanceFootnotes);
+  document.addEventListener('astro:before-swap', resetFootnotes);
+</script>
