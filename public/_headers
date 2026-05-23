@@ -26,6 +26,15 @@
 /favicons/*
   Cache-Control: public, max-age=86400
 
+# The Service Worker script controls which precached HTML the
+# browser serves. If `/sw.js` itself is cached the browser keeps
+# running the OLD worker — old `<script src="…hash.js">` references
+# stay in cached HTML and the new bundle hash never loads. Force a
+# fresh byte-for-byte check on every request so a deploy reliably
+# rolls clients forward.
+/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
+
 # Force .fb2 (FictionBook) downloads instead of inline XML preview.
 /newspaper/*.fb2
   Content-Type: application/x-fictionbook+xml
