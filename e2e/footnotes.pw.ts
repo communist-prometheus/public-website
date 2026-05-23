@@ -91,3 +91,23 @@ test.describe('Footnote popover enhancer — legacy bottom list', () => {
     await expect(page.locator('li#endnote-3')).toBeInViewport();
   });
 });
+
+/*
+ * Old external shares predating the GFM rename use `#endnote-N` /
+ * `#endnote-ref-N`. On articles that have been re-imported to GFM
+ * those ids no longer exist in the DOM (the GFM rename moved the
+ * marker id to `user-content-fnref-N` and the body to
+ * `user-content-fn-N`); the enhancer maps the legacy hash to the
+ * new id so old links keep working.
+ */
+test.describe('Footnote popover enhancer — legacy hash on GFM article', () => {
+  test('#endnote-ref-N scrolls to the GFM marker', async ({ page }) => {
+    await page.goto(`${TEST_URL}#endnote-ref-1`);
+    await expect(page.locator('#user-content-fnref-1')).toBeInViewport();
+  });
+
+  test('#endnote-N scrolls to the GFM footnote body', async ({ page }) => {
+    await page.goto(`${TEST_URL}#endnote-1`);
+    await expect(page.locator('#user-content-fn-1')).toBeInViewport();
+  });
+});
