@@ -55,3 +55,28 @@ test.describe('Footnote popover enhancer', () => {
     await expect(page).toHaveURL(/#user-content-fnref-1$/);
   });
 });
+
+/*
+ * Legacy-format coverage. Articles imported by the older admin
+ * pipeline have a trailing `<ol>` with `↑`-style back-links but
+ * no inline body markers and no `id` on the list items. The
+ * annotation pass should give each `<li>` an `id="endnote-N"`
+ * so direct deep-links work.
+ */
+const LEGACY_URL = '/test-footnotes-legacy';
+
+test.describe('Footnote popover enhancer — legacy bottom list', () => {
+  test('each footnote <li> picks up an `id="endnote-N"`', async ({ page }) => {
+    await page.goto(LEGACY_URL);
+    await expect(page.locator('li#endnote-1')).toBeVisible();
+    await expect(page.locator('li#endnote-2')).toBeVisible();
+    await expect(page.locator('li#endnote-3')).toBeVisible();
+  });
+
+  test('direct deep-link #endnote-2 scrolls to that footnote', async ({ page }) => {
+    await page.goto(`${LEGACY_URL}#endnote-2`);
+    const li = page.locator('li#endnote-2');
+    await expect(li).toBeInViewport();
+    await expect(li).toContainText('Friedrich Engels');
+  });
+});

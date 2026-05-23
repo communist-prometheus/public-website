@@ -1,6 +1,7 @@
+import { annotateLegacyList, findLegacyRefs } from './legacy';
 import { transformFootnoteRef } from './transform';
 
-const REF_SELECTOR = 'a[data-footnote-ref]';
+const GFM_REF = 'a[data-footnote-ref]';
 const PROCESSED_FLAG = 'data-footnote-enhanced';
 
 const supportsPopover = (): boolean =>
@@ -15,25 +16,39 @@ const targetOf = (anchor: HTMLAnchorElement): Element | undefined => {
 
 const pageLang = (): string => document.documentElement.lang || 'en';
 
+const enhanceOne = (anchor: HTMLAnchorElement, li: Element, lang: string): void => {
+  transformFootnoteRef({ anchor, footnoteLi: li, lang });
+};
+
+const enhanceGfm = (lang: string): void => {
+  for (const anchor of document.querySelectorAll<HTMLAnchorElement>(GFM_REF)) {
+    const li = targetOf(anchor);
+    if (li) enhanceOne(anchor, li, lang);
+  }
+};
+
+const enhanceLegacy = (lang: string): void => {
+  for (const { anchor, li } of findLegacyRefs()) enhanceOne(anchor, li, lang);
+};
+
 /**
- * Enhance every GFM footnote reference on the page into a popover
- * trigger. Idempotent — re-runs (e.g. on `astro:page-load`) skip
- * already-processed nodes via a marker attribute on `<body>`.
+ * Enhance every footnote reference on the page into a popover
+ * trigger and (re-)attach `id`s to legacy footnote lists so direct
+ * `#endnote-N` deep-links resolve. Idempotent — subsequent runs
+ * skip already-processed bodies via a marker attribute.
  *
- * No-op in browsers without the HTML Popover API: the original
- * `<a href="#user-content-fn-N">` keeps working as a plain link.
+ * The annotation step (giving the bottom `<li>`s their ids) does
+ * not need the Popover API; it runs unconditionally so old browsers
+ * still get one direction of navigation working.
  */
 export const enhanceFootnotes = (): void => {
-  if (!supportsPopover()) return;
   if (document.body.hasAttribute(PROCESSED_FLAG)) return;
   document.body.setAttribute(PROCESSED_FLAG, '');
+  annotateLegacyList();
+  if (!supportsPopover()) return;
   const lang = pageLang();
-  const anchors = document.querySelectorAll<HTMLAnchorElement>(REF_SELECTOR);
-  for (const anchor of anchors) {
-    const footnoteLi = targetOf(anchor);
-    if (!footnoteLi) continue;
-    transformFootnoteRef({ anchor, footnoteLi, lang });
-  }
+  enhanceGfm(lang);
+  enhanceLegacy(lang);
 };
 
 /**
