@@ -1,0 +1,19 @@
+---
+/*
+ * Test-only route that renders a tiny fixture with GFM footnotes
+ * so the footnote-popover enhancer can be exercised by e2e against
+ * a real Astro build. Marked `noindex, nofollow` and excluded from
+ * the sitemap (see `astro.config.ts`); the `test-` prefix keeps
+ * it out of `_-prefix`-skipped territory while still being trivial
+ * to filter at the sitemap layer.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { Content as Body } from '../test-fixtures/footnotes-fixture.md';
+---
+
+<BaseLayout title="Footnote popover test" description="Test fixture." lang="en">
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <article>
+    <Body />
+  </article>
+</BaseLayout>
