@@ -81,3 +81,61 @@
     }
   }
 }
+
+/*
+ * Flash highlight on hash-target navigation. When the URL hash
+ * points at a footnote marker or a footnote body, briefly tint the
+ * target so the reader can see where they landed after a jump or
+ * a browser-back. Light/dark mode swap the tint via a CSS variable
+ * so the animation keyframes stay declared once.
+ */
+:root {
+  --color-footnote-flash-bg: oklch(0.93 0.16 90 / 0.85);
+}
+
+[data-theme="dark"] {
+  --color-footnote-flash-bg: oklch(0.5 0.14 80 / 0.55);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-footnote-flash-bg: oklch(0.5 0.14 80 / 0.55);
+  }
+}
+
+@keyframes footnote-target-flash {
+  from {
+    background-color: var(--color-footnote-flash-bg);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+.footnote-ref-button:target {
+  animation: footnote-target-flash 2.5s ease-out both;
+  border-radius: 0.2em;
+  padding: 0 0.2em;
+  scroll-margin-block: 6rem;
+}
+
+[data-footnotes] li:target,
+li[id^="endnote-"]:target,
+li[id^="user-content-fn-"]:target {
+  animation: footnote-target-flash 2.5s ease-out both;
+  border-radius: 0.35rem;
+  scroll-margin-block: 1rem;
+  padding-inline: 0.25rem;
+  margin-inline: -0.25rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footnote-ref-button:target,
+  [data-footnotes] li:target,
+  li[id^="endnote-"]:target,
+  li[id^="user-content-fn-"]:target {
+    animation: none;
+    background-color: var(--color-footnote-flash-bg);
+    transition: background-color 0.6s ease-out 1.5s;
+  }
+}
