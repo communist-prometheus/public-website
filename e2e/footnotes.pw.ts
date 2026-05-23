@@ -79,4 +79,15 @@ test.describe('Footnote popover enhancer — legacy bottom list', () => {
     await expect(li).toBeInViewport();
     await expect(li).toContainText('Friedrich Engels');
   });
+
+  test('loads a footnote hash that did not exist at first paint', async ({ page }) => {
+    /*
+     * The browser tries to scroll to `#endnote-N` once, right after
+     * the initial parse — before the annotation pass has added the
+     * id. The enhancer must re-fire the scroll itself so the user
+     * lands on the footnote, not at the top of the page.
+     */
+    await page.goto(`${LEGACY_URL}#endnote-3`);
+    await expect(page.locator('li#endnote-3')).toBeInViewport();
+  });
 });
