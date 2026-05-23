@@ -1,0 +1,22 @@
+---
+/*
+ * Test-only route mirroring `test-footnotes.astro` but using the
+ * pre-GFM legacy footnote shape: a trailing `<ol>` with manual
+ * `↑` back-links and no inline body markers. Exercises the
+ * annotation pass — each `<li>` should pick up `id="endnote-N"`
+ * so direct `#endnote-N` URLs scroll to the right body.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { Content as Body } from '../test-fixtures/footnotes-legacy-fixture.md';
+---
+
+<BaseLayout
+  title="Footnote popover legacy test"
+  description="Test fixture."
+  lang="en"
+>
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <article>
+    <Body />
+  </article>
+</BaseLayout>
