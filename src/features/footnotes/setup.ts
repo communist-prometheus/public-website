@@ -16,6 +16,23 @@ const targetOf = (anchor: HTMLAnchorElement): Element | undefined => {
 
 const pageLang = (): string => document.documentElement.lang || 'en';
 
+/*
+ * The browser scrolls to `location.hash` once, right after the
+ * initial parse. If our annotation only put the id on the list
+ * item *after* that scroll attempt, the user lands at the top of
+ * the page even though the id now exists. Re-fire the scroll
+ * manually when the hash matches a footnote/endnote pattern and
+ * the target wasn't reachable a moment ago.
+ */
+const FOOTNOTE_HASH = /^#(?:footnote|endnote|fn|user-content-fn)-?\d+$/;
+
+const restoreHashScroll = (): void => {
+  const hash = globalThis.location.hash;
+  if (!FOOTNOTE_HASH.test(hash)) return;
+  const target = document.getElementById(hash.slice(1));
+  if (target) target.scrollIntoView({ block: 'start' });
+};
+
 const enhanceOne = (anchor: HTMLAnchorElement, li: Element, lang: string): void => {
   transformFootnoteRef({ anchor, footnoteLi: li, lang });
 };
@@ -45,6 +62,7 @@ export const enhanceFootnotes = (): void => {
   if (document.body.hasAttribute(PROCESSED_FLAG)) return;
   document.body.setAttribute(PROCESSED_FLAG, '');
   annotateLegacyList();
+  restoreHashScroll();
   if (!supportsPopover()) return;
   const lang = pageLang();
   enhanceGfm(lang);
