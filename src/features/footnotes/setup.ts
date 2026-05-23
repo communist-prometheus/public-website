@@ -25,11 +25,40 @@ const pageLang = (): string => document.documentElement.lang || 'en';
  * the target wasn't reachable a moment ago.
  */
 const FOOTNOTE_HASH = /^#(?:footnote|endnote|fn|user-content-fn)-?\d+$/;
+const LEGACY_REF_HASH = /^#(?:footnote|endnote)-ref-(\d+)$/;
+const LEGACY_BODY_HASH = /^#(?:footnote|endnote|fn)-(\d+)$/;
+
+const resolveHash = (hash: string): HTMLElement | undefined => {
+  const refMatch = LEGACY_REF_HASH.exec(hash);
+  if (refMatch) {
+    /*
+     * External shares like `#endnote-ref-19` predate the GFM
+     * rename; they now have to land on `user-content-fnref-19`.
+     */
+    return (
+      document.getElementById(`user-content-fnref-${refMatch[1]}`) ??
+      document.getElementById(hash.slice(1)) ??
+      undefined
+    );
+  }
+  const bodyMatch = LEGACY_BODY_HASH.exec(hash);
+  if (bodyMatch) {
+    /*
+     * `#endnote-19` (legacy) or `#fn19` (Pandoc) → GFM body id.
+     */
+    return (
+      document.getElementById(`user-content-fn-${bodyMatch[1]}`) ??
+      document.getElementById(hash.slice(1)) ??
+      undefined
+    );
+  }
+  return document.getElementById(hash.slice(1)) ?? undefined;
+};
 
 const restoreHashScroll = (): void => {
   const hash = globalThis.location.hash;
-  if (!FOOTNOTE_HASH.test(hash)) return;
-  const target = document.getElementById(hash.slice(1));
+  if (!FOOTNOTE_HASH.test(hash) && !LEGACY_REF_HASH.test(hash)) return;
+  const target = resolveHash(hash);
   if (target) target.scrollIntoView({ block: 'start' });
 };
 
