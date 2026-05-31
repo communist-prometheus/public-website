@@ -6,7 +6,6 @@ export interface LinkEntry {
   readonly url: string;
   readonly name: string;
   readonly category: string;
-  readonly siteLang: string;
   readonly inRing: boolean;
   readonly descriptions: Readonly<Record<string, string>>;
 }
