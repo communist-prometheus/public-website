@@ -26,6 +26,13 @@
 /favicons/*
   Cache-Control: public, max-age=86400
 
+# RFC 9116 security.txt. CF Workers Static Assets serves no
+# extension as `application/octet-stream` by default — force
+# `text/plain` so the contact info renders inline rather than
+# triggering a download.
+/.well-known/security.txt
+  Content-Type: text/plain; charset=utf-8
+
 # The Service Worker script controls which precached HTML the
 # browser serves. If `/sw.js` itself is cached the browser keeps
 # running the OLD worker — old `<script src="…hash.js">` references
