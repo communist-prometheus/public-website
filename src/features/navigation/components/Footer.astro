@@ -1,4 +1,5 @@
 ---
+import { features } from '@/config/features';
 import type { Language } from '@/config/i18n';
 import { getMenuData } from '@/config/translations';
 
@@ -134,18 +135,26 @@ const linksLabel = LINKS_LABELS[lang] ?? 'Links';
         </a>
       </li>
     </ul>
-    <div class="webring" data-testid="footer-webring">
-      <span class="webring-label text-secondary text-sm">
-        Revolutionary Internationalists webring
-      </span>
-      <revint-webring lang={lang}></revint-webring>
-    </div>
+    {
+      features.webring && (
+        <div class="webring" data-testid="footer-webring">
+          <span class="webring-label text-secondary text-sm">
+            Revolutionary Internationalists webring
+          </span>
+          <revint-webring lang={lang} />
+        </div>
+      )
+    }
   </div>
-  <script
-    is:inline
-    type="module"
-    src="https://cdn.comprom.org/webring.js"
-  ></script>
+  {
+    features.webring && (
+      <script
+        is:inline
+        type="module"
+        src="https://cdn.comprom.org/webring.js"
+      />
+    )
+  }
 </footer>
 
 <style>
