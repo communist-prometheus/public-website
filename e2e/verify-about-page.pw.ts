@@ -1,15 +1,7 @@
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import process from 'node:process';
-import {
-  click,
-  expectText,
-  expectVisible,
-  test,
-  visit,
-  waitForCondition,
-  waitForUrl,
-} from '@prometheus/e2e-toolkit';
+import { click, expectText, expectVisible, test, visit, waitForUrl } from '@prometheus/e2e-toolkit';
 
 /**
  * Manual prod probe for the About page split.
