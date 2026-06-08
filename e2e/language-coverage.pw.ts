@@ -1,15 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import {
-  click,
-  expect,
-  expectVisible,
-  test,
-  visit,
-  waitForCondition,
-  waitForUrl,
-} from '@prometheus/e2e-toolkit';
+import { click, expect, expectVisible, test, visit, waitForUrl } from '@prometheus/e2e-toolkit';
 import { buildSectionAvailability, hasSection } from './helpers/content-coverage';
 
 /*
