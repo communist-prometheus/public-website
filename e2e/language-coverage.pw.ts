@@ -8,6 +8,7 @@ import {
   test,
   visit,
   waitForCondition,
+  waitForUrl,
 } from '@prometheus/e2e-toolkit';
 import { buildSectionAvailability, hasSection } from './helpers/content-coverage';
 
@@ -254,7 +255,7 @@ test.describe('Language coverage — switcher click never lands on 404', () => {
       await visit(page, from);
       await click(page, page.locator(switcherSel));
       await click(page, page.locator(`${switcherSel} [data-testid="lang-option-${target}"]`));
-      await waitForCondition(page, async () => new RegExp(`/${target}(/|$)`).test(page.url()));
+      await waitForUrl(page, new RegExp(`/${target}(/|$)`));
       const last = documentStatuses.at(-1);
       expect(last, `last document status for ${from} → ${target}`).toBeLessThan(400);
       await expectVisible(page, page.locator('h1').first());
