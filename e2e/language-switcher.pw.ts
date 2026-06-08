@@ -7,7 +7,6 @@ import {
   pressKey,
   test,
   visit,
-  waitForCondition,
   waitForUrl,
 } from '@prometheus/e2e-toolkit';
 
