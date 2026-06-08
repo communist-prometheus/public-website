@@ -1,4 +1,12 @@
-import { click, expect, type Page, test, visit, waitForCondition } from '@prometheus/e2e-toolkit';
+import {
+  click,
+  expect,
+  type Page,
+  test,
+  visit,
+  waitForCondition,
+  waitForUrl,
+} from '@prometheus/e2e-toolkit';
 
 /**
  * Theme toggle E2E tests.
@@ -72,7 +80,7 @@ test.describe('Theme persistence', () => {
     await visit(page, BASE);
     await setTheme(page, 'dark');
     await click(page, page.locator('[data-testid="desktop-nav"] a:has-text("Blog")'));
-    await waitForCondition(page, async () => /\/blog/.test(page.url()));
+    await waitForUrl(page, /\/blog/);
     expect(await theme(page)).toBe('dark');
   });
 
@@ -104,7 +112,7 @@ test.describe('Animation isolation', () => {
     await visit(page, BASE);
     const before = await page.screenshot();
     await click(page, page.locator('[data-testid="desktop-nav"] a:has-text("Blog")'));
-    await waitForCondition(page, async () => /\/blog/.test(page.url()));
+    await waitForUrl(page, /\/blog/);
     await animationsSettled(page);
     const after = await page.screenshot();
     expect(Buffer.compare(before, after)).not.toBe(0);
@@ -147,7 +155,7 @@ test.describe('SPA navigation color flash', () => {
     });
 
     await click(page, page.locator('[data-testid="desktop-nav"] a:has-text("Blog")'));
-    await waitForCondition(page, async () => /\/blog/.test(page.url()));
+    await waitForUrl(page, /\/blog/);
 
     type LogEntry = {
       event: string;

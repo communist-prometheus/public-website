@@ -10,6 +10,7 @@ import {
   test,
   visit,
   waitForCondition,
+  waitForUrl,
 } from '@prometheus/e2e-toolkit';
 
 /**
@@ -82,7 +83,7 @@ test.describe('Mobile menu interaction', () => {
     await openMobileMenu(page);
     const blogLink = page.locator('[data-testid="mobile-menu-panel"] a:has-text("Blog")');
     await click(page, blogLink);
-    await waitForCondition(page, async () => /\/blog/.test(page.url()));
+    await waitForUrl(page, /\/blog/);
     await expectHidden(page, page.locator('[data-testid="mobile-menu-panel"]'));
   });
 
@@ -96,7 +97,7 @@ test.describe('Mobile menu interaction', () => {
     await openMobileMenu(page);
     const blogLink = page.locator('[data-testid="mobile-menu-panel"] a:has-text("Blog")');
     await click(page, blogLink);
-    await waitForCondition(page, async () => /\/blog/.test(page.url()));
+    await waitForUrl(page, /\/blog/);
     await expectHidden(page, page.locator('[data-testid="mobile-menu-panel"]'));
     await openMobileMenu(page);
     await expectMinCount(page, page.locator('[data-testid="mobile-menu-panel"] a'), 3);
@@ -195,7 +196,7 @@ test.describe('Mobile menu controls', () => {
     const ruOption = switcher.locator('[data-testid="lang-option-ru"]');
     await expectVisible(page, ruOption);
     await click(page, ruOption);
-    await waitForCondition(page, async () => /\/ru\/?$/.test(page.url()));
+    await waitForUrl(page, /\/ru\/?$/);
     await expect(page).toHaveURL(/\/ru\/?$/);
   });
 });

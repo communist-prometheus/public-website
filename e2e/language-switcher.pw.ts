@@ -8,6 +8,7 @@ import {
   test,
   visit,
   waitForCondition,
+  waitForUrl,
 } from '@prometheus/e2e-toolkit';
 
 const desktopNav = '[data-testid="desktop-nav"]';
@@ -44,7 +45,7 @@ test.describe('Language switcher - Desktop', () => {
     const ruOption = switcher.locator('[data-testid="lang-option-ru"]');
     await expectVisible(page, ruOption);
     await click(page, ruOption);
-    await waitForCondition(page, async () => /\/ru\/blog\/?$/.test(page.url()));
+    await waitForUrl(page, /\/ru\/blog\/?$/);
     await expectVisible(page, page.locator('h1'));
   });
 
@@ -55,7 +56,7 @@ test.describe('Language switcher - Desktop', () => {
     const enOption = switcher.locator('[data-testid="lang-option-en"]');
     await expectVisible(page, enOption);
     await click(page, enOption);
-    await waitForCondition(page, async () => /\/en\/manifest\/?$/.test(page.url()));
+    await waitForUrl(page, /\/en\/manifest\/?$/);
     await expectVisible(page, page.locator('h1'));
   });
 
@@ -65,7 +66,7 @@ test.describe('Language switcher - Desktop', () => {
     await click(page, switcher);
     const ruOption = switcher.locator('[data-testid="lang-option-ru"]');
     await click(page, ruOption);
-    await waitForCondition(page, async () => /\/ru\/?$/.test(page.url()));
+    await waitForUrl(page, /\/ru\/?$/);
     await expect(page).toHaveURL(/\/ru\/?$/);
   });
 
@@ -93,12 +94,12 @@ test.describe('Language switcher - Desktop', () => {
   test('works after SPA navigation', async ({ page }) => {
     await visit(page, '/en');
     await click(page, page.locator(`${desktopNav} a[href="/en/blog"]`));
-    await waitForCondition(page, async () => /\/en\/blog\/?$/.test(page.url()));
+    await waitForUrl(page, /\/en\/blog\/?$/);
     const switcher = page.locator(switcherSel);
     await click(page, switcher);
     const ruOption = switcher.locator('[data-testid="lang-option-ru"]');
     await expectVisible(page, ruOption);
     await click(page, ruOption);
-    await waitForCondition(page, async () => /\/ru\/blog\/?$/.test(page.url()));
+    await waitForUrl(page, /\/ru\/blog\/?$/);
   });
 });
