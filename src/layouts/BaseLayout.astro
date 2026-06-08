@@ -1,5 +1,6 @@
 ---
 import { ClientRouter } from 'astro:transitions';
+import { features } from '@/config/features';
 import type { Language } from '@/config/i18n';
 import { buildHreflangAlternates, SITE_URL } from '@/config/seo';
 import { buildOrganizationLD, buildWebSiteLD } from '@/config/structured-data';
@@ -64,7 +65,7 @@ const websiteLD = buildWebSiteLD(lang);
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     {/* Warm the connection for the footer webring bundle + members list. */}
-    <link rel="preconnect" href="https://cdn.comprom.org" crossorigin />
+    {features.webring && <link rel="preconnect" href="https://cdn.comprom.org" crossorigin />}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/pwa-icon.svg" />
     <link rel="manifest" href="/manifest.webmanifest" />
