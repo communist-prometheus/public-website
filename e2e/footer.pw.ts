@@ -40,19 +40,16 @@ test.describe('Footer widgets', () => {
 
   /*
    * The Revolutionary Internationalists webring (tickets#22) is
-   * embedded as the `<revint-webring>` custom element, loaded from
-   * cdn.comprom.org. We assert the markup is present and the loader
-   * script points at the CDN — not that the element upgrades (that
-   * needs the external bundle + network, covered in the webring
-   * repo's own Playwright suite).
+   * gated by the `webring` feature flag in `settings/features.json`.
+   * When the flag is off (today's prod state), the footer must NOT
+   * carry the `revint-webring` element nor its CDN loader script.
+   * When the flag flips on, a sibling test in the webring repo's
+   * own Playwright suite asserts the embedded behaviour.
    */
-  test('webring element + CDN loader are embedded', async ({ page }) => {
+  test('webring element + CDN loader stay out when the flag is off', async ({ page }) => {
     await visit(page, '/en');
-    const ring = page.getByTestId('footer-webring');
-    await expectVisible(page, ring);
-    await expect(ring.locator('revint-webring')).toHaveAttribute('lang', 'en');
-    const loader = page.locator('script[src="https://cdn.comprom.org/webring.js"]');
-    await expect(loader).toHaveCount(1);
+    await expect(page.getByTestId('footer-webring')).toHaveCount(0);
+    await expect(page.locator('script[src="https://cdn.comprom.org/webring.js"]')).toHaveCount(0);
   });
 
   test('copyright still renders in Russian locale', async ({ page }) => {
