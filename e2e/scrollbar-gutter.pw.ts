@@ -1,4 +1,4 @@
-import { click, expect, test, visit, waitForCondition } from '@prometheus/e2e-toolkit';
+import { click, expect, test, visit, waitForUrl } from '@prometheus/e2e-toolkit';
 
 /**
  * E2E tests for scrollbar gutter stability.
@@ -16,7 +16,7 @@ test.describe('Scrollbar gutter stability', () => {
 
     const homepageLeft = await getHeaderLeft();
     await click(page, page.locator('[data-testid="desktop-nav"] a[href="/en/manifest"]'));
-    await waitForCondition(page, async () => /\/en\/manifest/.test(page.url()));
+    await waitForUrl(page, /\/en\/manifest/);
     const manifestLeft = await getHeaderLeft();
     expect(Math.abs(homepageLeft - manifestLeft)).toBeLessThanOrEqual(1);
   });

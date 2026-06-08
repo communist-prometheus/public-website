@@ -8,6 +8,7 @@ import {
   test,
   visit,
   waitForCondition,
+  waitForUrl,
 } from '@prometheus/e2e-toolkit';
 
 /**
@@ -48,7 +49,7 @@ for (const [lang, words] of Object.entries(LANGS)) {
     await expectText(page, aboutNavLink, words.aboutLabel);
 
     await click(page, cta);
-    await waitForCondition(page, async () => new RegExp(`/${lang}/about/?$`).test(page.url()));
+    await waitForUrl(page, new RegExp(`/${lang}/about/?$`));
     await expectVisible(page, page.locator('h1').first());
     await expectText(page, page.locator('h1').first(), words.aboutTitle);
     await page.screenshot({ path: `${SHOTS}/${lang}-about.png`, fullPage: true });
