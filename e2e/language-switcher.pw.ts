@@ -1,6 +1,7 @@
 import {
   click,
   expect,
+  expectAttribute,
   expectHidden,
   expectText,
   expectVisible,
@@ -45,7 +46,12 @@ test.describe('Language switcher - Desktop', () => {
     await expectVisible(page, ruOption);
     await click(page, ruOption);
     await waitForUrl(page, /\/ru\/blog\/?$/);
-    await expectVisible(page, page.locator('h1'));
+    /*
+     * Assert the new document — not the old one — has settled by
+     * checking <html lang> flipped. `expectVisible(h1)` would also
+     * pass on the still-mounted old page mid-swap, masking races.
+     */
+    await expectAttribute(page, page.locator('html'), 'lang', 'ru');
   });
 
   test('switches from RU to EN and navigates to equivalent page', async ({ page }) => {
@@ -56,7 +62,7 @@ test.describe('Language switcher - Desktop', () => {
     await expectVisible(page, enOption);
     await click(page, enOption);
     await waitForUrl(page, /\/en\/manifest\/?$/);
-    await expectVisible(page, page.locator('h1'));
+    await expectAttribute(page, page.locator('html'), 'lang', 'en');
   });
 
   test('preserves path segments when switching language on home page', async ({ page }) => {
