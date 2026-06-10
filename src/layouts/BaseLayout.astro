@@ -66,8 +66,19 @@ const websiteLD = buildWebSiteLD(lang);
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     {/* Warm the connection for the footer webring bundle + members list. */}
     {features.webring && <link rel="preconnect" href="https://cdn.comprom.org" crossorigin />}
+    {/*
+      Favicon stack — order matters. Modern browsers pick SVG first
+      (sharp at any DPR), older ones fall back to the explicit PNG
+      sizes. Google's SERP favicon crawler picks the closest match to
+      a multiple of 48×48; without the 48 + 192 PNGs it used to fall
+      back to the apple-touch-icon (`pwa-icon.svg`) and render the
+      "P" placeholder in search results.
+    */}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="apple-touch-icon" href="/pwa-icon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/favicon-192.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="theme-color" content="#cf3618" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#ef6e3d" media="(prefers-color-scheme: dark)" />

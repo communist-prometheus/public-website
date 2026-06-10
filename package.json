@@ -4,9 +4,10 @@
   "scripts": {
     "fetch-content": "bun scripts/fetch-content.ts",
     "fetch-favicons": "bun scripts/fetch-favicons.ts",
+    "build-favicons": "bun scripts/build-favicons.ts",
     "check-frontmatter": "bun scripts/check-frontmatter-yaml.ts",
-    "predev": "bun run fetch-content && bun run check-frontmatter && bun run fetch-favicons",
-    "prebuild": "bun run fetch-content && bun run check-frontmatter && bun run fetch-favicons",
+    "predev": "bun run fetch-content && bun run check-frontmatter && bun run fetch-favicons && bun run build-favicons",
+    "prebuild": "bun run fetch-content && bun run check-frontmatter && bun run fetch-favicons && bun run build-favicons",
     "dev": "astro dev",
     "build": "biome format . && biome check . && eslint . && astro check && astro build",
     "preview": "astro preview",
@@ -32,6 +33,7 @@
     "@biomejs/biome": "^2.3.14",
     "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.58.2",
+    "@resvg/resvg-js": "^2.6.2",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^25.2.3",
     "@typescript-eslint/eslint-plugin": "^8.55.0",
@@ -43,6 +45,7 @@
     "lighthouse": "^13.0.3",
     "lint-staged": "^16.2.7",
     "playwright-lighthouse": "^4.0.0",
+    "to-ico": "^1.1.5",
     "typescript": "^5.9.3"
   },
   "lint-staged": {
