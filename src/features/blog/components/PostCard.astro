@@ -12,41 +12,55 @@ interface Props {
   image?: ImageMetadata | undefined;
   lang: Language;
   headingLevel?: 2 | 3;
+  /**
+   * Legacy slot. Kept for backwards-compat with the home page +
+   * positions widget call sites, but ignored — the whole card is the
+   * link now, so there is no in-card CTA to label.
+   */
   readMoreLabel?: string;
 }
 
-const {
-  title,
-  description,
-  category,
-  slug,
-  image,
-  lang,
-  headingLevel = 3,
-  readMoreLabel = 'Read more',
-} = Astro.props;
+const { title, description, category, slug, image, lang, headingLevel = 3 } = Astro.props;
+const href = `/${lang}/blog/${slug}`;
 ---
 
 <CpCard hoverable elevated class="post-card">
   {image && <div class="post-image"><BlogPicture image={image} alt={title} preset="thumbnail" /></div>}
   <div class="post-content">
     <span class="category">{category}</span>
-    {headingLevel === 2 ? <h2 class="post-title">{title}</h2> : <h3 class="post-title">{title}</h3>}
+    {/*
+      The heading anchor + `::before` overlay pattern: the link is
+      attached to the title (so screen readers announce a real
+      headline link), and the absolute ::before stretches it over
+      the entire card so any pointer click navigates. The summary
+      keeps `z-index: 1` so users can still select its text.
+    */}
+    {headingLevel === 2
+      ? <h2 class="post-title"><a href={href}>{title}</a></h2>
+      : <h3 class="post-title"><a href={href}>{title}</a></h3>}
     <p class="post-summary text-secondary">{description}</p>
-    <a href={`/${lang}/blog/${slug}`} class="read-more">
-      {readMoreLabel} <span aria-hidden="true">→</span>
-    </a>
   </div>
 </CpCard>
 
 <style>
-  .post-card {
+  /*
+   * `.post-card` lives on the CpCard root <div>, which gets CpCard's
+   * Astro scope id, not PostCard's — so a non-global selector here
+   * never matches and the original layout rules below silently no-op'd.
+   * Promoting to :global makes both the layout rules AND the
+   * positioning context for the title-anchor ::before overlay take
+   * effect; without `position: relative` the overlay falls back to
+   * the nearest positioned ancestor (body) and intercepts clicks on
+   * the category filter buttons rendered above the grid.
+   */
+  :global(.post-card) {
     display: flex;
     flex-direction: column;
     height: 100%;
     width: 100%;
     overflow: hidden;
     padding: 0;
+    position: relative;
   }
 
   .post-image {
@@ -101,32 +115,40 @@ const {
     flex-shrink: 0;
   }
 
+  .post-title a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /*
+   * Stretch the title link over the whole card so any pointer
+   * click navigates to the article. Sits below the summary
+   * (z-index < .post-summary's z-index) so text remains selectable.
+   */
+  .post-title a::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .post-title a:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 4px;
+    border-radius: var(--radius-sm);
+  }
+
   .post-summary {
     flex: 1;
     margin: 0;
     display: -webkit-box;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
+    -webkit-line-clamp: 6;
+    line-clamp: 6;
     -webkit-box-orient: vertical;
     overflow: hidden;
     min-height: 0;
-  }
-
-  .read-more {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-    margin-top: auto;
-    padding: var(--spacing-sm) var(--spacing-md);
-    border-radius: var(--radius-sm);
-    color: var(--color-text-primary);
-    text-decoration: none;
-    width: fit-content;
-    min-height: 44px;
-    flex-shrink: 0;
-  }
-
-  .read-more:hover {
-    background: var(--color-surface);
+    /* Sit above the ::before overlay so the text is selectable. */
+    position: relative;
+    z-index: 1;
   }
 </style>
