@@ -1,5 +1,7 @@
 ---
 import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from '@/config/i18n';
+import { SITE_URL } from '@/config/seo';
+import { buildAboutPageLD } from '@/config/structured-data';
 import { getLabelsData, getPageData } from '@/config/translations';
 import ArticleTocOverlay from '@/features/content/components/ArticleTocOverlay.astro';
 import ArticleTocSidebar from '@/features/content/components/ArticleTocSidebar.astro';
@@ -29,9 +31,18 @@ const Content = rendered.Content;
 const headings = rendered.headings ?? [];
 const labels = (await getLabelsData(lang)) ?? (await getLabelsData(DEFAULT_LANGUAGE));
 const tocLabel = labels?.data.tableOfContents ?? 'Contents';
+
+const pageUrl = `${SITE_URL}/${lang}/about`;
+const aboutPageLD = buildAboutPageLD({
+  title: page.data.title,
+  ...(page.data.description ? { description: page.data.description } : {}),
+  lang,
+  url: pageUrl,
+});
 ---
 
 <BaseLayout title={`${page.data.title} - Prometheus`} {...(page.data.description ? { description: page.data.description } : {})} lang={lang}>
+  <script slot="head" type="application/ld+json" set:html={JSON.stringify(aboutPageLD)} />
   <article class="section">
     <ArticleTocSidebar headings={headings} label={tocLabel} articleTitle={page.data.title} />
     <div class="container">
