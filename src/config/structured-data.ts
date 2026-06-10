@@ -74,6 +74,49 @@ export const buildWebSiteLD = (lang: string): WebSiteLD => ({
   inLanguage: inLanguage[lang] ?? lang,
 });
 
+interface AboutPageLD {
+  readonly '@context': 'https://schema.org';
+  readonly '@type': 'AboutPage';
+  readonly name: string;
+  readonly description?: string;
+  readonly inLanguage: string;
+  readonly url: string;
+  readonly mainEntity: {
+    readonly '@type': 'Organization';
+    readonly name: 'Communist Prometheus';
+    readonly url: string;
+  };
+}
+
+interface AboutPageInput {
+  readonly title: string;
+  readonly description?: string;
+  readonly lang: string;
+  readonly url: string;
+}
+
+/**
+ * AboutPage entity for the per-language `/<lang>/about` route. Wires
+ * the page to the canonical Organization entity declared in
+ * buildOrganizationLD via `mainEntity`, which Google uses to disambiguate
+ * whose About page this is when assembling the knowledge-graph card.
+ * @param input - Page fields (title, optional description, lang, url)
+ * @returns JSON-LD AboutPage record
+ */
+export const buildAboutPageLD = (input: AboutPageInput): AboutPageLD => ({
+  '@context': 'https://schema.org',
+  '@type': 'AboutPage',
+  name: input.title,
+  ...(input.description ? { description: input.description } : {}),
+  inLanguage: inLanguage[input.lang] ?? input.lang,
+  url: input.url,
+  mainEntity: {
+    '@type': 'Organization',
+    name: 'Communist Prometheus',
+    url: SITE_URL,
+  },
+});
+
 interface BlogPostingLD {
   readonly '@context': 'https://schema.org';
   readonly '@type': 'BlogPosting';
