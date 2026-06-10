@@ -45,12 +45,30 @@ manually instead of waiting weeks for Google to find them:
 1. GSC → **URL Inspection** → paste the URL.
 2. Click **Request indexing**.
 
+The quota is ~10 URLs/day per property, so spread the work across
+2–3 days instead of dumping everything Russian on day 1. Each
+language competes for its own query equivalent ("marxistas
+revolucionarios", "marxisti rivoluzionari", "rewolucyjni marksiści",
+"революційні марксисти", "революционни марксисти", "revolutionary
+Marxists") — one indexed door per language is one new audience.
+
 Priority URLs (re-request whenever they change substantively):
-- `https://comprom.org/ru`
-- `https://comprom.org/ru/about`
-- `https://comprom.org/ru/manifest`
-- `https://comprom.org/ru/positions`
-- `https://comprom.org/en` (English entry point)
+
+**Day 1 — every home (7 URLs):**
+`/ru`, `/en`, `/it`, `/es`, `/pl`, `/uk`, `/bl` (all under
+`https://comprom.org`).
+
+**Day 2 — every About (7 URLs):**
+`/ru/about`, `/en/about`, `/it/about`, `/es/about`, `/pl/about`,
+`/uk/about`, `/bl/about`.
+
+**Day 3 — every Manifest (7 URLs):**
+`/ru/manifest`, `/en/manifest`, `/it/manifest`, `/es/manifest`,
+`/pl/manifest`, `/uk/manifest`, `/bl/manifest`.
+
+Everything else (blog posts, positions, newspaper issues) Google
+discovers on its own via sitemap + internal linking — don't waste
+the manual quota on them.
 
 ### Monitor
 
