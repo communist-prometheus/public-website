@@ -1,4 +1,4 @@
-import { expectText, expectVisible, test, visit } from '@prometheus/e2e-toolkit';
+import { expectMinCount, expectText, expectVisible, test, visit } from '@prometheus/e2e-toolkit';
 
 /**
  * Translation E2E tests.
@@ -73,7 +73,13 @@ test.describe('Translations - Russian', () => {
     await visit(page, '/ru/blog');
     await expectText(page, page.locator('h1'), 'Блог');
     await expectText(page, page.locator('.category-btn[data-category="all"]'), 'Все');
-    await expectVisible(page, page.locator('text=Читать далее').first());
+    /*
+     * Used to assert «Читать далее» — that CTA was removed when the
+     * whole post card became a link. Assert that at least one post
+     * tile rendered instead, which is the underlying smoke we cared
+     * about.
+     */
+    await expectMinCount(page, page.locator('.grid [data-category]'), 1);
   });
 
   test('navigation renders Russian labels', async ({ page }) => {
