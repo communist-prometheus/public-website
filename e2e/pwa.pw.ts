@@ -28,9 +28,17 @@ test.describe('PWA install criteria', () => {
       'href',
       '/manifest.webmanifest',
     );
+    /*
+     * apple-touch-icon used to point at `/pwa-icon.svg` (the red "P"
+     * placeholder). It now points at the brand favicon's 192×192
+     * PNG raster so Google's SERP favicon picker stops falling
+     * through to the placeholder. The exact href could grow more
+     * size variants over time — assert the raster suffix, not the
+     * literal string.
+     */
     await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveAttribute(
       'href',
-      '/pwa-icon.svg',
+      /\/favicon-\d+\.png$/,
     );
     const themeColors = await page.locator('meta[name="theme-color"]').count();
     expect(themeColors).toBeGreaterThan(0);
