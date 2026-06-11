@@ -22,7 +22,7 @@ jobs:
       CONTENT_BRANCH: ${{ github.ref_name }}
     steps:
       - name: Cloning git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           # e2e-toolkit lives in a separate repo and is wired as a
           # submodule. Without this, the e2e tsconfig path mapping
@@ -58,7 +58,7 @@ jobs:
         run: bunx playwright test --project=chromium --reporter=line
 
       - name: Deploying to Cloudflare Workers
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

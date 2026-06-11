@@ -1,0 +1,28 @@
+version: 2
+updates:
+  # The repo's lockfile is bun.lock — the `bun` ecosystem (GA since
+  # Feb 2025) updates package.json AND the lockfile together.
+  - package-ecosystem: bun
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      dev-minor:
+        dependency-type: development
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+
+  # e2e-toolkit submodule — keeps the pinned SHA moving with upstream.
+  - package-ecosystem: gitsubmodule
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 2
