@@ -48,7 +48,7 @@ const readMore = labels?.data.readMore ?? 'Read more';
               <div data-category={post.data.category}>
                 <PostCard
                   title={post.data.title}
-                  description={deriveSummary(post.body) ?? ''}
+                  description={post.data.description ?? deriveSummary(post.body) ?? ''}
                   category={post.data.category}
                   slug={getArticleSlug(post)}
                   image={post.data.image}

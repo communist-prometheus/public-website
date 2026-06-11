@@ -1,11 +1,6 @@
 /*
- * Widget summary — short preview text shown on cards in listings.
- *
- * Editor wants widgets (PostCard, NewspaperCard, position cards) to
- * always derive their preview from the article body, NOT from the
- * frontmatter `description` field. The frontmatter description is
- * being repurposed as the preface block on the article page itself
- * — see deriveDescription for the SEO meta path.
+ * Widget summary — fallback preview text shown on cards in listings
+ * when the entry has no editorial `description` in frontmatter.
  *
  * Rules:
  * - Strip markdown decorations (headings, lists, bold, italic, …).
@@ -41,15 +36,14 @@ const stripMarkdown = (raw: string): string => {
   return out;
 };
 
-const MAX_LEN = 160;
+const MAX_LEN = 320;
 
 /**
- * Build the preview snippet shown on listing cards. Always derives
- * from the article body — frontmatter `description` is reserved for
- * the lead/preface block on the detail page now.
+ * Build the preview snippet shown on listing cards. Used as a fallback
+ * when the entry has no editorial `description` in frontmatter.
  *
  * @param body Raw markdown body.
- * @returns Short summary (~160 chars), or undefined if body is empty.
+ * @returns Short summary (~320 chars), or undefined if body is empty.
  */
 export const deriveSummary = (body: string | undefined): string | undefined => {
   if (!body) return undefined;
