@@ -37,7 +37,7 @@ const fb2Label = labels?.data.downloadFb2 ?? 'Download FB2';
           {items.map((item) => (
             <NewspaperCard
               title={item.data.title}
-              description={deriveSummary(item.body) ?? item.data.description ?? ''}
+              description={item.data.description ?? deriveSummary(item.body) ?? ''}
               slug={item.id.split('/').at(0) ?? item.id}
               lang={lang}
               image={item.data.image ?? undefined}

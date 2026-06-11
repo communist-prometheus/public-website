@@ -9,11 +9,10 @@ const blogCollection = defineCollection({
     z.object({
       title: z.string(),
       /*
-       * Description is optional now: editors stopped filling it in
-       * the admin (the field was retired). Listings derive their
-       * card preview from the body's first paragraph; the article
-       * page renders description as a lead block when an old entry
-       * still carries one.
+       * Description is the editorial card preview. Listings show it
+       * directly and fall back to the body's first paragraph (via
+       * deriveSummary) when missing. The article page also renders
+       * it as a lead block when present.
        */
       description: z.string().optional(),
       category: z.string(),
