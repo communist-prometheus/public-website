@@ -64,9 +64,9 @@ const href = `/${lang}/blog/${slug}`;
   }
 
   .post-image {
-    margin: var(--spacing-sm);
-    width: calc(100% - var(--spacing-sm) * 2);
-    height: clamp(120px, 30vw, 200px);
+    margin: var(--spacing-xs);
+    width: calc(100% - var(--spacing-xs) * 2);
+    height: clamp(96px, 22vw, 160px);
     overflow: hidden;
     border-radius: var(--radius-md);
     flex-shrink: 0;
@@ -81,8 +81,8 @@ const href = `/${lang}/blog/${slug}`;
   .post-content {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-sm);
-    padding: clamp(var(--spacing-sm), 3vw, var(--spacing-lg));
+    gap: var(--spacing-xs);
+    padding: clamp(var(--spacing-xs), 2vw, var(--spacing-md));
     flex: 1;
     min-width: 0;
     min-height: 0;
@@ -90,10 +90,10 @@ const href = `/${lang}/blog/${slug}`;
 
   .category {
     display: inline-block;
-    padding: 0.25rem 0.75rem;
+    padding: 0.15rem 0.55rem;
     background: var(--color-accent);
     color: var(--color-on-accent);
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 500;
     border-radius: var(--radius-sm);
     width: fit-content;
@@ -103,8 +103,8 @@ const href = `/${lang}/blog/${slug}`;
   }
 
   .post-title {
-    font-size: clamp(1rem, 3vw, 1.25rem);
-    line-height: 1.4;
+    font-size: clamp(0.95rem, 2.6vw, 1.15rem);
+    line-height: 1.25;
     overflow-wrap: break-word;
     word-break: break-word;
     display: -webkit-box;
@@ -141,9 +141,11 @@ const href = `/${lang}/blog/${slug}`;
   .post-summary {
     flex: 1;
     margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.45;
     display: -webkit-box;
-    -webkit-line-clamp: 6;
-    line-clamp: 6;
+    -webkit-line-clamp: 12;
+    line-clamp: 12;
     -webkit-box-orient: vertical;
     overflow: hidden;
     min-height: 0;

@@ -34,7 +34,7 @@ const readMore = labels?.data.readMore ?? 'Read more';
           {positions.map((pos) => (
             <PositionCard
               title={pos.data.title}
-              description={deriveSummary(pos.body) ?? ''}
+              description={pos.data.description ?? deriveSummary(pos.body) ?? ''}
               slug={pos.id.split('/').at(0) ?? pos.id}
               lang={lang}
               readMoreLabel={readMore}
