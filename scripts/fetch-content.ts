@@ -1,4 +1,4 @@
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, rmSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import process from 'node:process';
@@ -37,8 +37,13 @@ const log = (msg: string): void => {
   process.stdout.write(`[fetch-content] ${msg}\n`);
 };
 
-const run = (cmd: string, cwd?: string): void => {
-  execSync(cmd, { cwd, stdio: 'inherit' });
+/*
+ * execFileSync (argv array, no shell) instead of execSync: env-derived
+ * values never pass through shell parsing, so a hostile CONTENT_BRANCH
+ * or CONTENT_REPO cannot smuggle command separators into the build.
+ */
+const git = (args: readonly string[], cwd?: string): void => {
+  execFileSync('git', [...args], { cwd, stdio: 'inherit' });
 };
 
 const main = (): void => {
@@ -49,15 +54,18 @@ const main = (): void => {
 
   if (existsSync(resolve(TARGET, '.git'))) {
     log(`refreshing ${TARGET} (branch=${BRANCH})`);
-    run(`git remote set-url origin ${URL}`, TARGET);
+    git(['remote', 'set-url', 'origin', URL], TARGET);
     /*
      * Refspec form: writes the remote-tracking ref locally so the
      * subsequent reset can address it. A bare `git fetch origin <b>`
      * only updates FETCH_HEAD, which is brittle when switching
      * branches across runs (e.g. local CONTENT_BRANCH override).
      */
-    run(`git fetch --depth=1 --force origin ${BRANCH}:refs/remotes/origin/${BRANCH}`, TARGET);
-    run(`git reset --hard origin/${BRANCH}`, TARGET);
+    git(
+      ['fetch', '--depth=1', '--force', 'origin', `${BRANCH}:refs/remotes/origin/${BRANCH}`],
+      TARGET,
+    );
+    git(['reset', '--hard', `origin/${BRANCH}`], TARGET);
     log('done');
     return;
   }
@@ -68,7 +76,7 @@ const main = (): void => {
   }
   mkdirSync(dirname(TARGET), { recursive: true });
   log(`cloning ${REPO}#${BRANCH} into ${TARGET}`);
-  run(`git clone --depth=1 --branch=${BRANCH} ${URL} "${TARGET}"`);
+  git(['clone', '--depth=1', `--branch=${BRANCH}`, URL, TARGET]);
   log('done');
 };
 
