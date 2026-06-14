@@ -25,15 +25,14 @@ test('clicking a card summary navigates to the article', async ({ page }) => {
   expect(new URL(page.url()).pathname).not.toBe(BLOG);
 });
 
-test('clicking the card image navigates to the article', async ({ page }) => {
+test('clicking the category badge navigates to the article', async ({ page }) => {
   await visit(page, BLOG);
 
-  const card = page
-    .locator('.post-card')
-    .filter({ has: page.locator('.post-image') })
-    .first();
-  await expect(card).toBeVisible();
+  const cards = page.locator('.post-card');
+  await expectMinCount(page, cards, 1);
 
-  await card.locator('.post-image').click();
+  // The category badge is on every card (unlike the cover image) and is
+  // non-link content under the overlay — same dead-zone the fix closes.
+  await cards.first().locator('.category').click();
   await page.waitForURL(/\/ru\/blog\/.+/);
 });
