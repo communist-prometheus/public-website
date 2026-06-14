@@ -3,6 +3,7 @@ import type { ImageMetadata } from 'astro';
 import CpCard from '@/components/cp/CpCard.astro';
 import type { Language } from '@/config/i18n';
 import BlogPicture from '@/features/blog/components/BlogPicture.astro';
+import { getCategoryLabel } from '@/features/content/helpers/getCategoryLabel';
 
 interface Props {
   title: string;
@@ -27,7 +28,7 @@ const href = `/${lang}/blog/${slug}`;
 <CpCard hoverable elevated class="post-card">
   {image && <div class="post-image"><BlogPicture image={image} alt={title} preset="thumbnail" /></div>}
   <div class="post-content">
-    <span class="category">{category}</span>
+    <span class="category">{getCategoryLabel(category, lang)}</span>
     {/*
       The heading anchor + `::before` overlay pattern: the link is
       attached to the title (so screen readers announce a real

@@ -42,7 +42,7 @@ const readMore = labels?.data.readMore ?? 'Read more';
       <h1>{heading}</h1>
       {posts.length > 0 ? (
         <>
-          <CategoryFilter categories={categories} allLabel={allCategory} />
+          <CategoryFilter categories={categories} lang={lang} allLabel={allCategory} />
           <div class="grid grid-2">
             {posts.map((post) => (
               <div data-category={post.data.category}>
