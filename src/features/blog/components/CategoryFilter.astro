@@ -1,15 +1,19 @@
 ---
+import type { Language } from '@/config/i18n';
+import { getCategoryLabel } from '@/features/content/helpers/getCategoryLabel';
+
 interface Props {
   categories: string[];
+  lang: Language;
   allLabel?: string;
 }
 
-const { categories, allLabel = 'All' } = Astro.props;
+const { categories, lang, allLabel = 'All' } = Astro.props;
 ---
 
 <div class="category-filter">
   <button class="category-btn active" data-category="all">{allLabel}</button>
-  {categories.map((category) => <button class="category-btn" data-category={category}>{category}</button>)}
+  {categories.map((category) => <button class="category-btn" data-category={category}>{getCategoryLabel(category, lang)}</button>)}
 </div>
 
 <script>
