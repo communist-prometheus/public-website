@@ -47,55 +47,88 @@ const { lang } = Astro.props;
    * below the header line could subtract this offset to follow the
    * reveal). Header height is published as `--header-height`.
    */
+  /*
+   * Re-init on every `astro:page-load`, NOT once. With the
+   * ClientRouter a menu navigation swaps the <header> for a fresh
+   * element; a one-shot IIFE would keep operating on the old,
+   * detached node — publishing a stale `--header-height` and
+   * transforming a header nobody can see, so the sticky TOC offset
+   * and scroll positioning diverged from a full reload (the correct,
+   * server-rendered baseline). Mirrors ArticleTocSidebar's pattern.
+   */
   (function () {
-    var header = document.querySelector('[data-scroll-header]');
-    if (!header) return;
-    var lastY = window.scrollY;
-    var offset = 0;
-    var ticking = false;
+    if (window.__headerScrollInit) return;
+    window.__headerScrollInit = true;
 
-    function publishHeight() {
-      var h = header.getBoundingClientRect().height || 60;
-      document.documentElement.style.setProperty(
-        '--header-height',
-        h + 'px'
-      );
-    }
-    function applyOffset(o) {
-      header.style.transform = 'translateY(' + o + 'px)';
-      document.documentElement.style.setProperty(
-        '--header-offset',
-        o + 'px'
-      );
-    }
-    function handleScroll() {
-      ticking = false;
-      var height = header.getBoundingClientRect().height || 60;
-      var y = window.scrollY;
-      var dy = y - lastY;
-      lastY = y;
-      if (y < height) {
-        offset = 0;
-      } else {
-        offset = Math.max(-height, Math.min(0, offset - dy));
+    var cleanups = [];
+
+    function init() {
+      while (cleanups.length > 0) {
+        var c = cleanups.pop();
+        if (c) c();
       }
-      applyOffset(offset);
+
+      var header = document.querySelector('[data-scroll-header]');
+      if (!header) return;
+      var lastY = window.scrollY;
+      var offset = 0;
+      var ticking = false;
+
+      function publishHeight() {
+        var h = header.getBoundingClientRect().height || 60;
+        document.documentElement.style.setProperty(
+          '--header-height',
+          h + 'px'
+        );
+      }
+      function applyOffset(o) {
+        header.style.transform = 'translateY(' + o + 'px)';
+        document.documentElement.style.setProperty(
+          '--header-offset',
+          o + 'px'
+        );
+      }
+      function handleScroll() {
+        ticking = false;
+        var height = header.getBoundingClientRect().height || 60;
+        var y = window.scrollY;
+        var dy = y - lastY;
+        lastY = y;
+        if (y < height) {
+          offset = 0;
+        } else {
+          offset = Math.max(-height, Math.min(0, offset - dy));
+        }
+        applyOffset(offset);
+      }
+
+      publishHeight();
+      applyOffset(0);
+
+      var onScroll = function () {
+        if (ticking) return;
+        ticking = true;
+        window.requestAnimationFrame(handleScroll);
+      };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      cleanups.push(function () {
+        window.removeEventListener('scroll', onScroll);
+      });
+      window.addEventListener('resize', publishHeight);
+      cleanups.push(function () {
+        window.removeEventListener('resize', publishHeight);
+      });
     }
 
-    publishHeight();
-    applyOffset(0);
-    window.addEventListener('scroll', function () {
-      if (ticking) return;
-      ticking = true;
-      window.requestAnimationFrame(handleScroll);
-    }, { passive: true });
-    window.addEventListener('resize', publishHeight);
+    init();
+    /* Neutralise the outgoing header's transform so the VT snapshot
+     * isn't frozen mid-reveal. */
     document.addEventListener('astro:before-swap', function () {
-      offset = 0;
-      lastY = 0;
-      applyOffset(0);
+      var h = document.querySelector('[data-scroll-header]');
+      if (h) h.style.transform = 'translateY(0)';
+      document.documentElement.style.setProperty('--header-offset', '0px');
     });
-    document.addEventListener('astro:after-swap', publishHeight);
+    document.addEventListener('astro:page-load', init);
   })();
 </script>
 
