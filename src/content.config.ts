@@ -39,6 +39,12 @@ const blogCollection = defineCollection({
        * to /<lang>/newspaper/<slug> when present.
        */
       newspaper: z.string().optional(),
+      /*
+       * Optional archive-item slug attached to this article. The blog
+       * detail page renders an ArchiveWidget gallery at the foot when
+       * present and the referenced item is published.
+       */
+      archive: z.string().optional(),
     }),
 });
 
@@ -68,7 +74,28 @@ const positionsCollection = defineCollection({
     published: z.boolean().optional(),
     publishDate: z.date().optional(),
     lang: langEnum,
+    /* See blogCollection.archive. */
+    archive: z.string().optional(),
   }),
+});
+
+/*
+ * An archive item is an album: frontmatter is listing metadata, the
+ * payload is the files in its `assets/` folder (shipped to dist by the
+ * archive-files integration). Images are listed for the gallery; other
+ * files are download-only.
+ */
+const archiveCollection = defineCollection({
+  type: 'content',
+  schema: ({ image }) =>
+    z.object({
+      title: z.string(),
+      description: z.string().optional(),
+      published: z.boolean().optional(),
+      publishDate: z.date().optional(),
+      image: image().optional(),
+      lang: langEnum,
+    }),
 });
 
 const commonCollection = defineCollection({
@@ -82,6 +109,8 @@ const commonCollection = defineCollection({
     positions: z.string().optional(),
     manifest: z.string().optional(),
     newspaper: z.string().optional(),
+    /* Nav label for the archive section (menu entry). */
+    archive: z.string().optional(),
     links: z.string().optional(),
     menu: z.string().optional(),
     copyright: z.string().optional(),
@@ -97,6 +126,15 @@ const commonCollection = defineCollection({
     viewAll: z.string().optional(),
     backToList: z.string().optional(),
     tableOfContents: z.string().optional(),
+    /*
+     * Archive UI labels. All optional with inline English fallbacks at
+     * the call sites, so the build stays green before the content repo
+     * ships the translations.
+     */
+    archiveTitle: z.string().optional(),
+    viewArchive: z.string().optional(),
+    archiveFiles: z.string().optional(),
+    openViewer: z.string().optional(),
   }),
 });
 
@@ -130,4 +168,5 @@ export const collections = {
   positions: positionsCollection,
   common: commonCollection,
   newspaper: newspaperCollection,
+  archive: archiveCollection,
 };

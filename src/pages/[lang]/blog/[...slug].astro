@@ -5,6 +5,7 @@ import { DEFAULT_LANGUAGE, type Language, SUPPORTED_LANGUAGES } from '@/config/i
 import { SITE_URL } from '@/config/seo';
 import { buildBlogPostingLD } from '@/config/structured-data';
 import { getLabelsData } from '@/config/translations';
+import ArchiveWidget from '@/features/archive/components/ArchiveWidget.astro';
 import BlogPicture from '@/features/blog/components/BlogPicture.astro';
 import { getArticleSlug } from '@/features/blog/helpers/getBlogPosts';
 import ArticleTocOverlay from '@/features/content/components/ArticleTocOverlay.astro';
@@ -158,6 +159,7 @@ const newspaperRef = await (async () => {
         <div class="prose" itemprop="articleBody">
           <Content />
         </div>
+        {post.data.archive && <ArchiveWidget slug={post.data.archive} lang={lang} />}
         <SuggestChangesLink collection="blog" entryId={post.id} />
       </div>
     </article>

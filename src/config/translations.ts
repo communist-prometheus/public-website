@@ -77,6 +77,7 @@ export const getNavLinks = async (
     { key: 'positions', href: `/${lang}/positions`, label: menu.data.positions },
     { key: 'manifest', href: `/${lang}/manifest`, label: menu.data.manifest },
     { key: 'newspaper', href: `/${lang}/newspaper`, label: menu.data.newspaper },
+    { key: 'archive', href: `/${lang}/archive`, label: menu.data.archive },
     { key: 'about', href: `/${lang}/about`, label: menu.data.about },
     { key: 'links', href: `/${lang}/links`, label: menu.data.links },
   ] as const;

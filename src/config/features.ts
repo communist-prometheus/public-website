@@ -13,13 +13,18 @@ import featuresData from '@/content/settings/features.json';
  */
 export type FeatureFlags = {
   readonly webring: boolean;
+  readonly archive: boolean;
 };
 
 const DEFAULTS: FeatureFlags = {
   webring: false,
+  archive: false,
 };
 
-type PartialFlags = { readonly webring?: unknown };
+type PartialFlags = {
+  readonly webring?: unknown;
+  readonly archive?: unknown;
+};
 
 const isObject = (x: unknown): x is PartialFlags => x !== null && typeof x === 'object';
 
@@ -27,7 +32,12 @@ const readBool = (raw: unknown, fallback: boolean): boolean =>
   typeof raw === 'boolean' ? raw : fallback;
 
 const parse = (raw: unknown): FeatureFlags =>
-  isObject(raw) ? { webring: readBool(raw.webring, DEFAULTS.webring) } : DEFAULTS;
+  isObject(raw)
+    ? {
+        webring: readBool(raw.webring, DEFAULTS.webring),
+        archive: readBool(raw.archive, DEFAULTS.archive),
+      }
+    : DEFAULTS;
 
 /**
  * Resolved feature-flag bundle, ready for `{features.X && ...}`

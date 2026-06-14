@@ -1,0 +1,102 @@
+---
+import { DEFAULT_LANGUAGE, type Language } from '@/config/i18n';
+import { getLabelsData } from '@/config/translations';
+import ArchiveGallery from '@/features/archive/components/ArchiveGallery.astro';
+import { getArchiveItem } from '@/features/archive/helpers/getArchiveItems';
+
+interface Props {
+  readonly slug: string;
+  readonly lang: Language;
+}
+
+const { slug, lang } = Astro.props;
+
+/*
+ * Foot-of-article widget. Renders nothing when the referenced album is
+ * missing or unpublished — the caller decides whether to invoke us at
+ * all; we just no-op so a stale `archive:` slug never breaks the page.
+ */
+const item = await getArchiveItem(slug, lang);
+
+const labels = (await getLabelsData(lang)) ?? (await getLabelsData(DEFAULT_LANGUAGE));
+const archiveTitle = labels?.data.archiveTitle ?? 'Archive';
+const viewArchive = labels?.data.viewArchive ?? 'View archive';
+
+const href = `/${lang}/archive/${slug}`;
+const WIDGET_LIMIT = 4;
+---
+
+{
+  item && (
+    <aside class="archive-widget" aria-label={archiveTitle}>
+      <header class="archive-widget-header">
+        <span class="archive-widget-kicker">{archiveTitle}</span>
+        <h2 class="archive-widget-title">
+          <a href={href}>{item.data.title}</a>
+        </h2>
+      </header>
+      <ArchiveGallery slug={slug} limit={WIDGET_LIMIT} />
+      <a href={href} class="archive-widget-link">
+        {viewArchive}
+        <span aria-hidden="true">→</span>
+      </a>
+    </aside>
+  )
+}
+
+<style>
+  .archive-widget {
+    margin-top: var(--spacing-2xl);
+    padding: var(--spacing-lg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+  }
+
+  .archive-widget-header {
+    margin-bottom: var(--spacing-md);
+  }
+
+  .archive-widget-kicker {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-accent);
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .archive-widget-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.3;
+    margin: 0;
+  }
+
+  .archive-widget-title a {
+    color: var(--color-text-primary);
+    text-decoration: none;
+  }
+
+  .archive-widget-title a:hover,
+  .archive-widget-title a:focus-visible {
+    color: var(--color-accent);
+  }
+
+  .archive-widget-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    min-height: 44px;
+    margin-top: var(--spacing-md);
+    color: var(--color-accent);
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  .archive-widget-link:hover,
+  .archive-widget-link:focus-visible {
+    color: var(--color-accent-hover);
+  }
+</style>

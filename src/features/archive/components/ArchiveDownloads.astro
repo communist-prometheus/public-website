@@ -1,0 +1,120 @@
+---
+import { listArchiveFiles } from '@/features/archive/helpers/getArchiveItems';
+import { formatBytes } from '@/features/newspaper/helpers/formatBytes';
+
+interface Props {
+  readonly slug: string;
+  /** Section heading (localised by the caller). */
+  readonly heading?: string;
+}
+
+const { slug, heading = 'Files' } = Astro.props;
+
+const files = listArchiveFiles(slug);
+
+const extensionOf = (name: string): string => name.split('.').at(-1)?.toUpperCase() ?? 'FILE';
+---
+
+{
+  files.length > 0 && (
+    <section class="archive-downloads" aria-label={heading}>
+      <h2 class="archive-downloads-title">{heading}</h2>
+      <ul class="archive-downloads-list">
+        {files.map((file) => (
+          <li>
+            <a href={file.url} download class="download-link">
+              <span class="format-badge" aria-hidden="true">
+                {extensionOf(file.name)}
+              </span>
+              <span class="download-text">
+                <span class="download-label">{file.name}</span>
+                <span class="download-size">{formatBytes(file.sizeBytes)}</span>
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+<style>
+  .archive-downloads {
+    margin-top: var(--spacing-xl);
+  }
+
+  .archive-downloads-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: var(--spacing-md);
+  }
+
+  .archive-downloads-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  /* Mirrors DownloadLink.astro (newspaper) styling. */
+  .download-link {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-xs) var(--spacing-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-elevated);
+    color: var(--color-text-primary);
+    text-decoration: none;
+    min-height: 44px;
+    transition: border-color var(--transition-fast), background var(--transition-fast);
+  }
+
+  .download-link:hover {
+    border-color: var(--color-accent);
+    background: var(--color-surface);
+  }
+
+  .download-link:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+
+  .format-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    height: 28px;
+    padding: 0 0.25rem;
+    border-radius: var(--radius-sm);
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+    font-weight: 700;
+    font-size: 0.6875rem;
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+  }
+
+  .download-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+    min-width: 0;
+  }
+
+  .download-label {
+    font-weight: 500;
+    font-size: 0.9375rem;
+    overflow-wrap: anywhere;
+  }
+
+  .download-size {
+    color: var(--color-text-secondary);
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+  }
+</style>

@@ -1,4 +1,5 @@
 import { getCollection } from 'astro:content';
+import { features } from './features';
 import type { Language } from './i18n';
 
 /**
@@ -34,6 +35,15 @@ const newspaperHas = async (lang: Language): Promise<boolean> => {
   return items.length > 0;
 };
 
+const archiveHas = async (lang: Language): Promise<boolean> => {
+  if (!features.archive) return false;
+  const items = await getCollection(
+    'archive',
+    ({ data }) => data.lang === lang && data.published === true,
+  );
+  return items.length > 0;
+};
+
 const pageHas = async (slug: string, lang: Language): Promise<boolean> => {
   const items = await getCollection('pages', ({ data, id }) => {
     return data.lang === lang && id.startsWith(`${slug}/`);
@@ -50,13 +60,14 @@ const pageHas = async (slug: string, lang: Language): Promise<boolean> => {
  * @returns A boolean per nav slot.
  */
 export const getSectionAvailability = async (lang: Language): Promise<AvailableMap> => {
-  const [blog, positions, newspaper, manifest, about] = await Promise.all([
+  const [blog, positions, newspaper, archive, manifest, about] = await Promise.all([
     blogHas(lang),
     positionsHas(lang),
     newspaperHas(lang),
+    archiveHas(lang),
     pageHas('manifest', lang),
     pageHas('about', lang),
   ]);
   // `links` is a curated static page — always available.
-  return { home: true, blog, positions, newspaper, manifest, about, links: true };
+  return { home: true, blog, positions, newspaper, archive, manifest, about, links: true };
 };

@@ -2,6 +2,7 @@
 import { type CollectionEntry, getCollection } from 'astro:content';
 import { DEFAULT_LANGUAGE, type Language, SUPPORTED_LANGUAGES } from '@/config/i18n';
 import { getLabelsData } from '@/config/translations';
+import ArchiveWidget from '@/features/archive/components/ArchiveWidget.astro';
 import ArticleTocOverlay from '@/features/content/components/ArticleTocOverlay.astro';
 import ArticleTocSidebar from '@/features/content/components/ArticleTocSidebar.astro';
 import SuggestChangesLink from '@/features/content/components/SuggestChangesLink.astro';
@@ -74,6 +75,7 @@ const pageDescription = entry ? deriveDescription(entry.data.description, entry.
         <div class="content">
           <Content />
         </div>
+        {entry.data.archive && <ArchiveWidget slug={entry.data.archive} lang={lang} />}
         <SuggestChangesLink collection="positions" entryId={entry.id} />
       </div>
     </article>

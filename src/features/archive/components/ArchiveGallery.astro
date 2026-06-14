@@ -1,0 +1,242 @@
+---
+import { Picture } from 'astro:assets';
+import { getArchiveImages } from '@/features/archive/helpers/getArchiveItems';
+
+interface Props {
+  readonly slug: string;
+  /** Render the first thumbnail eagerly (above-the-fold detail page). */
+  readonly eagerFirst?: boolean;
+  /** Cap the number of thumbnails (the foot-of-article widget passes a few). */
+  readonly limit?: number;
+}
+
+const { slug, eagerFirst = false, limit } = Astro.props;
+
+const all = getArchiveImages(slug);
+const images = typeof limit === 'number' ? all.slice(0, limit) : all;
+
+/* Gallery thumbnails are a responsive grid: full-width on phones,
+ * ~3-up on tablet, ~4-up on desktop. The largest a single thumb ever
+ * gets is ~360px, so cap the candidate widths there. */
+const THUMB_WIDTHS = [200, 360, 540];
+const THUMB_SIZES = '(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 220px';
+---
+
+{
+  images.length > 0 && (
+    <ul class="archive-gallery" data-archive-gallery>
+      {images.map(({ name, image }, index) => (
+        <li>
+          <button
+            type="button"
+            class="archive-thumb"
+            data-archive-item
+            data-full={image.src}
+            data-name={name}
+            aria-label={`Open ${name} in viewer`}
+          >
+            <Picture
+              src={image}
+              widths={THUMB_WIDTHS}
+              sizes={THUMB_SIZES}
+              formats={['avif', 'webp']}
+              alt=""
+              loading={eagerFirst && index === 0 ? 'eager' : 'lazy'}
+            />
+          </button>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<script>
+  import { initArchiveLightbox } from '@/features/archive/scripts/archive-lightbox';
+
+  initArchiveLightbox();
+  document.addEventListener('astro:after-swap', initArchiveLightbox);
+</script>
+
+<style>
+  .archive-gallery {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-sm);
+  }
+
+  @media (min-width: 640px) {
+    .archive-gallery {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .archive-gallery {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .archive-thumb {
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    padding: 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    cursor: pointer;
+    overflow: hidden;
+    aspect-ratio: 1 / 1;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  }
+
+  .archive-thumb:hover {
+    border-color: var(--color-accent);
+  }
+
+  .archive-thumb:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+
+  .archive-thumb :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+</style>
+
+<style is:global>
+  /*
+   * Shared viewer overlay built imperatively by archive-lightbox.ts.
+   * Global because the <dialog> is appended to <body>, outside any
+   * scoped component subtree. Tokens only; dark backdrop via ::backdrop.
+   */
+  .archive-viewer {
+    width: 100vw;
+    height: 100dvh;
+    max-width: 100vw;
+    max-height: 100dvh;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: rgb(0 0 0 / 0.92);
+    color: #fff;
+    overflow: hidden;
+  }
+
+  .archive-viewer::backdrop {
+    background: rgb(0 0 0 / 0.8);
+  }
+
+  .archive-viewer[open] {
+    display: grid;
+    grid-template-rows: auto 1fr;
+  }
+
+  .archive-viewer-bar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+
+  .archive-viewer-counter {
+    margin-right: auto;
+    font-variant-numeric: tabular-nums;
+    font-size: 0.9375rem;
+  }
+
+  .archive-viewer-bar button,
+  .archive-viewer-prev,
+  .archive-viewer-next {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: rgb(255 255 255 / 0.12);
+    color: #fff;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .archive-viewer-bar button:hover:not(:disabled),
+  .archive-viewer-prev:hover:not(:disabled),
+  .archive-viewer-next:hover:not(:disabled) {
+    background: rgb(255 255 255 / 0.24);
+  }
+
+  .archive-viewer button:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+  }
+
+  .archive-viewer button:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  .archive-viewer-stage {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: var(--spacing-sm);
+    min-height: 0;
+  }
+
+  .archive-viewer-prev,
+  .archive-viewer-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
+  }
+
+  .archive-viewer-prev {
+    left: var(--spacing-sm);
+  }
+
+  .archive-viewer-next {
+    right: var(--spacing-sm);
+  }
+
+  .archive-viewer-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: pan-y;
+  }
+
+  .archive-viewer-live {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .archive-viewer:not([data-reduced-motion]) .archive-viewer-image {
+      transition: opacity var(--transition-fast);
+    }
+  }
+</style>
