@@ -38,3 +38,23 @@ test('clicking the category badge navigates to the article', async ({ page }) =>
   await cards.first().locator('.category').click();
   await page.waitForURL(/\/ru\/blog\/.+/);
 });
+
+test('card hover lift is animated, not snapped', async ({ page }) => {
+  await visit(page, BLOG);
+
+  const card = page.locator('.post-card').first();
+  await expect(card).toBeVisible();
+
+  /*
+   * CpCard's `.card { transition: box-shadow }` and PostCard's rule are
+   * equal-specificity; if CpCard wins, `transform` drops from the
+   * transition and the lift snaps. Assert the resolved transition keeps
+   * transform with a non-zero duration.
+   */
+  const transition = await card.evaluate((el) => {
+    const s = getComputedStyle(el);
+    return { prop: s.transitionProperty, dur: s.transitionDuration };
+  });
+  expect(transition.prop).toContain('transform');
+  expect(transition.dur).not.toMatch(/^0s(?:,\s*0s)*$/);
+});

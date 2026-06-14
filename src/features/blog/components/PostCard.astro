@@ -54,7 +54,13 @@ const href = `/${lang}/blog/${slug}`;
    * the nearest positioned ancestor (body) and intercepts clicks on
    * the category filter buttons rendered above the grid.
    */
-  :global(.post-card) {
+  /*
+   * `.card.post-card` (not `.post-card`) so this transition outranks
+   * CpCard's `.card { transition: box-shadow }` — equal-specificity
+   * single-class rules let CpCard's win on source order, which dropped
+   * `transform` from the transition and made the hover lift snap.
+   */
+  :global(.card.post-card) {
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -162,16 +168,16 @@ const href = `/${lang}/blog/${slug}`;
    * rise so the whole card reads as interactive. Disabled under
    * reduced-motion.
    */
-  :global(.post-card:hover) {
+  :global(.card.post-card:hover) {
     transform: translateY(-4px);
   }
 
   @media (prefers-reduced-motion: reduce) {
-    :global(.post-card) {
+    :global(.card.post-card) {
       transition: box-shadow var(--transition-fast);
     }
 
-    :global(.post-card:hover) {
+    :global(.card.post-card:hover) {
       transform: none;
     }
   }
