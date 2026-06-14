@@ -33,8 +33,8 @@ const href = `/${lang}/blog/${slug}`;
       The heading anchor + `::before` overlay pattern: the link is
       attached to the title (so screen readers announce a real
       headline link), and the absolute ::before stretches it over
-      the entire card so any pointer click navigates. The summary
-      keeps `z-index: 1` so users can still select its text.
+      the entire card so a click ANYWHERE — including on the summary
+      text — navigates to the article.
     */}
     {headingLevel === 2
       ? <h2 class="post-title"><a href={href}>{title}</a></h2>
@@ -62,6 +62,9 @@ const href = `/${lang}/blog/${slug}`;
     overflow: hidden;
     padding: 0;
     position: relative;
+    transition:
+      transform var(--transition-base),
+      box-shadow var(--transition-fast);
   }
 
   .post-image {
@@ -122,15 +125,17 @@ const href = `/${lang}/blog/${slug}`;
   }
 
   /*
-   * Stretch the title link over the whole card so any pointer
-   * click navigates to the article. Sits below the summary
-   * (z-index < .post-summary's z-index) so text remains selectable.
+   * Stretch the title link over the whole card so a pointer click
+   * anywhere navigates to the article. As a positioned element it
+   * paints above the in-flow card content (image, category, summary),
+   * so clicks on any of them land on the link — that's the whole
+   * point of a clickable card.
    */
   .post-title a::before {
     content: '';
     position: absolute;
     inset: 0;
-    z-index: 0;
+    z-index: 1;
   }
 
   .post-title a:focus-visible {
@@ -150,8 +155,24 @@ const href = `/${lang}/blog/${slug}`;
     -webkit-box-orient: vertical;
     overflow: hidden;
     min-height: 0;
-    /* Sit above the ::before overlay so the text is selectable. */
-    position: relative;
-    z-index: 1;
+  }
+
+  /*
+   * Hover lift: CpCard already animates the shadow; this adds a gentle
+   * rise so the whole card reads as interactive. Disabled under
+   * reduced-motion.
+   */
+  :global(.post-card:hover) {
+    transform: translateY(-4px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.post-card) {
+      transition: box-shadow var(--transition-fast);
+    }
+
+    :global(.post-card:hover) {
+      transform: none;
+    }
   }
 </style>
