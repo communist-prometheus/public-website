@@ -1,5 +1,6 @@
 import sitemap from '@astrojs/sitemap';
 import { defineConfig } from 'astro/config';
+import archiveFiles from './src/integrations/archive-files';
 import contentMedia from './src/integrations/content-media';
 import newspaperFb2 from './src/integrations/newspaper-fb2';
 import newspaperPdfs from './src/integrations/newspaper-pdfs';
@@ -21,6 +22,7 @@ export default defineConfig({
     contentMedia(),
     newspaperPdfs(),
     newspaperFb2(),
+    archiveFiles(),
     swManifest(),
     sitemap({
       /*

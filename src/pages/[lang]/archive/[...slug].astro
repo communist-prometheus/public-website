@@ -1,0 +1,126 @@
+---
+import { type CollectionEntry, getCollection } from 'astro:content';
+import { DEFAULT_LANGUAGE, type Language, SUPPORTED_LANGUAGES } from '@/config/i18n';
+import { getLabelsData } from '@/config/translations';
+import ArchiveDownloads from '@/features/archive/components/ArchiveDownloads.astro';
+import ArchiveGallery from '@/features/archive/components/ArchiveGallery.astro';
+import { getArchiveSlug } from '@/features/archive/helpers/getArchiveItems';
+import SuggestChangesLink from '@/features/content/components/SuggestChangesLink.astro';
+import { deriveDescription } from '@/features/content/helpers/deriveDescription';
+import MissingTranslation from '@/features/i18n/MissingTranslation.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+
+/*
+ * Emit one path per (supported language × slug that exists in *any*
+ * language). Same cross-language shape as blog/positions detail pages:
+ * render the album when the target locale carries it, otherwise hand
+ * the MissingTranslation card without swapping the URL prefix.
+ */
+export const getStaticPaths = async () => {
+  const entries = await getCollection('archive', ({ data }) => data.published === true);
+  const slugs = new Set(entries.map((e) => getArchiveSlug(e)));
+  const byKey = new Map(entries.map((e) => [`${e.data.lang}/${getArchiveSlug(e)}`, e] as const));
+  const slugToLangs = new Map<string, ReadonlyArray<Language>>();
+  for (const slug of slugs) {
+    slugToLangs.set(
+      slug,
+      SUPPORTED_LANGUAGES.filter((lang) => byKey.has(`${lang}/${slug}`)),
+    );
+  }
+  return SUPPORTED_LANGUAGES.flatMap((lang) =>
+    [...slugs].map((slug) => ({
+      params: { lang, slug },
+      props: {
+        entry: byKey.get(`${lang}/${slug}`),
+        availableLangs: slugToLangs.get(slug) ?? [],
+      },
+    })),
+  );
+};
+
+interface Props {
+  readonly entry?: CollectionEntry<'archive'>;
+  readonly availableLangs: ReadonlyArray<Language>;
+}
+
+const { entry, availableLangs } = Astro.props as Props;
+const { lang, slug } = Astro.params;
+const rendered = entry ? await entry.render() : undefined;
+const Content = rendered?.Content;
+
+const labels = (await getLabelsData(lang)) ?? (await getLabelsData(DEFAULT_LANGUAGE));
+const filesHeading = labels?.data.archiveFiles ?? 'Files';
+
+const pageTitle = entry ? `${entry.data.title} - Communist Prometheus` : 'Communist Prometheus';
+const pageDescription = entry ? deriveDescription(entry.data.description, entry.body) : undefined;
+---
+
+<BaseLayout
+  title={pageTitle}
+  {...(pageDescription ? { description: pageDescription } : {})}
+  lang={lang}
+>
+  <article class="section">
+    <div class="container">
+      {entry ? (
+        <>
+          <header class="archive-header">
+            <h1>{entry.data.title}</h1>
+            {entry.data.description && entry.data.description.trim() !== '' && (
+              <p class="lead">{entry.data.description}</p>
+            )}
+          </header>
+          {Content && (
+            <div class="prose">
+              <Content />
+            </div>
+          )}
+          <ArchiveGallery slug={slug} eagerFirst />
+          <ArchiveDownloads slug={slug} heading={filesHeading} />
+          <SuggestChangesLink collection="archive" entryId={entry.id} />
+        </>
+      ) : (
+        <MissingTranslation
+          lang={lang}
+          availableLangs={availableLangs}
+          relativePath={`/archive/${slug}`}
+        />
+      )}
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .archive-header {
+    max-width: 800px;
+    margin-inline: auto;
+    margin-bottom: var(--spacing-xl);
+  }
+
+  h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .lead {
+    color: var(--color-text-secondary);
+    font-size: 1.125rem;
+    line-height: 1.65;
+    border-left: 3px solid var(--color-accent);
+    padding-left: var(--spacing-md);
+    margin: var(--spacing-md) 0 0;
+  }
+
+  .prose {
+    max-width: 800px;
+    margin-inline: auto;
+    margin-bottom: var(--spacing-xl);
+    line-height: 1.8;
+  }
+
+  .prose :global(p) {
+    margin-bottom: var(--spacing-md);
+  }
+</style>

@@ -1,0 +1,166 @@
+---
+import CpCard from '@/components/cp/CpCard.astro';
+import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from '@/config/i18n';
+import { getLabelsData } from '@/config/translations';
+import { getArchiveItems, getArchiveSlug } from '@/features/archive/helpers/getArchiveItems';
+import BlogPicture from '@/features/blog/components/BlogPicture.astro';
+import { deriveSummary } from '@/features/content/helpers/deriveSummary';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+
+/*
+ * Build the archive listing for every supported language. The nav link
+ * is gated by the `archive` feature flag + per-language availability,
+ * but a directly-reached URL must still resolve to the empty-state page
+ * rather than a 404 (same rationale as blog/newspaper listings).
+ */
+export const getStaticPaths = async () => SUPPORTED_LANGUAGES.map((lang) => ({ params: { lang } }));
+
+const { lang } = Astro.params;
+
+const items = await getArchiveItems(lang);
+const labels = (await getLabelsData(lang)) ?? (await getLabelsData(DEFAULT_LANGUAGE));
+const heading = labels?.data.archiveTitle ?? 'Archive';
+---
+
+<BaseLayout
+  title={heading}
+  description="Document and image archive of the Communist Prometheus."
+  lang={lang}
+>
+  <div class="section">
+    <div class="container">
+      <h1>{heading}</h1>
+      {items.length > 0 ? (
+        <ul class="archive-grid">
+          {items.map((item) => {
+            const slug = getArchiveSlug(item);
+            const summary = item.data.description ?? deriveSummary(item.body) ?? '';
+            const href = `/${lang}/archive/${slug}`;
+            return (
+              <li>
+                <CpCard hoverable elevated class="archive-card">
+                  {item.data.image && (
+                    <div class="archive-card-image">
+                      <BlogPicture image={item.data.image} alt={item.data.title} preset="thumbnail" />
+                    </div>
+                  )}
+                  <div class="archive-card-body">
+                    <h2 class="archive-card-title"><a href={href}>{item.data.title}</a></h2>
+                    {summary && <p class="archive-card-summary text-secondary">{summary}</p>}
+                  </div>
+                </CpCard>
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        <p class="empty-state">No archive items yet.</p>
+      )}
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  h1 {
+    font-size: clamp(1.75rem, 5vw, 2.5rem);
+    font-weight: 700;
+    margin-bottom: var(--spacing-xl);
+  }
+
+  .archive-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+
+  @media (min-width: 640px) {
+    .archive-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .archive-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  :global(.archive-card) {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .archive-card-image {
+    width: 100%;
+    height: clamp(120px, 30vw, 180px);
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .archive-card-image :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .archive-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-md);
+    flex: 1;
+    min-width: 0;
+  }
+
+  .archive-card-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.3;
+    margin: 0;
+  }
+
+  .archive-card-title a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .archive-card-title a::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .archive-card-title a:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 4px;
+    border-radius: var(--radius-sm);
+  }
+
+  .archive-card-summary {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+  }
+
+  .empty-state {
+    color: var(--color-text-secondary);
+    font-size: 1.125rem;
+    text-align: center;
+    padding: var(--spacing-xl) 0;
+  }
+</style>
