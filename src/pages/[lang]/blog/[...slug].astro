@@ -15,6 +15,7 @@ import { deriveDescription } from '@/features/content/helpers/deriveDescription'
 import { getCategoryLabel } from '@/features/content/helpers/getCategoryLabel';
 import { formatArticleDate } from '@/features/i18n/format-date';
 import MissingTranslation from '@/features/i18n/MissingTranslation.astro';
+import { resolveIssueSlug } from '@/features/newspaper/helpers/resolveArticleIssue';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 
 /*
@@ -88,19 +89,25 @@ const articleLD = post
     })
   : undefined;
 
+/*
+ * The badge keys off EITHER the article's own `newspaper` slug OR a
+ * reverse lookup across issues whose `articles[]` list this article —
+ * so an article referenced only from the issue side still gets the
+ * "published in" link (see tickets#29).
+ */
 const newspaperRef = await (async () => {
-  if (!post?.data.newspaper) return undefined;
+  if (!post || !slug) return undefined;
   const issues = await getCollection('newspaper');
+  const issueSlug = resolveIssueSlug(issues, slug, post.data.newspaper);
+  if (!issueSlug) return undefined;
   const slugFrom = (id: string) => id.split('/').at(0) ?? id;
   const byKey = new Map(issues.map((i) => [`${i.data.lang}/${slugFrom(i.id)}`, i] as const));
-  const issue =
-    byKey.get(`${lang}/${post.data.newspaper}`) ??
-    byKey.get(`${DEFAULT_LANGUAGE}/${post.data.newspaper}`);
+  const issue = byKey.get(`${lang}/${issueSlug}`) ?? byKey.get(`${DEFAULT_LANGUAGE}/${issueSlug}`);
   if (!issue) return undefined;
   return {
     title: issue.data.title,
     image: issue.data.image,
-    href: `/${lang}/newspaper/${post.data.newspaper}`,
+    href: `/${lang}/newspaper/${issueSlug}`,
   };
 })();
 ---
