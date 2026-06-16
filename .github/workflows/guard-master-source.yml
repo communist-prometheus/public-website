@@ -1,0 +1,21 @@
+name: Guard master source
+
+# Enforce the dev-first pipeline: only `develop` may be merged into
+# `master`. Any PR into master from another branch fails this check,
+# which is a required status check on master — so it blocks the merge.
+on:
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require develop as the PR source branch
+        if: github.head_ref != 'develop'
+        run: |
+          echo "::error::PRs into master must come from 'develop' (got '${{ github.head_ref }}'). Open your PR against develop first."
+          exit 1
