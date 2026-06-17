@@ -8,11 +8,18 @@ import { getCategoryLabel } from '@/features/content/helpers/getCategoryLabel';
 interface Props {
   title: string;
   description: string;
-  category: string;
+  /** Optional category badge — omitted for sections without categories (e.g. archive). */
+  category?: string | undefined;
   slug: string;
   image?: ImageMetadata | undefined;
   lang: Language;
   headingLevel?: 2 | 3;
+  /**
+   * Target URL. Defaults to the blog post route; pass it explicitly to
+   * reuse this card for other sections (archive, etc.) so they get the
+   * same fully-clickable behaviour instead of a bespoke copy.
+   */
+  href?: string | undefined;
   /**
    * Legacy slot. Kept for backwards-compat with the home page +
    * positions widget call sites, but ignored — the whole card is the
@@ -22,13 +29,13 @@ interface Props {
 }
 
 const { title, description, category, slug, image, lang, headingLevel = 3 } = Astro.props;
-const href = `/${lang}/blog/${slug}`;
+const href = Astro.props.href ?? `/${lang}/blog/${slug}`;
 ---
 
 <CpCard hoverable elevated class="post-card">
   {image && <div class="post-image"><BlogPicture image={image} alt={title} preset="thumbnail" /></div>}
   <div class="post-content">
-    <span class="category">{getCategoryLabel(category, lang)}</span>
+    {category && <span class="category">{getCategoryLabel(category, lang)}</span>}
     {/*
       The heading anchor + `::before` overlay pattern: the link is
       attached to the title (so screen readers announce a real
