@@ -18,6 +18,13 @@ import swManifest from './src/integrations/sw-manifest';
 export default defineConfig({
   site: 'https://comprom.org',
   cacheDir: './.astro-cache',
+  /*
+   * Prefetch internal links as they enter the viewport so a click
+   * navigates near-instantly instead of staring at an unchanged page
+   * while the next document loads. Pairs with ClientRouter's
+   * view-transition cross-fade for visible feedback on every nav.
+   */
+  prefetch: { prefetchAll: true, defaultStrategy: 'viewport' },
   integrations: [
     contentMedia(),
     newspaperPdfs(),
