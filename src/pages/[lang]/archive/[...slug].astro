@@ -1,8 +1,6 @@
 ---
 import { type CollectionEntry, getCollection } from 'astro:content';
-import { DEFAULT_LANGUAGE, type Language, SUPPORTED_LANGUAGES } from '@/config/i18n';
-import { getLabelsData } from '@/config/translations';
-import ArchiveDownloads from '@/features/archive/components/ArchiveDownloads.astro';
+import { type Language, SUPPORTED_LANGUAGES } from '@/config/i18n';
 import ArchiveGallery from '@/features/archive/components/ArchiveGallery.astro';
 import { getArchiveSlug } from '@/features/archive/helpers/getArchiveItems';
 import SuggestChangesLink from '@/features/content/components/SuggestChangesLink.astro';
@@ -48,9 +46,6 @@ const { lang, slug } = Astro.params;
 const rendered = entry ? await entry.render() : undefined;
 const Content = rendered?.Content;
 
-const labels = (await getLabelsData(lang)) ?? (await getLabelsData(DEFAULT_LANGUAGE));
-const filesHeading = labels?.data.archiveFiles ?? 'Files';
-
 const pageTitle = entry ? `${entry.data.title} - Communist Prometheus` : 'Communist Prometheus';
 const pageDescription = entry ? deriveDescription(entry.data.description, entry.body) : undefined;
 ---
@@ -76,7 +71,6 @@ const pageDescription = entry ? deriveDescription(entry.data.description, entry.
             </div>
           )}
           <ArchiveGallery slug={slug} eagerFirst />
-          <ArchiveDownloads slug={slug} heading={filesHeading} />
           <SuggestChangesLink collection="archive" entryId={entry.id} />
         </>
       ) : (

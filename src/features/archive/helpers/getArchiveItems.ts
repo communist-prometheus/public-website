@@ -53,52 +53,7 @@ export const getArchiveItem = async (
   return byKey.get(`${lang}/${slug}`) ?? byKey.get(`${DEFAULT_LANGUAGE}/${slug}`);
 };
 
-const IMAGE_EXTENSIONS: ReadonlySet<string> = new Set([
-  'png',
-  'jpg',
-  'jpeg',
-  'webp',
-  'avif',
-  'gif',
-  'svg',
-]);
-
 const extensionOf = (name: string): string => name.split('.').at(-1)?.toLowerCase() ?? '';
-
-const isImageName = (name: string): boolean => IMAGE_EXTENSIONS.has(extensionOf(name));
-
-/**
- * A single downloadable file belonging to an archive album.
- */
-export interface ArchiveFile {
-  readonly name: string;
-  readonly sizeBytes: number;
-  readonly url: string;
-  readonly isImage: boolean;
-}
-
-/**
- * List every file in an album's `assets/` folder at build time,
- * sorted by name. Non-existent folders yield an empty list so a
- * seeded-but-empty album still builds. URLs point at the copies the
- * archive-files integration ships to `dist/archive/{slug}/assets/*`.
- *
- * @param slug - Album slug.
- * @returns File descriptors sorted by name.
- */
-export const listArchiveFiles = (slug: string): ReadonlyArray<ArchiveFile> => {
-  const dir = resolve(`src/content/archive/${slug}/assets`);
-  if (!existsSync(dir)) return [];
-  return readdirSync(dir)
-    .filter((name) => statSync(resolve(dir, name)).isFile())
-    .sort((a, b) => a.localeCompare(b))
-    .map((name) => ({
-      name,
-      sizeBytes: statSync(resolve(dir, name)).size,
-      url: `/archive/${slug}/assets/${name}`,
-      isImage: isImageName(name),
-    }));
-};
 
 /*
  * Eagerly resolved processable images across every album. Keyed by the
@@ -136,3 +91,55 @@ export const getArchiveImages = (slug: string): ReadonlyArray<ArchiveImage> =>
     .filter(([path]) => slugFromPath(path) === slug)
     .map(([path, mod]) => ({ name: nameFromPath(path), image: mod.default }))
     .sort((a, b) => a.name.localeCompare(b.name));
+
+/**
+ * One asset in an album, discriminated by `kind`. An image carries its
+ * processed `ImageMetadata` (thumbnail + viewer source); any other file
+ * carries only its extension + size. Both expose a `downloadUrl` so the
+ * viewer offers download for everything — the seam that lets us add
+ * per-type previewers later without changing call sites.
+ */
+export type ArchiveAsset =
+  | {
+      readonly kind: 'image';
+      readonly name: string;
+      readonly image: ImageMetadata;
+      readonly downloadUrl: string;
+    }
+  | {
+      readonly kind: 'file';
+      readonly name: string;
+      readonly ext: string;
+      readonly sizeBytes: number;
+      readonly downloadUrl: string;
+    };
+
+/**
+ * Every asset in an album's `assets/` folder as one unified list,
+ * sorted by name — images and files together, never split. Drives the
+ * single gallery grid + the viewer so there is no image/file divide.
+ *
+ * @param slug - Album slug.
+ * @returns Unified asset descriptors sorted by filename.
+ */
+export const getArchiveAssets = (slug: string): ReadonlyArray<ArchiveAsset> => {
+  const dir = resolve(`src/content/archive/${slug}/assets`);
+  if (!existsSync(dir)) return [];
+  const imageByName = new Map(getArchiveImages(slug).map((i) => [i.name, i.image] as const));
+  return readdirSync(dir)
+    .filter((name) => statSync(resolve(dir, name)).isFile())
+    .sort((a, b) => a.localeCompare(b))
+    .map((name) => {
+      const downloadUrl = `/archive/${slug}/assets/${name}`;
+      const image = imageByName.get(name);
+      return image
+        ? ({ kind: 'image', name, image, downloadUrl } as const)
+        : ({
+            kind: 'file',
+            name,
+            ext: extensionOf(name).toUpperCase() || 'FILE',
+            sizeBytes: statSync(resolve(dir, name)).size,
+            downloadUrl,
+          } as const);
+    });
+};
