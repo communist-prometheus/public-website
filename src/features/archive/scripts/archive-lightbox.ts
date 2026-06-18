@@ -5,19 +5,40 @@
  * tiles carry `data-kind` (image|file), `data-name`, `data-download`
  * and, for images, `data-full` (optimised large image URL). Clicking a
  * tile opens a single shared <dialog> overlay that navigates across the
- * whole gallery — images render full, any other file renders a
- * pictogram + filename + download (R2.5), so there is no image/file
- * divide and per-type previewers can be added later without changing
- * call sites.
+ * whole gallery.
+ *
+ * Rendering: images render inline; text / pdf / docx render inline via
+ * the lazily-imported `archive-renderers` chunk (heavy code arrives only
+ * on an archive page, and only when a document is opened — a spinner
+ * covers the load); anything else falls back to a pictogram + download.
+ *
+ * URL-driven: the open item lives in the `#asset=<name>` hash, so the
+ * view is deep-linkable and the Back button closes it.
  *
  * Accessibility: native `dialog.showModal()` provides the focus trap;
  * we restore focus to the invoking tile on close, announce the current
  * position via a polite live region, and wire ArrowLeft/Right + Escape.
- * Touch drag follows the finger and snaps/slides on release.
+ * A horizontal flick navigates; the visual is a View Transition.
  */
 
+import type { DocKind } from './archive-renderers';
+
 const SWIPE_THRESHOLD = 60;
-const TAP_SLOP = 6;
+const HASH_KEY = 'asset';
+const TEXT_EXTS: ReadonlySet<string> = new Set([
+  'txt',
+  'md',
+  'markdown',
+  'csv',
+  'tsv',
+  'log',
+  'json',
+  'xml',
+  'yml',
+  'yaml',
+]);
+
+type ViewerMode = 'image' | DocKind | 'other';
 
 interface GalleryItem {
   readonly kind: 'image' | 'file';
@@ -34,6 +55,7 @@ interface Viewer {
   readonly stage: HTMLElement;
   readonly content: HTMLElement;
   readonly image: HTMLImageElement;
+  readonly doc: HTMLElement;
   readonly filePanel: HTMLElement;
   readonly fileExt: HTMLElement;
   readonly fileName: HTMLElement;
@@ -65,6 +87,15 @@ const fullscreenSupported = (): boolean =>
  */
 const fullscreenUseful = (): boolean =>
   fullscreenSupported() && globalThis.matchMedia?.('(pointer: coarse)').matches !== true;
+
+const viewerMode = (item: GalleryItem): ViewerMode => {
+  if (item.kind === 'image') return 'image';
+  const ext = item.ext.toLowerCase();
+  if (ext === 'pdf') return 'pdf';
+  if (ext === 'docx') return 'docx';
+  if (TEXT_EXTS.has(ext)) return 'text';
+  return 'other';
+};
 
 const makeButton = (className: string, label: string, glyph: string): HTMLButtonElement => {
   const btn = document.createElement('button');
@@ -117,6 +148,10 @@ const buildViewer = (): Viewer => {
   image.alt = '';
   image.decoding = 'async';
 
+  const doc = document.createElement('div');
+  doc.className = 'archive-viewer-doc';
+  doc.hidden = true;
+
   const counter = document.createElement('span');
   counter.className = 'archive-viewer-counter';
   counter.setAttribute('aria-hidden', 'true');
@@ -144,7 +179,7 @@ const buildViewer = (): Viewer => {
 
   const content = document.createElement('div');
   content.className = 'archive-viewer-content';
-  content.append(image, filePanel);
+  content.append(image, doc, filePanel);
 
   const stage = document.createElement('figure');
   stage.className = 'archive-viewer-stage';
@@ -160,6 +195,7 @@ const buildViewer = (): Viewer => {
     stage,
     content,
     image,
+    doc,
     filePanel,
     fileExt,
     fileName,
@@ -174,30 +210,67 @@ const buildViewer = (): Viewer => {
 };
 
 let viewer: Viewer | undefined;
+let activeItems: ReadonlyArray<GalleryItem> = [];
+let renderToken = 0;
+let programmaticClose = false;
 const session: Session = { items: [], index: 0, invoker: undefined };
+
+let renderersPromise: Promise<typeof import('./archive-renderers')> | undefined;
+const loadRenderers = (): Promise<typeof import('./archive-renderers')> => {
+  renderersPromise ??= import('./archive-renderers');
+  return renderersPromise;
+};
 
 const getViewer = (): Viewer => {
   if (!viewer) viewer = buildViewer();
+  /*
+   * The module persists across ClientRouter view transitions, but the
+   * <body> we appended to is swapped away — re-attach to the live body
+   * so showModal() never throws "element is not in a Document".
+   */
+  if (!viewer.dialog.isConnected) document.body.append(viewer.dialog);
   return viewer;
 };
 
-const renderImage = (v: Viewer, item: GalleryItem): void => {
-  v.filePanel.hidden = true;
-  v.image.hidden = false;
+const showMode = (v: Viewer, mode: ViewerMode): void => {
+  v.image.hidden = mode !== 'image';
+  v.filePanel.hidden = mode !== 'other';
+  v.doc.hidden = mode === 'image' || mode === 'other';
+};
+
+const applyImage = (v: Viewer, item: GalleryItem): void => {
   v.stage.classList.add('is-loading');
   v.image.src = item.full ?? item.download;
   v.image.alt = item.name;
 };
 
-const renderFile = (v: Viewer, item: GalleryItem): void => {
+const applyFile = (v: Viewer, item: GalleryItem): void => {
   v.stage.classList.remove('is-loading');
-  v.image.hidden = true;
   v.image.removeAttribute('src');
   v.image.alt = '';
-  v.filePanel.hidden = false;
   v.fileExt.textContent = item.ext;
   v.fileName.textContent = item.name;
   v.fileDownload.href = item.download;
+};
+
+const applyDoc = (v: Viewer, item: GalleryItem, kind: DocKind): void => {
+  const token = ++renderToken;
+  v.image.removeAttribute('src');
+  v.doc.replaceChildren();
+  v.stage.classList.add('is-loading');
+  loadRenderers()
+    .then((mod) =>
+      token === renderToken ? mod.renderDoc(kind, item.download, item.name, v.doc) : undefined,
+    )
+    .then(() => {
+      if (token === renderToken) v.stage.classList.remove('is-loading');
+    })
+    .catch(() => {
+      if (token !== renderToken) return;
+      v.stage.classList.remove('is-loading');
+      showMode(v, 'other');
+      applyFile(v, item);
+    });
 };
 
 const render = (v: Viewer): void => {
@@ -210,11 +283,11 @@ const render = (v: Viewer): void => {
   v.prevBtn.disabled = session.index === 0;
   v.nextBtn.disabled = session.index === total - 1;
   v.download.href = item.download;
-  if (item.kind === 'image') {
-    renderImage(v, item);
-  } else {
-    renderFile(v, item);
-  }
+  const mode = viewerMode(item);
+  showMode(v, mode);
+  if (mode === 'image') applyImage(v, item);
+  else if (mode === 'other') applyFile(v, item);
+  else applyDoc(v, item, mode);
 };
 
 const go = (delta: number): void => {
@@ -227,6 +300,41 @@ const go = (delta: number): void => {
 const canGo = (delta: number): boolean => {
   const next = session.index + delta;
   return next >= 0 && next < session.items.length;
+};
+
+const setHash = (name: string, push: boolean): void => {
+  const url = `#${HASH_KEY}=${encodeURIComponent(name)}`;
+  if (push) history.pushState(null, '', url);
+  else history.replaceState(null, '', url);
+};
+
+const assetFromHash = (): string | undefined => {
+  const match = location.hash.match(/(?:^#|&)asset=([^&]+)/);
+  return match ? decodeURIComponent(match[1] ?? '') : undefined;
+};
+
+/*
+ * Move to a neighbouring item through the View Transitions API so any
+ * left/right change cross-fades / slides (direction set on <html> for
+ * the duration). Browsers without the API — or reduced-motion — get an
+ * instant swap. The open item is mirrored into the URL hash.
+ */
+const navigate = (delta: number): void => {
+  if (!canGo(delta)) return;
+  const target = session.items[session.index + delta]?.name;
+  const run = (): void => {
+    go(delta);
+    if (target !== undefined) setHash(target, false);
+  };
+  if (prefersReducedMotion() || typeof document.startViewTransition !== 'function') {
+    run();
+    return;
+  }
+  document.documentElement.setAttribute('data-archive-nav', delta > 0 ? 'next' : 'prev');
+  const transition = document.startViewTransition(run);
+  transition.finished.finally(() => {
+    document.documentElement.removeAttribute('data-archive-nav');
+  });
 };
 
 const exitFullscreen = (): void => {
@@ -248,10 +356,10 @@ const onKeydown = (event: KeyboardEvent): void => {
   if (!viewer?.dialog.open) return;
   if (event.key === 'ArrowLeft') {
     event.preventDefault();
-    go(-1);
+    navigate(-1);
   } else if (event.key === 'ArrowRight') {
     event.preventDefault();
-    go(1);
+    navigate(1);
   } else if (event.key === 'Escape' && document.fullscreenElement) {
     /* Exit fullscreen first; a second Escape closes the dialog. */
     event.preventDefault();
@@ -259,72 +367,54 @@ const onKeydown = (event: KeyboardEvent): void => {
   }
 };
 
-const setTransform = (v: Viewer, x: number, animate: boolean): void => {
-  v.content.classList.toggle('is-animating', animate);
-  v.content.style.transform = x === 0 ? '' : `translateX(${x}px)`;
-};
-
 /*
- * Slide the current item out, swap to the neighbour, then slide it in
- * from the opposite edge. Reduced-motion users get an instant swap.
+ * A horizontal flick past the threshold navigates; the visual is the
+ * shared View Transition, not a finger-tracking drag.
  */
-const commitSwipe = (v: Viewer, dir: number): void => {
-  const width = v.content.clientWidth || globalThis.innerWidth || 1;
-  if (prefersReducedMotion()) {
-    go(dir);
-    setTransform(v, 0, false);
-    return;
-  }
-  setTransform(v, dir > 0 ? -width : width, true);
-  v.content.addEventListener(
-    'transitionend',
-    () => {
-      go(dir);
-      setTransform(v, dir > 0 ? width : -width, false);
-      requestAnimationFrame(() => setTransform(v, 0, true));
-    },
-    { once: true },
-  );
-};
-
-const wireDrag = (v: Viewer): void => {
+const wireSwipe = (v: Viewer): void => {
   let startX: number | undefined;
-  let dx = 0;
   v.content.addEventListener('pointerdown', (e: PointerEvent) => {
-    if (e.pointerType === 'mouse' && e.button !== 0) return;
     startX = e.clientX;
-    dx = 0;
-    v.content.classList.remove('is-animating');
   });
-  v.content.addEventListener('pointermove', (e: PointerEvent) => {
-    if (startX === undefined) return;
-    dx = e.clientX - startX;
-    /* Rubber-band at the ends so there is nothing to swipe past. */
-    const resisted = canGo(dx < 0 ? 1 : -1) ? dx : dx * 0.3;
-    setTransform(v, resisted, false);
-  });
-  const end = (): void => {
-    if (startX === undefined) return;
+  v.content.addEventListener('pointercancel', () => {
     startX = undefined;
-    const dir = dx < 0 ? 1 : -1;
-    if (Math.abs(dx) >= SWIPE_THRESHOLD && canGo(dir)) {
-      commitSwipe(v, dir);
-    } else if (Math.abs(dx) > TAP_SLOP) {
-      setTransform(v, 0, true);
-    }
-  };
-  v.content.addEventListener('pointerup', end);
-  v.content.addEventListener('pointercancel', end);
+  });
+  v.content.addEventListener('pointerup', (e: PointerEvent) => {
+    if (startX === undefined) return;
+    const dx = e.clientX - startX;
+    startX = undefined;
+    if (Math.abs(dx) < SWIPE_THRESHOLD) return;
+    navigate(dx < 0 ? 1 : -1);
+  });
 };
 
-const open = (items: ReadonlyArray<GalleryItem>, index: number): void => {
+const open = (items: ReadonlyArray<GalleryItem>, index: number, fromUrl: boolean): void => {
   const v = getViewer();
   session.items = items;
   session.index = index;
   session.invoker = items[index]?.trigger;
-  setTransform(v, 0, false);
   render(v);
-  v.dialog.showModal();
+  if (!v.dialog.open) v.dialog.showModal();
+  const name = items[index]?.name;
+  if (!fromUrl && name !== undefined) setHash(name, true);
+};
+
+const onPopState = (): void => {
+  const name = assetFromHash();
+  const v = getViewer();
+  if (name !== undefined) {
+    const index = activeItems.findIndex((item) => item.name === name);
+    if (index < 0) return;
+    if (!v.dialog.open) open(activeItems, index, true);
+    else if (index !== session.index) {
+      session.index = index;
+      render(v);
+    }
+  } else if (v.dialog.open) {
+    programmaticClose = true;
+    v.dialog.close();
+    programmaticClose = false;
+  }
 };
 
 const collectItems = (gallery: HTMLElement): ReadonlyArray<GalleryItem> =>
@@ -345,17 +435,19 @@ const collectItems = (gallery: HTMLElement): ReadonlyArray<GalleryItem> =>
   });
 
 const wireViewerOnce = (v: Viewer): void => {
-  v.prevBtn.addEventListener('click', () => go(-1));
-  v.nextBtn.addEventListener('click', () => go(1));
+  v.prevBtn.addEventListener('click', () => navigate(-1));
+  v.nextBtn.addEventListener('click', () => navigate(1));
   v.fullscreenBtn.addEventListener('click', () => toggleFullscreen(v));
   v.image.addEventListener('load', () => v.stage.classList.remove('is-loading'));
   v.image.addEventListener('error', () => v.stage.classList.remove('is-loading'));
   v.dialog.addEventListener('close', () => {
     exitFullscreen();
     session.invoker?.focus();
+    if (!programmaticClose && assetFromHash() !== undefined) history.back();
   });
-  wireDrag(v);
+  wireSwipe(v);
   document.addEventListener('keydown', onKeydown);
+  window.addEventListener('popstate', onPopState);
 };
 
 /**
@@ -367,18 +459,39 @@ export const initArchiveLightbox = (): void => {
   const galleries = document.querySelectorAll<HTMLElement>('[data-archive-gallery]');
   if (galleries.length === 0) return;
 
+  /*
+   * Prefetch the renderer chunk as soon as an archive page loads, so it
+   * is usually ready by the time a document is opened (the spinner
+   * covers a fast click that beats the download).
+   */
+  loadRenderers().catch(() => undefined);
+
   const v = getViewer();
   if (v.dialog.getAttribute('data-wired') !== 'true') {
     v.dialog.setAttribute('data-wired', 'true');
     wireViewerOnce(v);
   }
 
+  /*
+   * The first gallery on the page drives URL deep-links; refresh it each
+   * run so navigating between archive pages tracks the live DOM.
+   */
+  const first = galleries[0];
+  if (first) activeItems = collectItems(first);
+
   galleries.forEach((gallery) => {
     if (gallery.getAttribute('data-archive-wired') === 'true') return;
     gallery.setAttribute('data-archive-wired', 'true');
     const items = collectItems(gallery);
     items.forEach((item, index) => {
-      item.trigger.addEventListener('click', () => open(items, index));
+      item.trigger.addEventListener('click', () => open(items, index, false));
     });
   });
+
+  /* Deep link: open the item named in the URL hash on load. */
+  const initial = assetFromHash();
+  if (initial !== undefined) {
+    const index = activeItems.findIndex((item) => item.name === initial);
+    if (index >= 0) open(activeItems, index, true);
+  }
 };
