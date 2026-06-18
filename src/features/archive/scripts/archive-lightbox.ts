@@ -13,10 +13,11 @@
  * Accessibility: native `dialog.showModal()` provides the focus trap;
  * we restore focus to the invoking tile on close, announce the current
  * position via a polite live region, and wire ArrowLeft/Right + Escape.
- * Touch swipe (pointer delta) mirrors prev/next.
+ * Touch drag follows the finger and snaps/slides on release.
  */
 
-const SWIPE_THRESHOLD = 50;
+const SWIPE_THRESHOLD = 60;
+const TAP_SLOP = 6;
 
 interface GalleryItem {
   readonly kind: 'image' | 'file';
@@ -31,6 +32,7 @@ interface GalleryItem {
 interface Viewer {
   readonly dialog: HTMLDialogElement;
   readonly stage: HTMLElement;
+  readonly content: HTMLElement;
   readonly image: HTMLImageElement;
   readonly filePanel: HTMLElement;
   readonly fileExt: HTMLElement;
@@ -55,6 +57,14 @@ const prefersReducedMotion = (): boolean =>
 
 const fullscreenSupported = (): boolean =>
   document.fullscreenEnabled === true && typeof Element.prototype.requestFullscreen === 'function';
+
+/*
+ * Fullscreen is pointless on touch devices — the modal already fills the
+ * viewport and the Fullscreen API is flaky/absent there. Show the toggle
+ * only with a fine pointer (desktop), so mobile never gets a dead button.
+ */
+const fullscreenUseful = (): boolean =>
+  fullscreenSupported() && globalThis.matchMedia?.('(pointer: coarse)').matches !== true;
 
 const makeButton = (className: string, label: string, glyph: string): HTMLButtonElement => {
   const btn = document.createElement('button');
@@ -120,11 +130,10 @@ const buildViewer = (): Viewer => {
   const prevBtn = makeButton('archive-viewer-prev', 'Previous file', '‹');
   const nextBtn = makeButton('archive-viewer-next', 'Next file', '›');
   const fullscreenBtn = makeButton('archive-viewer-fullscreen', 'Toggle fullscreen', '⛶');
-  if (!fullscreenSupported()) fullscreenBtn.hidden = true;
 
   const bar = document.createElement('div');
   bar.className = 'archive-viewer-bar';
-  bar.append(counter, download, fullscreenBtn, closeBtn);
+  bar.append(counter, download, ...(fullscreenUseful() ? [fullscreenBtn] : []), closeBtn);
 
   const {
     panel: filePanel,
@@ -133,9 +142,13 @@ const buildViewer = (): Viewer => {
     download: fileDownload,
   } = buildFilePanel();
 
+  const content = document.createElement('div');
+  content.className = 'archive-viewer-content';
+  content.append(image, filePanel);
+
   const stage = document.createElement('figure');
   stage.className = 'archive-viewer-stage';
-  stage.append(prevBtn, image, filePanel, nextBtn);
+  stage.append(prevBtn, content, nextBtn);
 
   dialog.append(bar, stage, live);
   document.body.append(dialog);
@@ -145,6 +158,7 @@ const buildViewer = (): Viewer => {
   return {
     dialog,
     stage,
+    content,
     image,
     filePanel,
     fileExt,
@@ -179,6 +193,7 @@ const renderFile = (v: Viewer, item: GalleryItem): void => {
   v.stage.classList.remove('is-loading');
   v.image.hidden = true;
   v.image.removeAttribute('src');
+  v.image.alt = '';
   v.filePanel.hidden = false;
   v.fileExt.textContent = item.ext;
   v.fileName.textContent = item.name;
@@ -207,6 +222,11 @@ const go = (delta: number): void => {
   if (next < 0 || next >= session.items.length) return;
   session.index = next;
   if (viewer) render(viewer);
+};
+
+const canGo = (delta: number): boolean => {
+  const next = session.index + delta;
+  return next >= 0 && next < session.items.length;
 };
 
 const exitFullscreen = (): void => {
@@ -239,18 +259,62 @@ const onKeydown = (event: KeyboardEvent): void => {
   }
 };
 
-const wireTouch = (v: Viewer): void => {
+const setTransform = (v: Viewer, x: number, animate: boolean): void => {
+  v.content.classList.toggle('is-animating', animate);
+  v.content.style.transform = x === 0 ? '' : `translateX(${x}px)`;
+};
+
+/*
+ * Slide the current item out, swap to the neighbour, then slide it in
+ * from the opposite edge. Reduced-motion users get an instant swap.
+ */
+const commitSwipe = (v: Viewer, dir: number): void => {
+  const width = v.content.clientWidth || globalThis.innerWidth || 1;
+  if (prefersReducedMotion()) {
+    go(dir);
+    setTransform(v, 0, false);
+    return;
+  }
+  setTransform(v, dir > 0 ? -width : width, true);
+  v.content.addEventListener(
+    'transitionend',
+    () => {
+      go(dir);
+      setTransform(v, dir > 0 ? width : -width, false);
+      requestAnimationFrame(() => setTransform(v, 0, true));
+    },
+    { once: true },
+  );
+};
+
+const wireDrag = (v: Viewer): void => {
   let startX: number | undefined;
-  v.image.addEventListener('pointerdown', (e: PointerEvent) => {
+  let dx = 0;
+  v.content.addEventListener('pointerdown', (e: PointerEvent) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
     startX = e.clientX;
+    dx = 0;
+    v.content.classList.remove('is-animating');
   });
-  v.image.addEventListener('pointerup', (e: PointerEvent) => {
+  v.content.addEventListener('pointermove', (e: PointerEvent) => {
     if (startX === undefined) return;
-    const deltaX = e.clientX - startX;
-    startX = undefined;
-    if (Math.abs(deltaX) < SWIPE_THRESHOLD) return;
-    go(deltaX < 0 ? 1 : -1);
+    dx = e.clientX - startX;
+    /* Rubber-band at the ends so there is nothing to swipe past. */
+    const resisted = canGo(dx < 0 ? 1 : -1) ? dx : dx * 0.3;
+    setTransform(v, resisted, false);
   });
+  const end = (): void => {
+    if (startX === undefined) return;
+    startX = undefined;
+    const dir = dx < 0 ? 1 : -1;
+    if (Math.abs(dx) >= SWIPE_THRESHOLD && canGo(dir)) {
+      commitSwipe(v, dir);
+    } else if (Math.abs(dx) > TAP_SLOP) {
+      setTransform(v, 0, true);
+    }
+  };
+  v.content.addEventListener('pointerup', end);
+  v.content.addEventListener('pointercancel', end);
 };
 
 const open = (items: ReadonlyArray<GalleryItem>, index: number): void => {
@@ -258,6 +322,7 @@ const open = (items: ReadonlyArray<GalleryItem>, index: number): void => {
   session.items = items;
   session.index = index;
   session.invoker = items[index]?.trigger;
+  setTransform(v, 0, false);
   render(v);
   v.dialog.showModal();
 };
@@ -289,7 +354,7 @@ const wireViewerOnce = (v: Viewer): void => {
     exitFullscreen();
     session.invoker?.focus();
   });
-  wireTouch(v);
+  wireDrag(v);
   document.addEventListener('keydown', onKeydown);
 };
 

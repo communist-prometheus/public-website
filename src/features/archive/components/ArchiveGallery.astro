@@ -211,13 +211,14 @@ const imageOf = (asset: ArchiveAsset): ImageMetadata | undefined =>
     margin: 0;
     padding: 0;
     border: none;
-    background: rgb(0 0 0 / 0.92);
+    /* Near-opaque so the page never bleeds through the viewer. */
+    background: rgb(8 8 8 / 0.985);
     color: #fff;
     overflow: hidden;
   }
 
   .archive-viewer::backdrop {
-    background: rgb(0 0 0 / 0.8);
+    background: rgb(0 0 0 / 0.85);
   }
 
   .archive-viewer[open] {
@@ -299,6 +300,30 @@ const imageOf = (asset: ArchiveAsset): ImageMetadata | undefined =>
     right: var(--spacing-sm);
   }
 
+  /* The dragged item (image or file pictogram) — follows the finger on
+   * swipe, snaps/slides on release. Arrows stay fixed (absolute). */
+  .archive-viewer-content {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    touch-action: pan-y;
+    will-change: transform;
+  }
+
+  .archive-viewer-content.is-animating {
+    transition:
+      transform var(--transition-base, 0.25s) ease,
+      opacity var(--transition-base, 0.25s) ease;
+  }
+
+  .archive-viewer[data-reduced-motion] .archive-viewer-content.is-animating {
+    transition: none;
+  }
+
   .archive-viewer-image {
     max-width: 100%;
     max-height: 100%;
@@ -306,6 +331,13 @@ const imageOf = (asset: ArchiveAsset): ImageMetadata | undefined =>
     user-select: none;
     -webkit-user-select: none;
     touch-action: pan-y;
+  }
+
+  /* The global reset `img { display: block }` (author origin) defeats the
+   * UA `[hidden]` rule, so a srcless image stayed visible as a broken box
+   * next to the file panel. Re-hide it from the author layer. */
+  .archive-viewer-image[hidden] {
+    display: none;
   }
 
   /* Loading spinner shown while the (optimised) image decodes, so a
