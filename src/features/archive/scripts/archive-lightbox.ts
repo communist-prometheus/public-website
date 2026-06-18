@@ -18,7 +18,8 @@
  * Accessibility: native `dialog.showModal()` provides the focus trap;
  * we restore focus to the invoking tile on close, announce the current
  * position via a polite live region, and wire ArrowLeft/Right + Escape.
- * A horizontal flick navigates; the visual is a View Transition.
+ * A horizontal flick navigates; the visual is a scoped slide animation
+ * on the pane (no top-layer View Transition, which janks in a dialog).
  */
 
 import type { DocKind } from './archive-renderers';
@@ -213,6 +214,12 @@ let viewer: Viewer | undefined;
 let activeItems: ReadonlyArray<GalleryItem> = [];
 let renderToken = 0;
 let programmaticClose = false;
+/*
+ * True when THIS open pushed a history entry (tile click) — so closing
+ * pops it. A deep-link open adds no entry, so closing just strips the
+ * hash in place instead of navigating off the page.
+ */
+let pushedOpen = false;
 const session: Session = { items: [], index: 0, invoker: undefined };
 
 let renderersPromise: Promise<typeof import('./archive-renderers')> | undefined;
@@ -280,8 +287,12 @@ const render = (v: Viewer): void => {
   const position = session.index + 1;
   v.counter.textContent = `${position} / ${total}`;
   v.live.textContent = `File ${position} of ${total}`;
-  v.prevBtn.disabled = session.index === 0;
-  v.nextBtn.disabled = session.index === total - 1;
+  /*
+   * aria-disabled (not the `disabled` property) so the arrow stays in
+   * the tab order and can be revealed on focus instead of vanishing.
+   */
+  v.prevBtn.setAttribute('aria-disabled', String(session.index === 0));
+  v.nextBtn.setAttribute('aria-disabled', String(session.index === total - 1));
   v.download.href = item.download;
   const mode = viewerMode(item);
   showMode(v, mode);
@@ -308,33 +319,42 @@ const setHash = (name: string, push: boolean): void => {
   else history.replaceState(null, '', url);
 };
 
+const clearHash = (): void => {
+  if (assetFromHash() !== undefined) {
+    history.replaceState(null, '', location.pathname + location.search);
+  }
+};
+
 const assetFromHash = (): string | undefined => {
   const match = location.hash.match(/(?:^#|&)asset=([^&]+)/);
   return match ? decodeURIComponent(match[1] ?? '') : undefined;
 };
 
 /*
- * Move to a neighbouring item through the View Transitions API so any
- * left/right change cross-fades / slides (direction set on <html> for
- * the duration). Browsers without the API — or reduced-motion — get an
- * instant swap. The open item is mirrored into the URL hash.
+ * Slide + fade the pane in from the travel direction. Re-triggerable:
+ * clear the class, then re-add it after two frames so the same animation
+ * replays on every step. Scoped to the pane — no top-layer View
+ * Transition, which janks inside a modal <dialog>.
+ */
+const animatePane = (v: Viewer, dir: number): void => {
+  if (prefersReducedMotion()) return;
+  const cls = dir > 0 ? 'archive-anim-next' : 'archive-anim-prev';
+  v.content.classList.remove('archive-anim-next', 'archive-anim-prev');
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => v.content.classList.add(cls));
+  });
+};
+
+/*
+ * Move to a neighbouring item, mirror it into the URL hash, and animate
+ * the pane in the travel direction.
  */
 const navigate = (delta: number): void => {
   if (!canGo(delta)) return;
   const target = session.items[session.index + delta]?.name;
-  const run = (): void => {
-    go(delta);
-    if (target !== undefined) setHash(target, false);
-  };
-  if (prefersReducedMotion() || typeof document.startViewTransition !== 'function') {
-    run();
-    return;
-  }
-  document.documentElement.setAttribute('data-archive-nav', delta > 0 ? 'next' : 'prev');
-  const transition = document.startViewTransition(run);
-  transition.finished.finally(() => {
-    document.documentElement.removeAttribute('data-archive-nav');
-  });
+  go(delta);
+  if (target !== undefined) setHash(target, false);
+  animatePane(getViewer(), delta);
 };
 
 const exitFullscreen = (): void => {
@@ -396,7 +416,12 @@ const open = (items: ReadonlyArray<GalleryItem>, index: number, fromUrl: boolean
   render(v);
   if (!v.dialog.open) v.dialog.showModal();
   const name = items[index]?.name;
-  if (!fromUrl && name !== undefined) setHash(name, true);
+  if (!fromUrl && name !== undefined) {
+    setHash(name, true);
+    pushedOpen = true;
+  } else {
+    pushedOpen = false;
+  }
 };
 
 const onPopState = (): void => {
@@ -440,10 +465,15 @@ const wireViewerOnce = (v: Viewer): void => {
   v.fullscreenBtn.addEventListener('click', () => toggleFullscreen(v));
   v.image.addEventListener('load', () => v.stage.classList.remove('is-loading'));
   v.image.addEventListener('error', () => v.stage.classList.remove('is-loading'));
+  v.content.addEventListener('animationend', () => {
+    v.content.classList.remove('archive-anim-next', 'archive-anim-prev');
+  });
   v.dialog.addEventListener('close', () => {
     exitFullscreen();
     session.invoker?.focus();
-    if (!programmaticClose && assetFromHash() !== undefined) history.back();
+    if (programmaticClose) return;
+    if (pushedOpen) history.back();
+    else clearHash();
   });
   wireSwipe(v);
   document.addEventListener('keydown', onKeydown);
