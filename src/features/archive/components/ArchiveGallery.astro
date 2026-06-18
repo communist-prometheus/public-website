@@ -90,8 +90,10 @@ const imageOf = (asset: ArchiveAsset): ImageMetadata | undefined =>
 <script>
   import { initArchiveLightbox } from '@/features/archive/scripts/archive-lightbox';
 
-  initArchiveLightbox();
-  document.addEventListener('astro:after-swap', initArchiveLightbox);
+  // `astro:page-load` fires on the initial load AND after every view
+  // transition, always against the live DOM — so the viewer is never
+  // built against a staging document that gets swapped away.
+  document.addEventListener('astro:page-load', initArchiveLightbox);
 </script>
 
 <style>
@@ -300,8 +302,9 @@ const imageOf = (asset: ArchiveAsset): ImageMetadata | undefined =>
     right: var(--spacing-sm);
   }
 
-  /* The dragged item (image or file pictogram) — follows the finger on
-   * swipe, snaps/slides on release. Arrows stay fixed (absolute). */
+  /* Holds the current item (image or file pictogram). Named so prev/next
+   * navigation cross-fades via the View Transitions API. Arrows stay
+   * fixed (absolute). */
   .archive-viewer-content {
     position: relative;
     display: flex;
@@ -310,18 +313,53 @@ const imageOf = (asset: ArchiveAsset): ImageMetadata | undefined =>
     width: 100%;
     height: 100%;
     min-height: 0;
-    touch-action: pan-y;
-    will-change: transform;
+    view-transition-name: archive-viewer-pane;
   }
 
-  .archive-viewer-content.is-animating {
-    transition:
-      transform var(--transition-base, 0.25s) ease,
-      opacity var(--transition-base, 0.25s) ease;
+  /* Directional slide on left/right navigation; the nav direction is set
+   * on <html> just for the duration of the transition. */
+  @keyframes archive-vt-out-left {
+    to {
+      transform: translateX(-6%);
+      opacity: 0;
+    }
   }
 
-  .archive-viewer[data-reduced-motion] .archive-viewer-content.is-animating {
-    transition: none;
+  @keyframes archive-vt-in-right {
+    from {
+      transform: translateX(6%);
+      opacity: 0;
+    }
+  }
+
+  @keyframes archive-vt-out-right {
+    to {
+      transform: translateX(6%);
+      opacity: 0;
+    }
+  }
+
+  @keyframes archive-vt-in-left {
+    from {
+      transform: translateX(-6%);
+      opacity: 0;
+    }
+  }
+
+  :root[data-archive-nav='next']::view-transition-old(archive-viewer-pane) {
+    animation: archive-vt-out-left 0.22s ease both;
+  }
+
+  :root[data-archive-nav='next']::view-transition-new(archive-viewer-pane) {
+    animation: archive-vt-in-right 0.22s ease both;
+  }
+
+  :root[data-archive-nav='prev']::view-transition-old(archive-viewer-pane) {
+    animation: archive-vt-out-right 0.22s ease both;
+  }
+
+  :root[data-archive-nav='prev']::view-transition-new(archive-viewer-pane) {
+    animation: archive-vt-in-left 0.22s ease both;
   }
 
   .archive-viewer-image {
@@ -335,9 +373,47 @@ const imageOf = (asset: ArchiveAsset): ImageMetadata | undefined =>
 
   /* The global reset `img { display: block }` (author origin) defeats the
    * UA `[hidden]` rule, so a srcless image stayed visible as a broken box
-   * next to the file panel. Re-hide it from the author layer. */
-  .archive-viewer-image[hidden] {
+   * next to the file panel. Re-hide it (and the doc pane, which we set to
+   * flex) from the author layer. */
+  .archive-viewer-image[hidden],
+  .archive-viewer-doc[hidden] {
     display: none;
+  }
+
+  /* Inline document pane (text / pdf / docx), rendered by the lazily
+   * imported archive-renderers chunk. Scrolls within the viewer. */
+  .archive-viewer-doc {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    background: #f4f4f4;
+  }
+
+  .archive-doc-text {
+    margin: 0;
+    padding: var(--spacing-lg);
+    min-height: 100%;
+    box-sizing: border-box;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font:
+      0.875rem / 1.6 ui-monospace,
+      'SF Mono',
+      monospace;
+    color: #1a1a1a;
+  }
+
+  .archive-doc-frame {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: #fff;
+  }
+
+  .archive-doc-docx {
+    width: 100%;
+    color: #111;
   }
 
   /* Loading spinner shown while the (optimised) image decodes, so a
