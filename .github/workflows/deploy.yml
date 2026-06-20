@@ -62,6 +62,17 @@ jobs:
         if: ${{ github.ref_name == 'master' && !startsWith(github.event.head_commit.message, 'content:') }}
         run: bunx playwright test --project=chromium --reporter=line
 
+      # The build above (and the e2e it feeds) keep the archive section
+      # ON so its suite stays green; production ships with it OFF until
+      # it's signed off. Rebuild master-only with the flag forced off so
+      # the deployed bundle emits no archive pages, nav, widget, or
+      # sitemap entries. Dev/develop deploys the archive-on build as-is.
+      - name: Rebuilding without the archive section (production)
+        if: ${{ github.ref_name == 'master' }}
+        # content already fetched + code already validated by the first
+        # build — just re-emit the static output with the flag off.
+        run: PUBLIC_FEATURE_ARCHIVE=false bunx astro build
+
       - name: Deploying to Cloudflare Workers
         uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
         with:

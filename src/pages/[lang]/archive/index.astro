@@ -1,4 +1,5 @@
 ---
+import { features } from '@/config/features';
 import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from '@/config/i18n';
 import { getLabelsData } from '@/config/translations';
 import { getArchiveItems, getArchiveSlug } from '@/features/archive/helpers/getArchiveItems';
@@ -7,12 +8,12 @@ import { deriveSummary } from '@/features/content/helpers/deriveSummary';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 
 /*
- * Build the archive listing for every supported language. The nav link
- * is gated by the `archive` feature flag + per-language availability,
- * but a directly-reached URL must still resolve to the empty-state page
- * rather than a 404 (same rationale as blog/newspaper listings).
+ * Build the archive listing for every supported language — but only
+ * when the `archive` feature flag is on. With the flag off the section
+ * is fully closed: no pages are emitted, so even a direct URL 404s.
  */
-export const getStaticPaths = async () => SUPPORTED_LANGUAGES.map((lang) => ({ params: { lang } }));
+export const getStaticPaths = async () =>
+  features.archive ? SUPPORTED_LANGUAGES.map((lang) => ({ params: { lang } })) : [];
 
 const { lang } = Astro.params;
 
