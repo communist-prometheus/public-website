@@ -1,4 +1,5 @@
 ---
+import { features } from '@/config/features';
 import { DEFAULT_LANGUAGE, type Language } from '@/config/i18n';
 import { getLabelsData } from '@/config/translations';
 import ArchiveGallery from '@/features/archive/components/ArchiveGallery.astro';
@@ -12,11 +13,12 @@ interface Props {
 const { slug, lang } = Astro.props;
 
 /*
- * Foot-of-article widget. Renders nothing when the referenced album is
- * missing or unpublished — the caller decides whether to invoke us at
- * all; we just no-op so a stale `archive:` slug never breaks the page.
+ * Foot-of-article widget. Renders nothing when the `archive` feature is
+ * off, or when the referenced album is missing/unpublished — the caller
+ * decides whether to invoke us at all; we just no-op so a stale
+ * `archive:` slug never breaks the page.
  */
-const item = await getArchiveItem(slug, lang);
+const item = features.archive ? await getArchiveItem(slug, lang) : undefined;
 
 const labels = (await getLabelsData(lang)) ?? (await getLabelsData(DEFAULT_LANGUAGE));
 const archiveTitle = labels?.data.archiveTitle ?? 'Archive';

@@ -1,5 +1,6 @@
 ---
 import { type CollectionEntry, getCollection } from 'astro:content';
+import { features } from '@/config/features';
 import { type Language, SUPPORTED_LANGUAGES } from '@/config/i18n';
 import ArchiveGallery from '@/features/archive/components/ArchiveGallery.astro';
 import { getArchiveSlug } from '@/features/archive/helpers/getArchiveItems';
@@ -15,6 +16,8 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
  * the MissingTranslation card without swapping the URL prefix.
  */
 export const getStaticPaths = async () => {
+  // Flag off → emit no archive detail pages (the whole section 404s).
+  if (!features.archive) return [];
   const entries = await getCollection('archive', ({ data }) => data.published === true);
   const slugs = new Set(entries.map((e) => getArchiveSlug(e)));
   const byKey = new Map(entries.map((e) => [`${e.data.lang}/${getArchiveSlug(e)}`, e] as const));
