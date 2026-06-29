@@ -6,9 +6,10 @@ import Nav from './Nav.astro';
 
 interface Props {
   lang: Language;
+  availableLangs?: ReadonlyArray<Language> | undefined;
 }
 
-const { lang } = Astro.props;
+const { lang, availableLangs } = Astro.props;
 ---
 
 <header data-scroll-header>
@@ -23,7 +24,7 @@ const { lang } = Astro.props;
           <Nav lang={lang} />
         </div>
         <div class="desktop-only">
-          <LanguageSwitcher lang={lang} />
+          <LanguageSwitcher lang={lang} availableLangs={availableLangs} />
         </div>
         <div class="desktop-only">
           <ThemeToggle />

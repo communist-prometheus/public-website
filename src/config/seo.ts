@@ -30,21 +30,32 @@ const hreflangByCode: Readonly<Record<string, string>> = {
 };
 
 /**
- * Build the full set of `<link rel="alternate" hreflang="…">` rows
- * for a given page. Each locale gets its own entry plus an
- * `x-default` pointing at the English variant so Google has a
- * fallback for regions without explicit targeting.
+ * Build the set of `<link rel="alternate" hreflang="…">` rows for a
+ * given page. Each locale gets its own entry plus an `x-default`
+ * pointing at the English variant (or the first available locale) so
+ * Google has a fallback for regions without explicit targeting.
+ *
+ * Pass `allowedLangs` on per-translation pages (blog/positions/
+ * newspaper/archive) to advertise ONLY the locales the content is
+ * actually published in — otherwise Google is pointed at locales that
+ * now 404, since an unpublished language version is no longer built.
  * @param currentPath - Astro.url.pathname for the page being rendered
+ * @param allowedLangs - optional whitelist of locales that exist for this page; defaults to every supported locale
  * @returns Alternates list ready to map into `<link>` tags
  */
-export const buildHreflangAlternates = (currentPath: string): readonly Alt[] => {
+export const buildHreflangAlternates = (
+  currentPath: string,
+  allowedLangs?: readonly string[],
+): readonly Alt[] => {
   const rest = ensureTrailingPath(localePath(currentPath));
-  const result: Alt[] = [];
-  for (const code of SUPPORTED_LANGUAGES) {
-    const tag = hreflangByCode[code] ?? code;
-    const href = `${SITE_URL}/${code}${rest === '/' ? '' : rest}`;
-    result.push({ hreflang: tag, href });
-  }
-  result.push({ hreflang: 'x-default', href: `${SITE_URL}/en${rest === '/' ? '' : rest}` });
-  return result;
+  const hrefFor = (code: string) => `${SITE_URL}/${code}${rest === '/' ? '' : rest}`;
+  const langs = allowedLangs
+    ? SUPPORTED_LANGUAGES.filter((code) => allowedLangs.includes(code))
+    : SUPPORTED_LANGUAGES;
+  const alts: Alt[] = langs.map((code) => ({
+    hreflang: hreflangByCode[code] ?? code,
+    href: hrefFor(code),
+  }));
+  const xDefault = langs.includes('en') ? 'en' : langs.at(0);
+  return xDefault ? [...alts, { hreflang: 'x-default', href: hrefFor(xDefault) }] : alts;
 };
