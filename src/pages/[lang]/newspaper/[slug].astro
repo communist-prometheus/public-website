@@ -28,15 +28,18 @@ export const getStaticPaths = async () => {
       SUPPORTED_LANGUAGES.filter((lang) => byKey.has(`${lang}/${slug}`)),
     );
   }
-  return SUPPORTED_LANGUAGES.flatMap((lang) =>
-    [...slugs].map((slug) => ({
-      params: { lang, slug },
-      props: {
-        issue: byKey.get(`${lang}/${slug}`),
-        availableLangs: slugToLangs.get(slug) ?? [],
-      },
-    })),
-  );
+  /*
+   * One path per PUBLISHED (lang, slug) only — an unpublished issue
+   * version gets no page (404), as if it was never created. No more
+   * "not translated" placeholder occupying a live URL.
+   */
+  return issues.map((issue) => ({
+    params: { lang: issue.data.lang, slug: slugFrom(issue.id) },
+    props: {
+      issue,
+      availableLangs: slugToLangs.get(slugFrom(issue.id)) ?? [],
+    },
+  }));
 };
 
 interface Props {
@@ -60,16 +63,26 @@ interface TocEntry {
 
 const tocEntries = await (async (): Promise<ReadonlyArray<TocEntry>> => {
   if (!issue?.data.articles?.length) return [];
-  const posts = await getCollection('blog');
+  /*
+   * Same publish gate as the blog index / article page: an article is
+   * listed in the issue TOC only when it is published in at least one
+   * language. Otherwise an unpublished (or fully unwritten) article
+   * still surfaced here with a live link — the one place the
+   * `published === true` filter was missing.
+   */
+  const posts = await getCollection('blog', ({ data }) => data.published === true);
   const byKey = new Map(posts.map((p) => [`${p.data.lang}/${getArticleSlug(p)}`, p] as const));
-  return issue.data.articles.map((articleSlug) => {
-    const localised = byKey.get(`${lang}/${articleSlug}`) ?? byKey.get(`en/${articleSlug}`);
-    return {
-      slug: articleSlug,
-      title: localised?.data.title ?? articleSlug,
-      href: `/${lang}/blog/${articleSlug}`,
-    };
-  });
+  const publishedSlugs = new Set(posts.map((p) => getArticleSlug(p)));
+  return issue.data.articles
+    .filter((articleSlug) => publishedSlugs.has(articleSlug))
+    .map((articleSlug) => {
+      const localised = byKey.get(`${lang}/${articleSlug}`) ?? byKey.get(`en/${articleSlug}`);
+      return {
+        slug: articleSlug,
+        title: localised?.data.title ?? articleSlug,
+        href: `/${lang}/blog/${articleSlug}`,
+      };
+    });
 })();
 
 const pdfAsset = issue ? findIssueAsset(slug, lang, '.pdf') : undefined;
@@ -84,6 +97,7 @@ const fb2Asset = issue ? findIssueAsset(slug, lang, '.fb2') : undefined;
     ? { description: issue.data.description }
     : {})}
   lang={lang}
+  availableLangs={availableLangs}
 >
   <div class="section">
     <div class="container">

@@ -5,9 +5,17 @@ import SmartDropdown from '@/features/ui/SmartDropdown/SmartDropdown.astro';
 
 interface Props {
   lang: Language;
+  /**
+   * Locales to offer. On per-translation detail pages this is the set
+   * the content is actually published in — offering a locale that now
+   * 404s (unpublished version) would be a dead link. Defaults to every
+   * supported locale on pages that exist in all of them.
+   */
+  availableLangs?: ReadonlyArray<Language> | undefined;
 }
 
-const { lang } = Astro.props;
+const { lang, availableLangs } = Astro.props;
+const codes = availableLangs && availableLangs.length > 0 ? availableLangs : SUPPORTED_LANGUAGES;
 
 // Build a per-language href that preserves the current path instead
 // of pointing at the bare `/{code}` root. Critical for middle-click,
@@ -49,7 +57,7 @@ const hrefFor = (code: string) => (rest === '' ? `/${code}` : `/${code}${rest}`)
     aria-label="Available languages"
     data-testid="language-dropdown"
   >
-    {SUPPORTED_LANGUAGES.map((code) => (
+    {codes.map((code) => (
       <li role="option" aria-selected={code === lang}>
         <a
           href={hrefFor(code)}
