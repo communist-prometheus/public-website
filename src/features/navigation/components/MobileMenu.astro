@@ -6,9 +6,10 @@ import LanguageSwitcher from './LanguageSwitcher.astro';
 
 interface Props {
   lang: Language;
+  availableLangs?: ReadonlyArray<Language> | undefined;
 }
 
-const { lang } = Astro.props;
+const { lang, availableLangs } = Astro.props;
 
 const links = await getNavLinks(lang);
 const nav = await getMenuData(lang);
@@ -90,7 +91,7 @@ const menuLabel = nav?.data.menu ?? 'Menu';
       ))}
     </ul>
     <div class="popup-tools">
-      <LanguageSwitcher lang={lang} />
+      <LanguageSwitcher lang={lang} availableLangs={availableLangs} />
       <ThemeToggle />
     </div>
   </nav>

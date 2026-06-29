@@ -37,15 +37,21 @@ export const getStaticPaths = async () => {
       SUPPORTED_LANGUAGES.filter((lang) => byKey.has(`${lang}/${slug}`)),
     );
   }
-  return SUPPORTED_LANGUAGES.flatMap((lang) =>
-    [...slugs].map((slug) => ({
-      params: { lang, slug },
-      props: {
-        post: byKey.get(`${lang}/${slug}`),
-        availableLangs: slugToLangs.get(slug) ?? [],
-      },
-    })),
-  );
+  /*
+   * One path per PUBLISHED (lang, slug) only. A language version that
+   * isn't published gets no page at all — the URL 404s, exactly as if
+   * the article had never been created in that language. (Previously
+   * every supported language was emitted for any published slug and a
+   * "not translated" placeholder rendered for the missing ones, so an
+   * unpublished article still occupied a live URL — the bug this fixes.)
+   */
+  return posts.map((post) => ({
+    params: { lang: post.data.lang, slug: getArticleSlug(post) },
+    props: {
+      post,
+      availableLangs: slugToLangs.get(getArticleSlug(post)) ?? [],
+    },
+  }));
 };
 
 interface Props {
@@ -97,7 +103,8 @@ const articleLD = post
  */
 const newspaperRef = await (async () => {
   if (!post || !slug) return undefined;
-  const issues = await getCollection('newspaper');
+  // Only link back to a published issue — same gate as everywhere else.
+  const issues = await getCollection('newspaper', ({ data }) => data.published === true);
   const issueSlug = resolveIssueSlug(issues, slug, post.data.newspaper);
   if (!issueSlug) return undefined;
   const slugFrom = (id: string) => id.split('/').at(0) ?? id;
@@ -116,6 +123,7 @@ const newspaperRef = await (async () => {
   title={pageTitle}
   {...(pageDescription ? { description: pageDescription } : {})}
   lang={lang}
+  availableLangs={availableLangs}
 >
   {articleLD && (
     <script

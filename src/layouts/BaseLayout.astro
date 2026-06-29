@@ -23,9 +23,18 @@ interface Props {
    * explicitly because Astro 5 sometimes hands the build path here.
    */
   ogImage?: string;
+  /**
+   * Locales this specific page is published in. Passed by per-
+   * translation detail pages (blog/positions/newspaper/archive) so the
+   * language switcher + hreflang only advertise locales that exist —
+   * an unpublished language version now 404s rather than rendering a
+   * placeholder, so linking to it would be a dead link. Omitted on
+   * pages that exist in every locale (home, section indexes).
+   */
+  availableLangs?: ReadonlyArray<Language>;
 }
 
-const { title, description, lang, ogImage } = Astro.props;
+const { title, description, lang, ogImage, availableLangs } = Astro.props;
 
 /*
  * Open Graph + Twitter cards. Telegram picks `og:title`,
@@ -54,7 +63,7 @@ const absoluteImage = shareImage.startsWith('http') ? shareImage : `${SITE_URL}$
  * same query. Without them only one locale ranks per query and the
  * other six effectively don't exist for search.
  */
-const hreflangAlternates = buildHreflangAlternates(Astro.url.pathname);
+const hreflangAlternates = buildHreflangAlternates(Astro.url.pathname, availableLangs);
 const organizationLD = buildOrganizationLD();
 const websiteLD = buildWebSiteLD(lang);
 ---
@@ -132,7 +141,7 @@ const websiteLD = buildWebSiteLD(lang);
   </head>
   <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
-    <Header lang={lang} />
+    <Header lang={lang} availableLangs={availableLangs} />
     <main id="main-content">
       <slot />
     </main>
@@ -144,7 +153,7 @@ const websiteLD = buildWebSiteLD(lang);
       the wrapper hides itself (>=768px), so this only paints on
       mobile.
     */}
-    <MobileMenu lang={lang} />
+    <MobileMenu lang={lang} availableLangs={availableLangs} />
     {/*
       `floating` slot for body-level fixed-position chrome (article
       TOC overlay, etc.). Sibling of <main>, so a `position: fixed`

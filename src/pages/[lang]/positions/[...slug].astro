@@ -29,15 +29,18 @@ export const getStaticPaths = async () => {
       SUPPORTED_LANGUAGES.filter((lang) => byKey.has(`${lang}/${slug}`)),
     );
   }
-  return SUPPORTED_LANGUAGES.flatMap((lang) =>
-    [...slugs].map((slug) => ({
-      params: { lang, slug },
-      props: {
-        entry: byKey.get(`${lang}/${slug}`),
-        availableLangs: slugToLangs.get(slug) ?? [],
-      },
-    })),
-  );
+  /*
+   * One path per PUBLISHED (lang, slug) only — an unpublished position
+   * version gets no page (404), as if it was never created. No more
+   * "not translated" placeholder occupying a live URL.
+   */
+  return entries.map((entry) => ({
+    params: { lang: entry.data.lang, slug: slugFrom(entry.id) },
+    props: {
+      entry,
+      availableLangs: slugToLangs.get(slugFrom(entry.id)) ?? [],
+    },
+  }));
 };
 
 interface Props {
@@ -63,6 +66,7 @@ const pageDescription = entry ? deriveDescription(entry.data.description, entry.
   title={pageTitle}
   {...(pageDescription ? { description: pageDescription } : {})}
   lang={lang}
+  availableLangs={availableLangs}
 >
   {entry && Content ? (
     <article class="section">
