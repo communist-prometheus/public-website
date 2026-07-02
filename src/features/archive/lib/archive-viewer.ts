@@ -420,34 +420,23 @@ const exitFullscreen = (): void => {
 };
 
 /*
- * Request fullscreen on the dialog first — a <dialog> in the top layer
- * upgrades cleanly to the fullscreen top layer in Chromium and Firefox.
- * If the browser rejects that (older WebKit was flaky here), fall back
- * to fullscreening the document element, which always works but leaves
- * the dialog stacking to the browser's top-layer default.
+ * Fullscreen the dialog itself. A modal <dialog> is already in the top
+ * layer, so browsers can upgrade it to the fullscreen top layer cleanly
+ * and its 100vw / 100dvh geometry follows the new viewport.
+ *
+ * We deliberately do NOT fall back to `document.documentElement`: on
+ * Android Chrome that succeeds visually (the browser chrome hides), but
+ * the dialog stays anchored to the pre-fullscreen viewport rectangle —
+ * so the archive page underneath ends up half-visible around the dialog.
+ * Silent no-op on browsers that reject dialog fullscreen is a smaller
+ * regression than a broken layout.
  */
-const requestFullscreenWithFallback = async (v: Viewer): Promise<void> => {
-  try {
-    if (typeof v.dialog.requestFullscreen === 'function') {
-      await v.dialog.requestFullscreen();
-      return;
-    }
-  } catch {
-    /* fall through */
-  }
-  try {
-    await document.documentElement.requestFullscreen();
-  } catch {
-    /* no fullscreen anywhere — nothing to do */
-  }
-};
-
 const toggleFullscreen = (v: Viewer): void => {
   if (document.fullscreenElement) {
     exitFullscreen();
     return;
   }
-  requestFullscreenWithFallback(v).catch(() => undefined);
+  v.dialog.requestFullscreen?.().catch(() => undefined);
 };
 
 /*

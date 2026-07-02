@@ -38,7 +38,12 @@ export default defineConfig({
        * probe ran during the deploy that was supposed to fix them
        * and went red on the live URL that was still the old build.)
        */
-      testIgnore: ['**/lighthouse.pw.ts', '**/mobile.pw.ts', '**/verify-*.pw.ts'],
+      testIgnore: [
+        '**/lighthouse.pw.ts',
+        '**/mobile.pw.ts',
+        '**/*-mobile.pw.ts',
+        '**/verify-*.pw.ts',
+      ],
     },
     {
       name: 'mobile',
@@ -48,7 +53,7 @@ export default defineConfig({
         isMobile: true,
         hasTouch: true,
       },
-      testMatch: '**/mobile.pw.ts',
+      testMatch: ['**/mobile.pw.ts', '**/*-mobile.pw.ts'],
     },
     {
       name: 'lighthouse',
