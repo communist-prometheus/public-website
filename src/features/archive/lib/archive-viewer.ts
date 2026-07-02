@@ -1,79 +1,50 @@
 /*
- * Framework-free progressive-enhancement lightbox for archive
- * galleries. No Vue/React/Astro-island — plain DOM. Each gallery is a
- * `[data-archive-gallery]` container whose `<button data-archive-item>`
- * tiles carry `data-kind` (image|file), `data-name`, `data-download`
- * and, for images, `data-full` (optimised large image URL). Clicking a
- * tile opens a single shared <dialog> overlay that navigates across the
- * whole gallery.
+ * Archive lightbox powered by web-file-reader.
  *
- * Rendering: images render inline; text / pdf / docx render inline via
- * the lazily-imported `archive-renderers` chunk (heavy code arrives only
- * on an archive page, and only when a document is opened — a spinner
- * covers the load); anything else falls back to a pictogram + download.
+ * SSR emits the tiles (SEO / no-JS friendly), each tile carries its
+ * FileDescriptor serialised on `data-wfr-file`. This module wires:
+ *   - clicks on `[data-archive-item]` → open the shared viewer
+ *   - prev / next / close / download UI
+ *   - deep-link via `#asset=<name>` (Back button closes)
+ *   - swipe navigation
  *
- * URL-driven: the open item lives in the `#asset=<name>` hash, so the
- * view is deep-linkable and the Back button closes it.
- *
- * Accessibility: native `dialog.showModal()` provides the focus trap;
- * we restore focus to the invoking tile on close, announce the current
- * position via a polite live region, and wire ArrowLeft/Right + Escape.
- * A horizontal flick navigates; the visual is a scoped slide animation
- * on the pane (no top-layer View Transition, which janks in a dialog).
+ * The viewer itself is `<wfr-viewer>` from @web-file-reader/viewer, fed a
+ * `FileDescriptor` and a provider registry; the heavy per-type renderers
+ * are downloaded lazily by the registry on first use of each provider.
  */
 
-import type { DocKind } from './archive-renderers';
+import '@web-file-reader/viewer';
+import type { FileDescriptor } from '@web-file-reader/core';
+import type { WfrViewer } from '@web-file-reader/viewer';
+import { getRegistry } from '@/features/archive/lib/registry';
 
-const SWIPE_THRESHOLD = 60;
 const HASH_KEY = 'asset';
-const TEXT_EXTS: ReadonlySet<string> = new Set([
-  'txt',
-  'md',
-  'markdown',
-  'csv',
-  'tsv',
-  'log',
-  'json',
-  'xml',
-  'yml',
-  'yaml',
-]);
+const SWIPE_THRESHOLD = 60;
 
-type ViewerMode = 'image' | DocKind | 'other';
-
-interface GalleryItem {
-  readonly kind: 'image' | 'file';
-  readonly name: string;
-  readonly download: string;
-  readonly ext: string;
-  /** Optimised large image URL; undefined for non-image files. */
-  readonly full: string | undefined;
+interface ArchiveItem {
+  readonly file: FileDescriptor;
   readonly trigger: HTMLButtonElement;
 }
 
 interface Viewer {
   readonly dialog: HTMLDialogElement;
   readonly stage: HTMLElement;
-  readonly content: HTMLElement;
-  readonly image: HTMLImageElement;
-  readonly doc: HTMLElement;
-  readonly filePanel: HTMLElement;
-  readonly fileExt: HTMLElement;
-  readonly fileName: HTMLElement;
-  readonly fileDownload: HTMLAnchorElement;
-  readonly download: HTMLAnchorElement;
+  readonly wfrViewer: WfrViewer;
   readonly counter: HTMLElement;
   readonly live: HTMLElement;
+  readonly download: HTMLAnchorElement;
   readonly prevBtn: HTMLButtonElement;
   readonly nextBtn: HTMLButtonElement;
   readonly fullscreenBtn: HTMLButtonElement;
 }
 
 interface Session {
-  items: ReadonlyArray<GalleryItem>;
+  items: ReadonlyArray<ArchiveItem>;
   index: number;
   invoker: HTMLButtonElement | undefined;
 }
+
+const registry = getRegistry();
 
 const prefersReducedMotion = (): boolean =>
   globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
@@ -88,15 +59,6 @@ const fullscreenSupported = (): boolean =>
  */
 const fullscreenUseful = (): boolean =>
   fullscreenSupported() && globalThis.matchMedia?.('(pointer: coarse)').matches !== true;
-
-const viewerMode = (item: GalleryItem): ViewerMode => {
-  if (item.kind === 'image') return 'image';
-  const ext = item.ext.toLowerCase();
-  if (ext === 'pdf') return 'pdf';
-  if (ext === 'docx') return 'docx';
-  if (TEXT_EXTS.has(ext)) return 'text';
-  return 'other';
-};
 
 const makeButton = (className: string, label: string, glyph: string): HTMLButtonElement => {
   const btn = document.createElement('button');
@@ -116,42 +78,13 @@ const makeDownload = (className: string, label: string, glyph: string): HTMLAnch
   return a;
 };
 
-const buildFilePanel = (): {
-  panel: HTMLElement;
-  ext: HTMLElement;
-  name: HTMLElement;
-  download: HTMLAnchorElement;
-} => {
-  const panel = document.createElement('div');
-  panel.className = 'archive-viewer-file';
-  panel.hidden = true;
-  const ext = document.createElement('span');
-  ext.className = 'archive-viewer-file-ext';
-  ext.setAttribute('aria-hidden', 'true');
-  const name = document.createElement('p');
-  name.className = 'archive-viewer-file-name';
-  const download = document.createElement('a');
-  download.className = 'archive-viewer-file-download';
-  download.setAttribute('download', '');
-  download.textContent = 'Download';
-  panel.append(ext, name, download);
-  return { panel, ext, name, download };
-};
-
 const buildViewer = (): Viewer => {
   const dialog = document.createElement('dialog');
   dialog.className = 'archive-viewer';
   if (prefersReducedMotion()) dialog.setAttribute('data-reduced-motion', 'true');
 
-  const image = document.createElement('img');
-  image.className = 'archive-viewer-image';
-  image.draggable = false;
-  image.alt = '';
-  image.decoding = 'async';
-
-  const doc = document.createElement('div');
-  doc.className = 'archive-viewer-doc';
-  doc.hidden = true;
+  const wfrViewer = document.createElement('wfr-viewer');
+  wfrViewer.className = 'archive-viewer-wfr';
 
   const counter = document.createElement('span');
   counter.className = 'archive-viewer-counter';
@@ -171,16 +104,9 @@ const buildViewer = (): Viewer => {
   bar.className = 'archive-viewer-bar';
   bar.append(counter, download, ...(fullscreenUseful() ? [fullscreenBtn] : []), closeBtn);
 
-  const {
-    panel: filePanel,
-    ext: fileExt,
-    name: fileName,
-    download: fileDownload,
-  } = buildFilePanel();
-
   const content = document.createElement('div');
   content.className = 'archive-viewer-content';
-  content.append(image, doc, filePanel);
+  content.append(wfrViewer);
 
   const stage = document.createElement('figure');
   stage.className = 'archive-viewer-stage';
@@ -191,28 +117,11 @@ const buildViewer = (): Viewer => {
 
   closeBtn.addEventListener('click', () => dialog.close());
 
-  return {
-    dialog,
-    stage,
-    content,
-    image,
-    doc,
-    filePanel,
-    fileExt,
-    fileName,
-    fileDownload,
-    download,
-    counter,
-    live,
-    prevBtn,
-    nextBtn,
-    fullscreenBtn,
-  };
+  return { dialog, stage, wfrViewer, counter, live, download, prevBtn, nextBtn, fullscreenBtn };
 };
 
 let viewer: Viewer | undefined;
-let activeItems: ReadonlyArray<GalleryItem> = [];
-let renderToken = 0;
+let activeItems: ReadonlyArray<ArchiveItem> = [];
 let programmaticClose = false;
 /*
  * True when THIS open pushed a history entry (tile click) — so closing
@@ -221,12 +130,6 @@ let programmaticClose = false;
  */
 let pushedOpen = false;
 const session: Session = { items: [], index: 0, invoker: undefined };
-
-let renderersPromise: Promise<typeof import('./archive-renderers')> | undefined;
-const loadRenderers = (): Promise<typeof import('./archive-renderers')> => {
-  renderersPromise ??= import('./archive-renderers');
-  return renderersPromise;
-};
 
 const getViewer = (): Viewer => {
   if (!viewer) viewer = buildViewer();
@@ -239,46 +142,7 @@ const getViewer = (): Viewer => {
   return viewer;
 };
 
-const showMode = (v: Viewer, mode: ViewerMode): void => {
-  v.image.hidden = mode !== 'image';
-  v.filePanel.hidden = mode !== 'other';
-  v.doc.hidden = mode === 'image' || mode === 'other';
-};
-
-const applyImage = (v: Viewer, item: GalleryItem): void => {
-  v.stage.classList.add('is-loading');
-  v.image.src = item.full ?? item.download;
-  v.image.alt = item.name;
-};
-
-const applyFile = (v: Viewer, item: GalleryItem): void => {
-  v.stage.classList.remove('is-loading');
-  v.image.removeAttribute('src');
-  v.image.alt = '';
-  v.fileExt.textContent = item.ext;
-  v.fileName.textContent = item.name;
-  v.fileDownload.href = item.download;
-};
-
-const applyDoc = (v: Viewer, item: GalleryItem, kind: DocKind): void => {
-  const token = ++renderToken;
-  v.image.removeAttribute('src');
-  v.doc.replaceChildren();
-  v.stage.classList.add('is-loading');
-  loadRenderers()
-    .then((mod) =>
-      token === renderToken ? mod.renderDoc(kind, item.download, item.name, v.doc) : undefined,
-    )
-    .then(() => {
-      if (token === renderToken) v.stage.classList.remove('is-loading');
-    })
-    .catch(() => {
-      if (token !== renderToken) return;
-      v.stage.classList.remove('is-loading');
-      showMode(v, 'other');
-      applyFile(v, item);
-    });
-};
+const currentFile = (): FileDescriptor | undefined => session.items[session.index]?.file;
 
 const render = (v: Viewer): void => {
   const item = session.items[session.index];
@@ -293,19 +157,13 @@ const render = (v: Viewer): void => {
    */
   v.prevBtn.setAttribute('aria-disabled', String(session.index === 0));
   v.nextBtn.setAttribute('aria-disabled', String(session.index === total - 1));
-  v.download.href = item.download;
-  const mode = viewerMode(item);
-  showMode(v, mode);
-  if (mode === 'image') applyImage(v, item);
-  else if (mode === 'other') applyFile(v, item);
-  else applyDoc(v, item, mode);
-};
-
-const go = (delta: number): void => {
-  const next = session.index + delta;
-  if (next < 0 || next >= session.items.length) return;
-  session.index = next;
-  if (viewer) render(viewer);
+  if (item.file.source.kind === 'url') {
+    v.download.href = item.file.source.url;
+  } else {
+    v.download.removeAttribute('href');
+  }
+  v.wfrViewer.registry = registry;
+  v.wfrViewer.file = item.file;
 };
 
 const canGo = (delta: number): boolean => {
@@ -333,15 +191,17 @@ const assetFromHash = (): string | undefined => {
 /*
  * Slide + fade the pane in from the travel direction. Re-triggerable:
  * clear the class, then re-add it after two frames so the same animation
- * replays on every step. Scoped to the pane — no top-layer View
+ * replays on every step. Scoped to the stage — no top-layer View
  * Transition, which janks inside a modal <dialog>.
  */
 const animatePane = (v: Viewer, dir: number): void => {
   if (prefersReducedMotion()) return;
   const cls = dir > 0 ? 'archive-anim-next' : 'archive-anim-prev';
-  v.content.classList.remove('archive-anim-next', 'archive-anim-prev');
+  const holder = v.stage.querySelector<HTMLElement>('.archive-viewer-content');
+  if (!holder) return;
+  holder.classList.remove('archive-anim-next', 'archive-anim-prev');
   requestAnimationFrame(() => {
-    requestAnimationFrame(() => v.content.classList.add(cls));
+    requestAnimationFrame(() => holder.classList.add(cls));
   });
 };
 
@@ -351,10 +211,12 @@ const animatePane = (v: Viewer, dir: number): void => {
  */
 const navigate = (delta: number): void => {
   if (!canGo(delta)) return;
-  const target = session.items[session.index + delta]?.name;
-  go(delta);
+  session.index += delta;
+  const target = currentFile()?.name;
   if (target !== undefined) setHash(target, false);
-  animatePane(getViewer(), delta);
+  const v = getViewer();
+  render(v);
+  animatePane(v, delta);
 };
 
 const exitFullscreen = (): void => {
@@ -388,18 +250,19 @@ const onKeydown = (event: KeyboardEvent): void => {
 };
 
 /*
- * A horizontal flick past the threshold navigates; the visual is the
- * shared View Transition, not a finger-tracking drag.
+ * A horizontal flick past the threshold navigates.
  */
 const wireSwipe = (v: Viewer): void => {
+  const holder = v.stage.querySelector<HTMLElement>('.archive-viewer-content');
+  if (!holder) return;
   let startX: number | undefined;
-  v.content.addEventListener('pointerdown', (e: PointerEvent) => {
+  holder.addEventListener('pointerdown', (e: PointerEvent) => {
     startX = e.clientX;
   });
-  v.content.addEventListener('pointercancel', () => {
+  holder.addEventListener('pointercancel', () => {
     startX = undefined;
   });
-  v.content.addEventListener('pointerup', (e: PointerEvent) => {
+  holder.addEventListener('pointerup', (e: PointerEvent) => {
     if (startX === undefined) return;
     const dx = e.clientX - startX;
     startX = undefined;
@@ -408,14 +271,14 @@ const wireSwipe = (v: Viewer): void => {
   });
 };
 
-const open = (items: ReadonlyArray<GalleryItem>, index: number, fromUrl: boolean): void => {
+const open = (items: ReadonlyArray<ArchiveItem>, index: number, fromUrl: boolean): void => {
   const v = getViewer();
   session.items = items;
   session.index = index;
   session.invoker = items[index]?.trigger;
   render(v);
   if (!v.dialog.open) v.dialog.showModal();
-  const name = items[index]?.name;
+  const name = items[index]?.file.name;
   if (!fromUrl && name !== undefined) {
     setHash(name, true);
     pushedOpen = true;
@@ -428,7 +291,7 @@ const onPopState = (): void => {
   const name = assetFromHash();
   const v = getViewer();
   if (name !== undefined) {
-    const index = activeItems.findIndex((item) => item.name === name);
+    const index = activeItems.findIndex((item) => item.file.name === name);
     if (index < 0) return;
     if (!v.dialog.open) open(activeItems, index, true);
     else if (index !== session.index) {
@@ -442,32 +305,31 @@ const onPopState = (): void => {
   }
 };
 
-const collectItems = (gallery: HTMLElement): ReadonlyArray<GalleryItem> =>
+const parseFileDescriptor = (raw: string | null): FileDescriptor | undefined => {
+  if (!raw) return undefined;
+  try {
+    return JSON.parse(raw) as FileDescriptor;
+  } catch {
+    return undefined;
+  }
+};
+
+const collectItems = (gallery: HTMLElement): ReadonlyArray<ArchiveItem> =>
   [...gallery.querySelectorAll<HTMLButtonElement>('[data-archive-item]')].flatMap((trigger) => {
-    const download = trigger.getAttribute('data-download');
-    if (!download) return [];
-    const kind = trigger.getAttribute('data-kind') === 'file' ? 'file' : 'image';
-    return [
-      {
-        kind,
-        name: trigger.getAttribute('data-name') ?? '',
-        download,
-        ext: trigger.getAttribute('data-ext') ?? '',
-        full: trigger.getAttribute('data-full') ?? undefined,
-        trigger,
-      } as const,
-    ];
+    const file = parseFileDescriptor(trigger.getAttribute('data-wfr-file'));
+    return file === undefined ? [] : [{ file, trigger }];
   });
 
 const wireViewerOnce = (v: Viewer): void => {
   v.prevBtn.addEventListener('click', () => navigate(-1));
   v.nextBtn.addEventListener('click', () => navigate(1));
   v.fullscreenBtn.addEventListener('click', () => toggleFullscreen(v));
-  v.image.addEventListener('load', () => v.stage.classList.remove('is-loading'));
-  v.image.addEventListener('error', () => v.stage.classList.remove('is-loading'));
-  v.content.addEventListener('animationend', () => {
-    v.content.classList.remove('archive-anim-next', 'archive-anim-prev');
-  });
+  const holder = v.stage.querySelector<HTMLElement>('.archive-viewer-content');
+  if (holder) {
+    holder.addEventListener('animationend', () => {
+      holder.classList.remove('archive-anim-next', 'archive-anim-prev');
+    });
+  }
   v.dialog.addEventListener('close', () => {
     exitFullscreen();
     session.invoker?.focus();
@@ -485,16 +347,9 @@ const wireViewerOnce = (v: Viewer): void => {
  * already wired (and the shared viewer) are skipped, so it is safe to
  * call on first load and after Astro view transitions.
  */
-export const initArchiveLightbox = (): void => {
+export const initArchiveViewer = (): void => {
   const galleries = document.querySelectorAll<HTMLElement>('[data-archive-gallery]');
   if (galleries.length === 0) return;
-
-  /*
-   * Prefetch the renderer chunk as soon as an archive page loads, so it
-   * is usually ready by the time a document is opened (the spinner
-   * covers a fast click that beats the download).
-   */
-  loadRenderers().catch(() => undefined);
 
   const v = getViewer();
   if (v.dialog.getAttribute('data-wired') !== 'true') {
@@ -521,7 +376,7 @@ export const initArchiveLightbox = (): void => {
   /* Deep link: open the item named in the URL hash on load. */
   const initial = assetFromHash();
   if (initial !== undefined) {
-    const index = activeItems.findIndex((item) => item.name === initial);
+    const index = activeItems.findIndex((item) => item.file.name === initial);
     if (index >= 0) open(activeItems, index, true);
   }
 };

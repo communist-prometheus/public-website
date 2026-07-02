@@ -36,20 +36,32 @@ test('opens the viewer from a tile and mirrors the item into the URL', async ({ 
   await expect(page).toHaveURL(/#asset=working-notes\.txt$/);
 });
 
+/*
+ * The three rendering tests assert that a document opens inside the shared
+ * <wfr-viewer> element via its lazy provider. `state="ready"` is a reflected
+ * attribute on the viewer host, and Playwright's default engines pierce open
+ * shadow roots — so descendant selectors reach the provider-painted [part="page"]
+ * subtree without a special combinator.
+ */
+const VIEWER = 'wfr-viewer[state="ready"]';
+
 test('renders a text file inline', async ({ page }) => {
   await visit(page, `${ARCHIVE}#asset=working-notes.txt`);
-  await expectVisible(page, page.locator('.archive-viewer-doc pre.archive-doc-text'));
-  await expectText(page, page.locator('.archive-doc-text'), /Founding documents/);
+  await expectVisible(page, page.locator(VIEWER));
+  await expectText(page, page.locator(`${VIEWER} [part="page"]`), /Founding documents/);
 });
 
 test('renders a pdf inline', async ({ page }) => {
   await visit(page, `${ARCHIVE}#asset=sample-charter.pdf`);
-  await expectVisible(page, page.locator('iframe.archive-doc-frame'));
+  await expectVisible(page, page.locator(VIEWER));
+  // provider-pdf uses pdf.js which paints each page onto a <canvas>.
+  await expectMinCount(page, page.locator(`${VIEWER} [part="page"] canvas`), 1);
 });
 
 test('renders a docx inline', async ({ page }) => {
   await visit(page, `${ARCHIVE}#asset=sample-charter.docx`);
-  await expectText(page, page.locator('.archive-doc-docx'), /founding document/i);
+  await expectVisible(page, page.locator(VIEWER));
+  await expectText(page, page.locator(`${VIEWER} [part="page"]`), /founding document/i);
 });
 
 test('a deep-link opens the named item on first load', async ({ page }) => {

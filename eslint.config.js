@@ -13,6 +13,7 @@ export default [
       '*.config.js',
       '*.config.ts',
       'bun.lock',
+      'packages/**',
     ],
   },
   {

@@ -1,0 +1,31 @@
+{
+  "name": "@web-file-reader/provider-image",
+  "version": "0.1.0",
+  "description": "Image provider (png/jpg/gif/webp/svg) for the web-file-reader viewer. Zoom & scroll, single-page output.",
+  "type": "module",
+  "license": "MIT",
+  "keywords": [
+    "web-file-reader",
+    "provider",
+    "image",
+    "lazy"
+  ],
+  "sideEffects": false,
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    },
+    "./lazy": {
+      "types": "./src/lazy.ts",
+      "import": "./src/lazy.ts"
+    }
+  },
+  "dependencies": {
+    "@web-file-reader/core": "workspace:*"
+  },
+  "private": true
+}
