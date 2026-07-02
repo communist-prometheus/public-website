@@ -1,451 +1,80 @@
 ---
-import { Picture } from 'astro:assets';
-import type { FileDescriptor } from '@web-file-reader/core';
-import type { ImageMetadata } from 'astro';
-import { getArchiveAssets } from '@/features/archive/helpers/getArchiveItems';
+/*
+ * Archive gallery — 1:1 port of wfr-host-astro's Grid + Viewer wiring.
+ * The tiles are rendered by <wfr-file-grid>; the shared viewer shell is
+ * `<ArchiveViewer>`. Files are computed here per album and passed through
+ * both components.
+ *
+ * The mount script (setFiles + setupViewer + wfr-file-grid registration)
+ * lives here so all three imports share the same `files.ts` module — if
+ * Grid.astro and Viewer.astro had their own scripts, Vite would emit two
+ * bundles that each carry their own copy of the singleton, and setFiles
+ * would populate a different module than getFiles reads.
+ */
 import { getArchiveFileDescriptors } from '@/features/archive/lib/adapter';
+import ArchiveFileGrid from './ArchiveFileGrid.astro';
+import ArchiveViewer from './ArchiveViewer.astro';
 
 interface Props {
   readonly slug: string;
-  /** Render the first thumbnail eagerly (above-the-fold detail page). */
-  readonly eagerFirst?: boolean;
   /** Cap the number of tiles (the foot-of-article widget passes a few). */
   readonly limit?: number;
 }
 
-const { slug, eagerFirst = false, limit } = Astro.props;
-
-const rawAssets = getArchiveAssets(slug);
-const allDescriptors = await getArchiveFileDescriptors(slug);
-const files = typeof limit === 'number' ? allDescriptors.slice(0, limit) : allDescriptors;
-const assets = typeof limit === 'number' ? rawAssets.slice(0, limit) : rawAssets;
-
-/* Gallery thumbnails are a responsive grid: full-width on phones,
- * ~3-up on tablet, ~4-up on desktop. The largest a single thumb ever
- * gets is ~360px, so cap the candidate widths there. */
-const THUMB_WIDTHS = [200, 360, 540];
-const THUMB_SIZES = '(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 220px';
-
-interface Tile {
-  readonly file: FileDescriptor;
-  readonly image: ImageMetadata | undefined;
-  readonly ext: string;
-  readonly downloadUrl: string;
-}
-
-const tiles: readonly Tile[] = files.map((file, i) => {
-  const asset = assets[i];
-  return {
-    file,
-    image: asset?.kind === 'image' ? asset.image : undefined,
-    ext: asset?.kind === 'file' ? asset.ext : (file.extension ?? '').toUpperCase(),
-    downloadUrl: file.source.kind === 'url' ? file.source.url : '#',
-  };
-});
+const { slug, limit } = Astro.props;
+const all = await getArchiveFileDescriptors(slug);
+const files = typeof limit === 'number' ? all.slice(0, limit) : all;
 ---
 
-{
-  tiles.length > 0 && (
-    <ul class="archive-gallery" data-archive-gallery>
-      {tiles.map((tile, index) => (
-        <li>
-          <button
-            type="button"
-            class:list={['archive-thumb', { 'archive-thumb-file': tile.image === undefined }]}
-            data-archive-item
-            data-name={tile.file.name}
-            data-wfr-file={JSON.stringify(tile.file)}
-            aria-label={`Open ${tile.file.name} in viewer`}
-          >
-            {tile.image ? (
-              <Picture
-                src={tile.image}
-                widths={THUMB_WIDTHS}
-                sizes={THUMB_SIZES}
-                formats={['avif', 'webp']}
-                alt=""
-                loading={eagerFirst && index === 0 ? 'eager' : 'lazy'}
-              />
-            ) : (
-              <span class="archive-file-tile">
-                <span class="archive-file-ext" aria-hidden="true">{tile.ext}</span>
-                <span class="archive-file-name">{tile.file.name}</span>
-              </span>
-            )}
-          </button>
-        </li>
-      ))}
-    </ul>
-  )
-}
+{files.length > 0 && (
+  <div class="archive-gallery" data-archive-gallery>
+    <ArchiveFileGrid files={files} />
+  </div>
+)}
 
-<noscript>
-  <ul class="archive-gallery-noscript">
-    {tiles.map((tile) => (
-      <li>
-        <a href={tile.downloadUrl} download>
-          {tile.file.name}
-        </a>
-      </li>
-    ))}
-  </ul>
-</noscript>
+<ArchiveViewer />
 
 <script>
-  import { initArchiveViewer } from '@/features/archive/lib/archive-viewer';
+  import '@web-file-reader/file-grid';
+  import type { FileDescriptor } from '@web-file-reader/core';
+  import { setFiles } from '../lib/files';
+  import { setupViewer } from '../lib/setup-viewer';
 
-  // `astro:page-load` fires on the initial load AND after every view
-  // transition, always against the live DOM — so the viewer is never
-  // built against a staging document that gets swapped away.
-  document.addEventListener('astro:page-load', initArchiveViewer);
+  interface WithFilesProp extends HTMLElement {
+    files?: readonly FileDescriptor[];
+  }
+
+  const initGallery = (): void => {
+    /*
+     * Populate every <wfr-file-grid> on the page and mirror the first one's
+     * files into the shared `files.ts` singleton — the viewer paging / URL
+     * sync reads from it. A blog page can carry multiple albums but the
+     * viewer only follows one; the first grid on the page wins.
+     */
+    let firstFiles: readonly FileDescriptor[] | undefined;
+    for (const grid of document.querySelectorAll<WithFilesProp>('wfr-file-grid[data-files]')) {
+      if (grid.dataset['ready'] === '1') continue;
+      const raw = grid.getAttribute('data-files');
+      if (raw === null) continue;
+      try {
+        const list = JSON.parse(raw) as readonly FileDescriptor[];
+        grid.files = list;
+        grid.dataset['ready'] = '1';
+        if (firstFiles === undefined) firstFiles = list;
+      } catch {
+        /* malformed JSON — noscript fallback still works */
+      }
+    }
+    if (firstFiles !== undefined) setFiles(firstFiles);
+    setupViewer();
+  };
+
+  document.addEventListener('astro:page-load', initGallery);
+  initGallery();
 </script>
 
 <style>
   .archive-gallery {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--spacing-sm);
-  }
-
-  @media (min-width: 640px) {
-    .archive-gallery {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-
-  @media (min-width: 1024px) {
-    .archive-gallery {
-      grid-template-columns: repeat(4, 1fr);
-    }
-  }
-
-  .archive-thumb {
     display: block;
-    width: 100%;
-    min-height: 44px;
-    padding: 0;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    background: var(--color-surface);
-    cursor: pointer;
-    overflow: hidden;
-    aspect-ratio: 1 / 1;
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-  }
-
-  .archive-thumb:hover {
-    border-color: var(--color-accent);
-  }
-
-  .archive-thumb:focus-visible {
-    outline: 2px solid var(--color-focus-ring);
-    outline-offset: 2px;
-  }
-
-  .archive-thumb :global(img) {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-
-  /* A non-image asset renders as a pictogram tile, same footprint as an
-   * image thumb, so the grid stays uniform — no image/file divide. */
-  .archive-thumb-file {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-xs);
-    padding: var(--spacing-sm);
-    background: var(--color-surface-elevated);
-  }
-
-  .archive-file-tile {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-sm);
-    width: 100%;
-    height: 100%;
-  }
-
-  .archive-file-ext {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 3.5rem;
-    padding: 0.35rem 0.6rem;
-    border-radius: var(--radius-sm);
-    background: var(--color-accent);
-    color: var(--color-on-accent);
-    font-weight: 700;
-    font-size: 0.8125rem;
-    letter-spacing: 0.04em;
-  }
-
-  .archive-file-name {
-    max-width: 100%;
-    font-size: 0.8125rem;
-    line-height: 1.3;
-    color: var(--color-text-secondary);
-    text-align: center;
-    overflow-wrap: anywhere;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  .archive-gallery-noscript {
-    list-style: disc;
-    margin: 0;
-    padding-left: 1.5rem;
-  }
-</style>
-
-<style is:global>
-  /*
-   * Shared viewer overlay built imperatively by archive-viewer.ts.
-   * Global because the <dialog> is appended to <body>, outside any
-   * scoped component subtree. Tokens only; dark backdrop via ::backdrop.
-   */
-  .archive-viewer {
-    width: 100vw;
-    height: 100dvh;
-    max-width: 100vw;
-    max-height: 100dvh;
-    margin: 0;
-    padding: 0;
-    border: none;
-    /* Near-opaque so the page never bleeds through the viewer. */
-    background: rgb(8 8 8 / 0.985);
-    color: #fff;
-    overflow: hidden;
-  }
-
-  .archive-viewer::backdrop {
-    background: rgb(0 0 0 / 0.85);
-  }
-
-  .archive-viewer[open] {
-    display: grid;
-    grid-template-rows: auto 1fr;
-  }
-
-  .archive-viewer-bar {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-sm) var(--spacing-md);
-    opacity: 1;
-    transition: opacity var(--transition-fast, 0.15s) ease;
-    z-index: 3;
-  }
-
-  /*
-   * Chrome auto-hide: 2.5s after last activity (or a tap on the file itself)
-   * the bar and arrows fade out so the file is what the viewer looks at.
-   * pointermove / focusin / keydown poke them back to visible. Native
-   * <dialog> backdrop clicks are already suppressed by our click handler;
-   * a swipe on the scroll-snap track produces no click, so it never toggles.
-   */
-  .archive-viewer[data-chrome-hidden] .archive-viewer-bar {
-    opacity: 0;
-    pointer-events: none;
-  }
-  .archive-viewer[data-chrome-hidden] .archive-viewer-prev,
-  .archive-viewer[data-chrome-hidden] .archive-viewer-next {
-    --arrow-op: 0 !important;
-    pointer-events: none;
-  }
-  .archive-viewer[data-reduced-motion] .archive-viewer-bar {
-    transition: none;
-  }
-
-  .archive-viewer-counter {
-    margin-right: auto;
-    font-variant-numeric: tabular-nums;
-    font-size: 0.9375rem;
-  }
-
-  .archive-viewer-bar button,
-  .archive-viewer-prev,
-  .archive-viewer-next {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 44px;
-    min-height: 44px;
-    padding: 0;
-    border: none;
-    border-radius: var(--radius-sm);
-    background: rgb(255 255 255 / 0.12);
-    color: #fff;
-    font-size: 1.5rem;
-    line-height: 1;
-    cursor: pointer;
-  }
-
-  .archive-viewer-bar button:hover:not(:disabled),
-  .archive-viewer-prev:hover:not(:disabled),
-  .archive-viewer-next:hover:not(:disabled) {
-    background: rgb(255 255 255 / 0.24);
-  }
-
-  .archive-viewer button:focus-visible {
-    outline: 2px solid #fff;
-    outline-offset: 2px;
-  }
-
-  .archive-viewer-stage {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0;
-    padding: var(--spacing-sm);
-    min-height: 0;
-  }
-
-  /* Arrow visibility rides a custom property so every rule just sets
-   * `--arrow-op` and the single `opacity` declaration reads the cascaded
-   * winner — no opacity-specificity fights between the disabled and
-   * reveal states. */
-  .archive-viewer-prev,
-  .archive-viewer-next {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 2;
-    --arrow-op: 1;
-    opacity: var(--arrow-op);
-    transition: opacity var(--transition-fast, 0.15s) ease;
-  }
-
-  .archive-viewer-prev { left: var(--spacing-sm); }
-  .archive-viewer-next { right: var(--spacing-sm); }
-
-  /* A direction with no neighbour is dimmed, but kept in the tab order
-   * and revealable — never `disabled` (which drops it from focus) and
-   * never gone for good. */
-  .archive-viewer-prev[aria-disabled='true'],
-  .archive-viewer-next[aria-disabled='true'] {
-    --arrow-op: 0.3;
-    cursor: default;
-  }
-
-  /* On a hover-capable pointer the arrows stay out of the way until the
-   * viewer is hovered OR an arrow is focused (keyboard/Tab) — so they
-   * always come back on focus instead of vanishing. Touch devices (no
-   * hover) keep them visible, since swipe + tap are the only inputs. */
-  @media (hover: hover) {
-    .archive-viewer-prev,
-    .archive-viewer-next,
-    .archive-viewer-prev[aria-disabled='true'],
-    .archive-viewer-next[aria-disabled='true'] {
-      --arrow-op: 0;
-    }
-
-    .archive-viewer:hover .archive-viewer-prev,
-    .archive-viewer:hover .archive-viewer-next,
-    .archive-viewer-stage:focus-within .archive-viewer-prev,
-    .archive-viewer-stage:focus-within .archive-viewer-next,
-    .archive-viewer-prev:focus-visible,
-    .archive-viewer-next:focus-visible {
-      --arrow-op: 1;
-    }
-
-    .archive-viewer:hover .archive-viewer-prev[aria-disabled='true'],
-    .archive-viewer:hover .archive-viewer-next[aria-disabled='true'],
-    .archive-viewer-stage:focus-within .archive-viewer-prev[aria-disabled='true'],
-    .archive-viewer-stage:focus-within .archive-viewer-next[aria-disabled='true'] {
-      --arrow-op: 0.3;
-    }
-  }
-
-  /*
-   * The carousel track: three <section> slides side-by-side, each holding a
-   * <wfr-viewer>. Native horizontal scroll + mandatory scroll-snap gives us
-   * finger-tracking swipes with real inertia; the settled slide's file
-   * becomes the current one (archive-viewer.ts handles the commit + ring
-   * recycle). Hide the scrollbar — the counter tells the user where they are.
-   */
-  .archive-viewer-track {
-    position: relative;
-    display: flex;
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-snap-type: x mandatory;
-    scroll-behavior: auto;
-    /* Contain overscroll on the inline axis so a swipe past the last slide
-       never triggers browser back-navigation. Block axis chains normally
-       so vertical scrolling of long PDFs/text works. */
-    overscroll-behavior-inline: contain;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-  .archive-viewer-track::-webkit-scrollbar { display: none; }
-
-  .archive-viewer-slide {
-    flex: 0 0 100%;
-    width: 100%;
-    height: 100%;
-    min-width: 0;
-    scroll-snap-align: center;
-    scroll-snap-stop: always;
-    /* Give the pane a paint/composite layer so scrolling stays smooth even
-       while a heavy renderer (pdf.js canvas) is populating a neighbour. */
-    contain: layout paint;
-  }
-  .archive-viewer-slide[hidden] { display: none !important; }
-  .archive-viewer-slide wfr-viewer {
-    display: block;
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-    color: #fff;
-  }
-
-  .archive-viewer[data-reduced-motion] .archive-viewer-track {
-    scroll-behavior: auto;
-  }
-
-  .archive-viewer-download {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 44px;
-    min-height: 44px;
-    padding: 0 var(--spacing-md);
-    border-radius: var(--radius-sm);
-    background: rgb(255 255 255 / 0.12);
-    color: #fff;
-    font-weight: 500;
-    text-decoration: none;
-  }
-
-  .archive-viewer-download:hover { background: rgb(255 255 255 / 0.24); }
-
-  .archive-viewer-live {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    padding: 0;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    clip-path: inset(50%);
-    white-space: nowrap;
-    border: 0;
   }
 </style>

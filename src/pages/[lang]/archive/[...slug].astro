@@ -77,7 +77,7 @@ const pageDescription = entry ? deriveDescription(entry.data.description, entry.
               <Content />
             </div>
           )}
-          <ArchiveGallery slug={slug} eagerFirst />
+          <ArchiveGallery slug={slug} />
           <SuggestChangesLink collection="archive" entryId={entry.id} />
         </>
       ) : (

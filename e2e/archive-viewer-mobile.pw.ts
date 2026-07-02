@@ -1,16 +1,17 @@
 import { expect, expectVisible, test, visit } from '@prometheus/e2e-toolkit';
 
-/**
- * Archive viewer — mobile.
+/*
+ * Archive viewer — mobile. Runs under playwright.config.ts's `mobile` project
+ * (viewport 375x812, hasTouch: true, isMobile: true). Selectors follow the
+ * wfr-host-astro shell (dialog.viewer-dialog + .slide + #fs-button).
  *
- * Runs under playwright.config.ts's `mobile` project (viewport 375x812,
- * hasTouch: true, isMobile: true). Guards the "on mobile the dialog does
- * not cover the page and prev/next float over the archive index" regression
- * that the previous fullscreen + auto-hide refactor introduced.
+ * Guards the "on mobile the dialog does not cover the page and prev/next
+ * float over the archive index" regression that the earlier fullscreen +
+ * auto-hide refactor introduced.
  */
 
 const ARCHIVE = '/en/archive/founding-documents/';
-const DIALOG = 'dialog.archive-viewer';
+const DIALOG = 'dialog.viewer-dialog';
 
 test.describe('archive viewer covers the viewport on mobile', () => {
   test('dialog fills the visible viewport (no page content bleeds through)', async ({ page }) => {
@@ -29,11 +30,6 @@ test.describe('archive viewer covers the viewport on mobile', () => {
       };
     });
 
-    /*
-     * The dialog must be flush with the viewport edges — even 1px slack lets
-     * the archive page underneath show through, which is what the regression
-     * screenshot shows.
-     */
     expect(geom.left, `dialog.left = ${geom.left}`).toBe(0);
     expect(geom.top, `dialog.top = ${geom.top}`).toBe(0);
     expect(geom.width, `dialog.width = ${geom.width}, viewport = ${geom.vw}`).toBe(geom.vw);
@@ -49,11 +45,6 @@ test.describe('archive viewer covers the viewport on mobile', () => {
     await visit(page, `${ARCHIVE}#asset=flag.svg`);
     await expectVisible(page, page.locator(DIALOG));
 
-    /*
-     * If the dialog covers the page, elementFromPoint at the page heading's
-     * location resolves to something INSIDE the dialog (backdrop / stage /
-     * wfr-viewer / etc.). If the regression is present, we hit the H1 itself.
-     */
     const covered = await page.evaluate(() => {
       const h1 = document.querySelector('h1');
       if (h1 === null) return { covered: false, reason: 'no h1' };
@@ -63,9 +54,8 @@ test.describe('archive viewer covers the viewport on mobile', () => {
         Math.round(rect.top + rect.height / 2),
       );
       return {
-        covered: el !== h1 && el?.closest('dialog.archive-viewer') !== null,
+        covered: el !== h1 && el?.closest('dialog.viewer-dialog') !== null,
         elTag: el?.tagName ?? null,
-        closestDialog: el?.closest('dialog.archive-viewer') !== null,
       };
     });
     expect(covered.covered, JSON.stringify(covered)).toBe(true);
@@ -73,7 +63,11 @@ test.describe('archive viewer covers the viewport on mobile', () => {
 
   test('opening from a tile on mobile still covers the viewport', async ({ page }) => {
     await visit(page, ARCHIVE);
-    await page.locator('[data-archive-item][data-name="flag.svg"]').tap();
+    /*
+     * <wfr-file-grid> renders <wfr-file-tile> children in its shadow root;
+     * Playwright's default engines pierce shadow roots so we can tap by tag.
+     */
+    await page.locator('wfr-file-tile').first().tap();
     await expectVisible(page, page.locator(DIALOG));
     const geom = await page.locator(DIALOG).evaluate((el) => {
       const rect = el.getBoundingClientRect();
@@ -118,19 +112,16 @@ test.describe('archive viewer covers the viewport on mobile', () => {
     await visit(page, `${ARCHIVE}#asset=flag.svg`);
     await expectVisible(page, page.locator(DIALOG));
 
-    await page.locator('.archive-viewer-fullscreen').tap();
+    await page.locator('#fs-button').tap();
 
     const calls = await page.evaluate(
       () => (window as unknown as { __fsCalls: { target: string; tag: string }[] }).__fsCalls,
     );
-    expect(
-      calls.length,
-      `no requestFullscreen calls at all: ${JSON.stringify(calls)}`,
-    ).toBeGreaterThan(0);
+    expect(calls.length, `no requestFullscreen calls: ${JSON.stringify(calls)}`).toBeGreaterThan(0);
     expect(calls[0]?.target, `first fs call target: ${JSON.stringify(calls)}`).toBe('dialog');
     expect(
       calls.some((c) => c.target === 'html'),
-      `documentElement fallback re-appeared on mobile: ${JSON.stringify(calls)}`,
+      `documentElement fallback re-appeared: ${JSON.stringify(calls)}`,
     ).toBe(false);
   });
 });

@@ -68,11 +68,17 @@ export const getArchiveFileDescriptors = async (
   slug: string,
 ): Promise<readonly FileDescriptor[]> => {
   const assets = getArchiveAssets(slug);
-  return Promise.all(assets.map((asset) => toDescriptor(asset, slug)));
+  return Promise.all(assets.map((asset) => toDescriptor(asset)));
 };
 
-const toDescriptor = async (asset: ArchiveAsset, slug: string): Promise<FileDescriptor> => {
-  const id = `${slug}-${asset.name}`.replace(/[^a-zA-Z0-9-]+/g, '-');
+const toDescriptor = async (asset: ArchiveAsset): Promise<FileDescriptor> => {
+  /*
+   * The file id doubles as the URL hash value (`#asset=<id>`) — using the
+   * bare filename keeps the deep-link human-readable and matches the
+   * filenames the noscript download list advertises. Filenames are unique
+   * per album by construction (single flat `assets/` directory).
+   */
+  const id = asset.name;
   const url = asset.downloadUrl;
 
   if (asset.kind === 'image') {
