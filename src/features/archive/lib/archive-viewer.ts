@@ -461,9 +461,11 @@ const open = (items: ReadonlyArray<ArchiveItem>, index: number, fromUrl: boolean
    * displayed, so centring a mid-list file must happen after showModal.
    */
   if (!v.dialog.open) v.dialog.showModal();
-  /* Force setCurrent-then-layout even if currentName still matches the
+  /*
+   * Force setCurrent-then-layout even if currentName still matches the
    * previous session's file (a re-open of the same file from a different
-   * gallery would otherwise skip layout in commit). */
+   * gallery would otherwise skip layout in commit).
+   */
   currentName = undefined;
   setCurrent(v, item, false);
   layout(v, item);
