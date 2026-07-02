@@ -33,6 +33,8 @@ const PAGE_SCROLL_MS = 180;
 const SNAP_TOLERANCE = 2;
 /* Fallback debounce for browsers that don't fire `scrollend`. */
 const SETTLE_DEBOUNCE_MS = 140;
+/* Idle time in ms before the chrome (bar + arrows) auto-hides. */
+const CHROME_IDLE_MS = 2500;
 
 interface ArchiveItem {
   readonly file: FileDescriptor;
@@ -63,14 +65,6 @@ const prefersReducedMotion = (): boolean =>
 
 const fullscreenSupported = (): boolean =>
   document.fullscreenEnabled === true && typeof Element.prototype.requestFullscreen === 'function';
-
-/*
- * Fullscreen is pointless on touch devices — the modal already fills the
- * viewport and the Fullscreen API is flaky/absent there. Show the toggle
- * only with a fine pointer (desktop), so mobile never gets a dead button.
- */
-const fullscreenUseful = (): boolean =>
-  fullscreenSupported() && globalThis.matchMedia?.('(pointer: coarse)').matches !== true;
 
 const easeOutCubic = (t: number): number => 1 - (1 - t) ** 3;
 
@@ -113,7 +107,7 @@ const buildViewer = (): Viewer => {
 
   const bar = document.createElement('div');
   bar.className = 'archive-viewer-bar';
-  bar.append(counter, download, ...(fullscreenUseful() ? [fullscreenBtn] : []), closeBtn);
+  bar.append(counter, download, ...(fullscreenSupported() ? [fullscreenBtn] : []), closeBtn);
 
   const track = document.createElement('div');
   track.className = 'archive-viewer-track';
@@ -425,28 +419,97 @@ const exitFullscreen = (): void => {
   }
 };
 
+/*
+ * Request fullscreen on the dialog first — a <dialog> in the top layer
+ * upgrades cleanly to the fullscreen top layer in Chromium and Firefox.
+ * If the browser rejects that (older WebKit was flaky here), fall back
+ * to fullscreening the document element, which always works but leaves
+ * the dialog stacking to the browser's top-layer default.
+ */
+const requestFullscreenWithFallback = async (v: Viewer): Promise<void> => {
+  try {
+    if (typeof v.dialog.requestFullscreen === 'function') {
+      await v.dialog.requestFullscreen();
+      return;
+    }
+  } catch {
+    /* fall through */
+  }
+  try {
+    await document.documentElement.requestFullscreen();
+  } catch {
+    /* no fullscreen anywhere — nothing to do */
+  }
+};
+
 const toggleFullscreen = (v: Viewer): void => {
   if (document.fullscreenElement) {
     exitFullscreen();
     return;
   }
-  /* Graceful no-op when the browser rejects (e.g. permissions, iOS). */
-  v.dialog.requestFullscreen?.().catch(() => undefined);
+  requestFullscreenWithFallback(v).catch(() => undefined);
 };
+
+/*
+ * Chrome auto-hide. The bar + prev/next arrows fade out after ~2.5 s of no
+ * user activity so the file itself is what the viewer viewer looks at. Any
+ * pointer movement, keyboard press, or programmatic paging (setCurrent)
+ * pokes the chrome back to visible and re-starts the idle timer. A tap on
+ * an empty region of the stage toggles the chrome — same UX pattern as
+ * Google Photos, Instagram, native image viewers.
+ */
+let chromeIdleTimer: ReturnType<typeof setTimeout> | undefined;
+
+const setChromeHidden = (v: Viewer, hidden: boolean): void => {
+  if (hidden) v.dialog.setAttribute('data-chrome-hidden', '');
+  else v.dialog.removeAttribute('data-chrome-hidden');
+};
+
+const pokeChrome = (v: Viewer): void => {
+  setChromeHidden(v, false);
+  if (chromeIdleTimer !== undefined) clearTimeout(chromeIdleTimer);
+  chromeIdleTimer = setTimeout(() => setChromeHidden(v, true), CHROME_IDLE_MS);
+};
+
+const toggleChrome = (v: Viewer): void => {
+  const wasHidden = v.dialog.hasAttribute('data-chrome-hidden');
+  setChromeHidden(v, !wasHidden);
+  if (chromeIdleTimer !== undefined) {
+    clearTimeout(chromeIdleTimer);
+    chromeIdleTimer = undefined;
+  }
+  if (wasHidden) pokeChrome(v);
+};
+
+/*
+ * True when the target of a click is a chrome control that should NOT
+ * trigger the tap-toggle (else clicking Prev also hides Prev).
+ */
+const isChromeControl = (target: EventTarget | null): boolean =>
+  target instanceof Element &&
+  target.closest('.archive-viewer-bar, .archive-viewer-prev, .archive-viewer-next, a, button') !==
+    null;
 
 const onKeydown = (event: KeyboardEvent): void => {
   const v = viewer;
   if (!v?.dialog.open) return;
   if (event.key === 'ArrowLeft') {
     event.preventDefault();
+    pokeChrome(v);
     page(v, -1);
   } else if (event.key === 'ArrowRight') {
     event.preventDefault();
+    pokeChrome(v);
     page(v, 1);
   } else if (event.key === 'Escape' && document.fullscreenElement) {
     /* Exit fullscreen first; a second Escape closes the dialog. */
     event.preventDefault();
     exitFullscreen();
+  } else if (event.key === 'f' && !event.ctrlKey && !event.metaKey && !event.altKey) {
+    /* Keyboard shortcut for fullscreen — matches many native viewers. */
+    event.preventDefault();
+    pokeChrome(v);
+    toggleFullscreen(v);
   }
 };
 
@@ -469,6 +532,8 @@ const open = (items: ReadonlyArray<ArchiveItem>, index: number, fromUrl: boolean
   currentName = undefined;
   setCurrent(v, item, false);
   layout(v, item);
+  /* Every open starts with the chrome visible + a fresh idle timer. */
+  pokeChrome(v);
   const name = item.file.name;
   if (!fromUrl) {
     setHash(name, true);
@@ -516,9 +581,18 @@ const collectItems = (gallery: HTMLElement): ReadonlyArray<ArchiveItem> =>
   });
 
 const wireViewerOnce = (v: Viewer): void => {
-  v.prevBtn.addEventListener('click', () => page(v, -1));
-  v.nextBtn.addEventListener('click', () => page(v, 1));
-  v.fullscreenBtn.addEventListener('click', () => toggleFullscreen(v));
+  v.prevBtn.addEventListener('click', () => {
+    pokeChrome(v);
+    page(v, -1);
+  });
+  v.nextBtn.addEventListener('click', () => {
+    pokeChrome(v);
+    page(v, 1);
+  });
+  v.fullscreenBtn.addEventListener('click', () => {
+    pokeChrome(v);
+    toggleFullscreen(v);
+  });
 
   v.track.addEventListener('scroll', () => onScroll(v), { passive: true });
   v.track.addEventListener('scrollend', () => onSettle(v), { passive: true });
@@ -526,6 +600,10 @@ const wireViewerOnce = (v: Viewer): void => {
   v.dialog.addEventListener('close', () => {
     exitFullscreen();
     session.invoker?.focus();
+    if (chromeIdleTimer !== undefined) {
+      clearTimeout(chromeIdleTimer);
+      chromeIdleTimer = undefined;
+    }
     if (programmaticClose) return;
     if (pushedOpen) history.back();
     else clearHash();
@@ -541,6 +619,30 @@ const wireViewerOnce = (v: Viewer): void => {
   window.addEventListener('resize', () => {
     const active = sections(v).find((sec) => sec.getAttribute('data-name') === currentName);
     if (active !== undefined) centre(v, active);
+  });
+
+  /*
+   * Chrome activity tracking. Any pointer movement or key press pokes the
+   * chrome back to visible and resets the 2.5 s idle timer; a click on an
+   * empty region of the stage (i.e. NOT on a button/link) toggles it.
+   * A finger swipe on the scroll-snap track scrolls the carousel and
+   * suppresses the trailing click, so genuine swipes never toggle chrome.
+   */
+  v.dialog.addEventListener('pointermove', () => pokeChrome(v), { passive: true });
+  v.dialog.addEventListener('focusin', () => pokeChrome(v), { passive: true });
+  v.dialog.addEventListener('click', (event) => {
+    if (isChromeControl(event.target)) return;
+    toggleChrome(v);
+  });
+
+  /*
+   * Reflect current fullscreen state on the button so screen readers announce
+   * it and CSS can style the pressed variant if it wants to.
+   */
+  document.addEventListener('fullscreenchange', () => {
+    const isFs = document.fullscreenElement !== null;
+    v.fullscreenBtn.setAttribute('aria-pressed', String(isFs));
+    v.fullscreenBtn.setAttribute('aria-label', isFs ? 'Exit fullscreen' : 'Toggle fullscreen');
   });
 };
 

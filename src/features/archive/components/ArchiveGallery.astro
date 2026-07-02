@@ -244,6 +244,29 @@ const tiles: readonly Tile[] = files.map((file, i) => {
     justify-content: flex-end;
     gap: var(--spacing-sm);
     padding: var(--spacing-sm) var(--spacing-md);
+    opacity: 1;
+    transition: opacity var(--transition-fast, 0.15s) ease;
+    z-index: 3;
+  }
+
+  /*
+   * Chrome auto-hide: 2.5s after last activity (or a tap on the file itself)
+   * the bar and arrows fade out so the file is what the viewer looks at.
+   * pointermove / focusin / keydown poke them back to visible. Native
+   * <dialog> backdrop clicks are already suppressed by our click handler;
+   * a swipe on the scroll-snap track produces no click, so it never toggles.
+   */
+  .archive-viewer[data-chrome-hidden] .archive-viewer-bar {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .archive-viewer[data-chrome-hidden] .archive-viewer-prev,
+  .archive-viewer[data-chrome-hidden] .archive-viewer-next {
+    --arrow-op: 0 !important;
+    pointer-events: none;
+  }
+  .archive-viewer[data-reduced-motion] .archive-viewer-bar {
+    transition: none;
   }
 
   .archive-viewer-counter {
