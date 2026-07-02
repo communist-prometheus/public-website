@@ -347,21 +347,45 @@ const tiles: readonly Tile[] = files.map((file, i) => {
     }
   }
 
-  /* Holds the current item — wfr-viewer paints inside this holder.
-     On prev/next it slides + fades in from the travel direction — a
-     scoped animation, not a top-layer View Transition (which janks
-     inside a modal <dialog>). */
-  .archive-viewer-content {
+  /*
+   * The carousel track: three <section> slides side-by-side, each holding a
+   * <wfr-viewer>. Native horizontal scroll + mandatory scroll-snap gives us
+   * finger-tracking swipes with real inertia; the settled slide's file
+   * becomes the current one (archive-viewer.ts handles the commit + ring
+   * recycle). Hide the scrollbar — the counter tells the user where they are.
+   */
+  .archive-viewer-track {
     position: relative;
     display: flex;
-    align-items: center;
-    justify-content: center;
     width: 100%;
     height: 100%;
     min-height: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: auto;
+    /* Contain overscroll on the inline axis so a swipe past the last slide
+       never triggers browser back-navigation. Block axis chains normally
+       so vertical scrolling of long PDFs/text works. */
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
   }
+  .archive-viewer-track::-webkit-scrollbar { display: none; }
 
-  .archive-viewer-wfr {
+  .archive-viewer-slide {
+    flex: 0 0 100%;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+    /* Give the pane a paint/composite layer so scrolling stays smooth even
+       while a heavy renderer (pdf.js canvas) is populating a neighbour. */
+    contain: layout paint;
+  }
+  .archive-viewer-slide[hidden] { display: none !important; }
+  .archive-viewer-slide wfr-viewer {
     display: block;
     width: 100%;
     height: 100%;
@@ -369,23 +393,8 @@ const tiles: readonly Tile[] = files.map((file, i) => {
     color: #fff;
   }
 
-  @keyframes archive-pane-next {
-    from { opacity: 0; transform: translateX(28px); }
-  }
-  @keyframes archive-pane-prev {
-    from { opacity: 0; transform: translateX(-28px); }
-  }
-
-  .archive-viewer-content.archive-anim-next {
-    animation: archive-pane-next 0.24s ease both;
-  }
-  .archive-viewer-content.archive-anim-prev {
-    animation: archive-pane-prev 0.24s ease both;
-  }
-
-  .archive-viewer[data-reduced-motion] .archive-viewer-content.archive-anim-next,
-  .archive-viewer[data-reduced-motion] .archive-viewer-content.archive-anim-prev {
-    animation: none;
+  .archive-viewer[data-reduced-motion] .archive-viewer-track {
+    scroll-behavior: auto;
   }
 
   .archive-viewer-download {

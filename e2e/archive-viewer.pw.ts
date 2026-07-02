@@ -38,30 +38,32 @@ test('opens the viewer from a tile and mirrors the item into the URL', async ({ 
 
 /*
  * The three rendering tests assert that a document opens inside the shared
- * <wfr-viewer> element via its lazy provider. `state="ready"` is a reflected
- * attribute on the viewer host, and Playwright's default engines pierce open
- * shadow roots — so descendant selectors reach the provider-painted [part="page"]
- * subtree without a special combinator.
+ * <wfr-viewer> element via its lazy provider. The dialog holds a 3-slide
+ * carousel (prev / current / next), so we scope selectors to the current
+ * slide via `[aria-current="true"]`. `state="ready"` is a reflected
+ * attribute on the viewer host, and Playwright's default engines pierce
+ * open shadow roots — so descendant selectors reach the provider-painted
+ * [part="page"] subtree without a special combinator.
  */
-const VIEWER = 'wfr-viewer[state="ready"]';
+const CURRENT = '.archive-viewer-slide[aria-current="true"] wfr-viewer[state="ready"]';
 
 test('renders a text file inline', async ({ page }) => {
   await visit(page, `${ARCHIVE}#asset=working-notes.txt`);
-  await expectVisible(page, page.locator(VIEWER));
-  await expectText(page, page.locator(`${VIEWER} [part="page"]`), /Founding documents/);
+  await expectVisible(page, page.locator(CURRENT));
+  await expectText(page, page.locator(`${CURRENT} [part="page"]`), /Founding documents/);
 });
 
 test('renders a pdf inline', async ({ page }) => {
   await visit(page, `${ARCHIVE}#asset=sample-charter.pdf`);
-  await expectVisible(page, page.locator(VIEWER));
+  await expectVisible(page, page.locator(CURRENT));
   // provider-pdf uses pdf.js which paints each page onto a <canvas>.
-  await expectMinCount(page, page.locator(`${VIEWER} [part="page"] canvas`), 1);
+  await expectMinCount(page, page.locator(`${CURRENT} [part="page"] canvas`), 1);
 });
 
 test('renders a docx inline', async ({ page }) => {
   await visit(page, `${ARCHIVE}#asset=sample-charter.docx`);
-  await expectVisible(page, page.locator(VIEWER));
-  await expectText(page, page.locator(`${VIEWER} [part="page"]`), /founding document/i);
+  await expectVisible(page, page.locator(CURRENT));
+  await expectText(page, page.locator(`${CURRENT} [part="page"]`), /founding document/i);
 });
 
 test('a deep-link opens the named item on first load', async ({ page }) => {

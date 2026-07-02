@@ -4,13 +4,21 @@
  * SSR emits the tiles (SEO / no-JS friendly), each tile carries its
  * FileDescriptor serialised on `data-wfr-file`. This module wires:
  *   - clicks on `[data-archive-item]` → open the shared viewer
+ *   - a 3-pane scroll-snap carousel: swiping the finger scrolls the track
+ *     natively (real inertia); the slide that settles in the viewport
+ *     becomes the current file, and slides are ring-recycled so paging
+ *     never reloads an already-rendered, visible pane
  *   - prev / next / close / download UI
  *   - deep-link via `#asset=<name>` (Back button closes)
- *   - swipe navigation
  *
  * The viewer itself is `<wfr-viewer>` from @web-file-reader/viewer, fed a
  * `FileDescriptor` and a provider registry; the heavy per-type renderers
  * are downloaded lazily by the registry on first use of each provider.
+ *
+ * Adapted from @web-file-reader/host-astro's setup-viewer.ts — the file-id
+ * routing there becomes hash-based `#asset=<name>` here, and the ordered
+ * file list is per-open (from the clicked gallery) instead of a static
+ * FILES module.
  */
 
 import '@web-file-reader/viewer';
@@ -19,7 +27,12 @@ import type { WfrViewer } from '@web-file-reader/viewer';
 import { getRegistry } from '@/features/archive/lib/registry';
 
 const HASH_KEY = 'asset';
-const SWIPE_THRESHOLD = 60;
+/* Paging animation duration; ~2x faster than the browser default smooth. */
+const PAGE_SCROLL_MS = 180;
+/* Treat `scrollLeft` within this many px of a snap-point offset as "on it". */
+const SNAP_TOLERANCE = 2;
+/* Fallback debounce for browsers that don't fire `scrollend`. */
+const SETTLE_DEBOUNCE_MS = 140;
 
 interface ArchiveItem {
   readonly file: FileDescriptor;
@@ -29,7 +42,7 @@ interface ArchiveItem {
 interface Viewer {
   readonly dialog: HTMLDialogElement;
   readonly stage: HTMLElement;
-  readonly wfrViewer: WfrViewer;
+  readonly track: HTMLElement;
   readonly counter: HTMLElement;
   readonly live: HTMLElement;
   readonly download: HTMLAnchorElement;
@@ -40,7 +53,6 @@ interface Viewer {
 
 interface Session {
   items: ReadonlyArray<ArchiveItem>;
-  index: number;
   invoker: HTMLButtonElement | undefined;
 }
 
@@ -59,6 +71,8 @@ const fullscreenSupported = (): boolean =>
  */
 const fullscreenUseful = (): boolean =>
   fullscreenSupported() && globalThis.matchMedia?.('(pointer: coarse)').matches !== true;
+
+const easeOutCubic = (t: number): number => 1 - (1 - t) ** 3;
 
 const makeButton = (className: string, label: string, glyph: string): HTMLButtonElement => {
   const btn = document.createElement('button');
@@ -83,9 +97,6 @@ const buildViewer = (): Viewer => {
   dialog.className = 'archive-viewer';
   if (prefersReducedMotion()) dialog.setAttribute('data-reduced-motion', 'true');
 
-  const wfrViewer = document.createElement('wfr-viewer');
-  wfrViewer.className = 'archive-viewer-wfr';
-
   const counter = document.createElement('span');
   counter.className = 'archive-viewer-counter';
   counter.setAttribute('aria-hidden', 'true');
@@ -104,24 +115,50 @@ const buildViewer = (): Viewer => {
   bar.className = 'archive-viewer-bar';
   bar.append(counter, download, ...(fullscreenUseful() ? [fullscreenBtn] : []), closeBtn);
 
-  const content = document.createElement('div');
-  content.className = 'archive-viewer-content';
-  content.append(wfrViewer);
+  const track = document.createElement('div');
+  track.className = 'archive-viewer-track';
+  track.setAttribute('role', 'group');
+  track.setAttribute('aria-label', 'Files');
+  /*
+   * Three <wfr-viewer> panes at all times: prev / current / next. The
+   * viewport becomes the current file's slide; a native swipe scrolls
+   * the track, and the settled slide becomes current on `scrollend`.
+   * Panes are recycled (ring) so paging never re-renders visible content.
+   */
+  for (let i = 0; i < 3; i++) {
+    const slide = document.createElement('section');
+    slide.className = 'archive-viewer-slide';
+    slide.append(document.createElement('wfr-viewer'));
+    track.append(slide);
+  }
 
   const stage = document.createElement('figure');
   stage.className = 'archive-viewer-stage';
-  stage.append(prevBtn, content, nextBtn);
+  stage.append(prevBtn, track, nextBtn);
 
   dialog.append(bar, stage, live);
   document.body.append(dialog);
 
   closeBtn.addEventListener('click', () => dialog.close());
 
-  return { dialog, stage, wfrViewer, counter, live, download, prevBtn, nextBtn, fullscreenBtn };
+  return {
+    dialog,
+    stage,
+    track,
+    counter,
+    live,
+    download,
+    prevBtn,
+    nextBtn,
+    fullscreenBtn,
+  };
 };
 
 let viewer: Viewer | undefined;
 let activeItems: ReadonlyArray<ArchiveItem> = [];
+let currentName: string | undefined;
+let settling = false;
+let settleTimer: ReturnType<typeof setTimeout> | undefined;
 let programmaticClose = false;
 /*
  * True when THIS open pushed a history entry (tile click) — so closing
@@ -129,7 +166,7 @@ let programmaticClose = false;
  * hash in place instead of navigating off the page.
  */
 let pushedOpen = false;
-const session: Session = { items: [], index: 0, invoker: undefined };
+const session: Session = { items: [], invoker: undefined };
 
 const getViewer = (): Viewer => {
   if (!viewer) viewer = buildViewer();
@@ -142,33 +179,227 @@ const getViewer = (): Viewer => {
   return viewer;
 };
 
-const currentFile = (): FileDescriptor | undefined => session.items[session.index]?.file;
+const itemByName = (name: string | undefined): ArchiveItem | undefined =>
+  name === undefined ? undefined : session.items.find((it) => it.file.name === name);
 
-const render = (v: Viewer): void => {
-  const item = session.items[session.index];
-  if (!item) return;
+const indexOfName = (name: string | undefined): number =>
+  name === undefined ? -1 : session.items.findIndex((it) => it.file.name === name);
+
+const sections = (v: Viewer): readonly HTMLElement[] =>
+  Array.from(v.track.children).filter((c): c is HTMLElement => c instanceof HTMLElement);
+
+const viewerIn = (section: HTMLElement): WfrViewer | undefined =>
+  section.querySelector<WfrViewer>('wfr-viewer') ?? undefined;
+
+/** Fill a slide's viewer with `item` (or empty + hide it when there is none). */
+const fillSlide = (section: HTMLElement, item: ArchiveItem | undefined): void => {
+  const el = viewerIn(section);
+  if (el === undefined) return;
+  if (item === undefined) {
+    section.hidden = true;
+    section.removeAttribute('data-name');
+    el.file = undefined;
+    return;
+  }
+  section.hidden = false;
+  section.setAttribute('data-name', item.file.name);
+  el.registry = registry;
+  el.file = item.file;
+};
+
+/** Mark which slide is the current file (drives aria + focus target). */
+const markCurrent = (v: Viewer, section: HTMLElement): void => {
+  for (const sec of sections(v)) {
+    if (sec === section) sec.setAttribute('aria-current', 'true');
+    else sec.removeAttribute('aria-current');
+  }
+};
+
+/*
+ * Centre the track on `section` instantly. Snap is disabled for the jump so
+ * mandatory scroll-snap can't fight the reposition (which caused a jerk).
+ */
+const centre = (v: Viewer, section: HTMLElement): void => {
+  settling = true;
+  const prevSnap = v.track.style.scrollSnapType;
+  v.track.style.scrollSnapType = 'none';
+  v.track.scrollLeft = section.offsetLeft;
+  v.track.style.scrollSnapType = prevSnap;
+  requestAnimationFrame(() => {
+    settling = false;
+  });
+};
+
+/** Lay out prev/current/next around `item` and centre it (used on open/sync). */
+const layout = (v: Viewer, item: ArchiveItem): void => {
+  const [a, b, c] = sections(v);
+  if (a === undefined || b === undefined || c === undefined) return;
+  const idx = indexOfName(item.file.name);
+  fillSlide(a, session.items[idx - 1]);
+  fillSlide(b, item);
+  fillSlide(c, session.items[idx + 1]);
+  markCurrent(v, b);
+  centre(v, b);
+};
+
+/*
+ * Recycle slides so the committed file is centred without reloading visible
+ * panes. When the user has scrolled right past current, the leftmost slide
+ * becomes the new far-right (and gets filled with the next-next file); same
+ * mirror for the left direction.
+ */
+const recentre = (v: Viewer, item: ArchiveItem): void => {
+  const list = sections(v);
+  const [a, , c] = list;
+  const committed = list.find((sec) => sec.getAttribute('data-name') === item.file.name);
+  const idx = indexOfName(item.file.name);
+  if (committed === undefined || a === undefined || c === undefined) {
+    layout(v, item);
+    return;
+  }
+  if (committed === c) {
+    v.track.append(a);
+    fillSlide(a, session.items[idx + 1]);
+  } else if (committed === a) {
+    v.track.prepend(c);
+    fillSlide(c, session.items[idx - 1]);
+  } else {
+    layout(v, item);
+    return;
+  }
+  markCurrent(v, committed);
+  centre(v, committed);
+};
+
+/** Update URL/aria/counter/prev-next-disabled for the new current file. */
+const setCurrent = (v: Viewer, item: ArchiveItem, push: boolean): void => {
+  currentName = item.file.name;
   const total = session.items.length;
-  const position = session.index + 1;
+  const position = indexOfName(item.file.name) + 1;
   v.counter.textContent = `${position} / ${total}`;
   v.live.textContent = `File ${position} of ${total}`;
+  v.dialog.setAttribute('aria-label', `Viewing ${item.file.name}`);
   /*
    * aria-disabled (not the `disabled` property) so the arrow stays in
    * the tab order and can be revealed on focus instead of vanishing.
    */
-  v.prevBtn.setAttribute('aria-disabled', String(session.index === 0));
-  v.nextBtn.setAttribute('aria-disabled', String(session.index === total - 1));
+  v.prevBtn.setAttribute('aria-disabled', String(position <= 1));
+  v.nextBtn.setAttribute('aria-disabled', String(position >= total));
   if (item.file.source.kind === 'url') {
     v.download.href = item.file.source.url;
   } else {
     v.download.removeAttribute('href');
   }
-  v.wfrViewer.registry = registry;
-  v.wfrViewer.file = item.file;
+  if (push) setHash(item.file.name, false);
 };
 
-const canGo = (delta: number): boolean => {
-  const next = session.index + delta;
-  return next >= 0 && next < session.items.length;
+/** Commit `item` as current and recycle the carousel around it. */
+const commit = (v: Viewer, item: ArchiveItem, push: boolean): void => {
+  if (item.file.name === currentName) return;
+  setCurrent(v, item, push);
+  recentre(v, item);
+};
+
+/** Animate `el.scrollLeft` to `to` over `ms` with `ease`, then run `done`. */
+const animateScrollLeft = (
+  el: HTMLElement,
+  to: number,
+  ms: number,
+  ease: (t: number) => number,
+  done: () => void,
+): void => {
+  const from = el.scrollLeft;
+  const distance = to - from;
+  if (distance === 0 || ms <= 0) {
+    el.scrollLeft = to;
+    done();
+    return;
+  }
+  let started: number | undefined;
+  const step = (now: number): void => {
+    started ??= now;
+    const t = Math.min(1, (now - started) / ms);
+    el.scrollLeft = from + distance * ease(t);
+    if (t < 1) requestAnimationFrame(step);
+    else done();
+  };
+  requestAnimationFrame(step);
+};
+
+/** The slide whose snap point (offsetLeft) is nearest the current scroll. */
+const nearestSnapSection = (v: Viewer): HTMLElement | undefined => {
+  let best: HTMLElement | undefined;
+  let bestDist = Number.POSITIVE_INFINITY;
+  for (const sec of sections(v)) {
+    if (sec.hidden) continue;
+    const dist = Math.abs(sec.offsetLeft - v.track.scrollLeft);
+    if (dist < bestDist) {
+      bestDist = dist;
+      best = sec;
+    }
+  }
+  return best;
+};
+
+/*
+ * Once scrolling stops, align to the nearest snap point and commit + recycle.
+ * On a real device mandatory snap has already landed exactly on a snap point
+ * by the time we run, so the align is a no-op. The `finally` guarantees the
+ * `settling` guard is released even if commit throws — otherwise every
+ * future settle is blocked and the counter/aria desync from the centred slide.
+ */
+const onSettle = (v: Viewer): void => {
+  if (settling) return;
+  const target = nearestSnapSection(v);
+  if (target === undefined) return;
+  const name = target.getAttribute('data-name') ?? undefined;
+  const item = itemByName(name);
+  if (item === undefined) return;
+  const onSnap = Math.abs(v.track.scrollLeft - target.offsetLeft) <= SNAP_TOLERANCE;
+  if (item.file.name === currentName && onSnap) return;
+  settling = true;
+  try {
+    v.track.style.scrollSnapType = 'none';
+    v.track.scrollLeft = target.offsetLeft;
+    if (item.file.name !== currentName) commit(v, item, true);
+  } finally {
+    v.track.style.scrollSnapType = '';
+    requestAnimationFrame(() => {
+      settling = false;
+    });
+  }
+};
+
+const onScroll = (v: Viewer): void => {
+  if (settling) return;
+  if (settleTimer !== undefined) clearTimeout(settleTimer);
+  settleTimer = setTimeout(() => onSettle(v), SETTLE_DEBOUNCE_MS);
+};
+
+/*
+ * Page via controls/keyboard: scroll to the neighbour slide (snappy), then
+ * commit. Mandatory scroll-snap fights a JS scrollLeft animation (yanks each
+ * frame back to a snap point — the "bounce"). Disable snap for the animation,
+ * then restore it once we've landed on a snap point.
+ */
+const page = (v: Viewer, delta: number): void => {
+  const [a, , c] = sections(v);
+  const target = delta < 0 ? a : c;
+  if (target === undefined || target.hidden) return;
+  const name = target.getAttribute('data-name') ?? undefined;
+  const item = itemByName(name);
+  if (item === undefined) return;
+  settling = true;
+  v.track.style.scrollSnapType = 'none';
+  const ms = prefersReducedMotion() ? 0 : PAGE_SCROLL_MS;
+  animateScrollLeft(v.track, target.offsetLeft, ms, easeOutCubic, () => {
+    try {
+      commit(v, item, true);
+    } finally {
+      v.track.style.scrollSnapType = '';
+      settling = false;
+    }
+  });
 };
 
 const setHash = (name: string, push: boolean): void => {
@@ -188,37 +419,6 @@ const assetFromHash = (): string | undefined => {
   return match ? decodeURIComponent(match[1] ?? '') : undefined;
 };
 
-/*
- * Slide + fade the pane in from the travel direction. Re-triggerable:
- * clear the class, then re-add it after two frames so the same animation
- * replays on every step. Scoped to the stage — no top-layer View
- * Transition, which janks inside a modal <dialog>.
- */
-const animatePane = (v: Viewer, dir: number): void => {
-  if (prefersReducedMotion()) return;
-  const cls = dir > 0 ? 'archive-anim-next' : 'archive-anim-prev';
-  const holder = v.stage.querySelector<HTMLElement>('.archive-viewer-content');
-  if (!holder) return;
-  holder.classList.remove('archive-anim-next', 'archive-anim-prev');
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => holder.classList.add(cls));
-  });
-};
-
-/*
- * Move to a neighbouring item, mirror it into the URL hash, and animate
- * the pane in the travel direction.
- */
-const navigate = (delta: number): void => {
-  if (!canGo(delta)) return;
-  session.index += delta;
-  const target = currentFile()?.name;
-  if (target !== undefined) setHash(target, false);
-  const v = getViewer();
-  render(v);
-  animatePane(v, delta);
-};
-
 const exitFullscreen = (): void => {
   if (document.fullscreenElement) {
     document.exitFullscreen().catch(() => undefined);
@@ -235,13 +435,14 @@ const toggleFullscreen = (v: Viewer): void => {
 };
 
 const onKeydown = (event: KeyboardEvent): void => {
-  if (!viewer?.dialog.open) return;
+  const v = viewer;
+  if (!v?.dialog.open) return;
   if (event.key === 'ArrowLeft') {
     event.preventDefault();
-    navigate(-1);
+    page(v, -1);
   } else if (event.key === 'ArrowRight') {
     event.preventDefault();
-    navigate(1);
+    page(v, 1);
   } else if (event.key === 'Escape' && document.fullscreenElement) {
     /* Exit fullscreen first; a second Escape closes the dialog. */
     event.preventDefault();
@@ -249,37 +450,25 @@ const onKeydown = (event: KeyboardEvent): void => {
   }
 };
 
-/*
- * A horizontal flick past the threshold navigates.
- */
-const wireSwipe = (v: Viewer): void => {
-  const holder = v.stage.querySelector<HTMLElement>('.archive-viewer-content');
-  if (!holder) return;
-  let startX: number | undefined;
-  holder.addEventListener('pointerdown', (e: PointerEvent) => {
-    startX = e.clientX;
-  });
-  holder.addEventListener('pointercancel', () => {
-    startX = undefined;
-  });
-  holder.addEventListener('pointerup', (e: PointerEvent) => {
-    if (startX === undefined) return;
-    const dx = e.clientX - startX;
-    startX = undefined;
-    if (Math.abs(dx) < SWIPE_THRESHOLD) return;
-    navigate(dx < 0 ? 1 : -1);
-  });
-};
-
 const open = (items: ReadonlyArray<ArchiveItem>, index: number, fromUrl: boolean): void => {
   const v = getViewer();
   session.items = items;
-  session.index = index;
   session.invoker = items[index]?.trigger;
-  render(v);
+  const item = items[index];
+  if (item === undefined) return;
+  /*
+   * Show first: slide offsets are only measurable once the dialog is
+   * displayed, so centring a mid-list file must happen after showModal.
+   */
   if (!v.dialog.open) v.dialog.showModal();
-  const name = items[index]?.file.name;
-  if (!fromUrl && name !== undefined) {
+  /* Force setCurrent-then-layout even if currentName still matches the
+   * previous session's file (a re-open of the same file from a different
+   * gallery would otherwise skip layout in commit). */
+  currentName = undefined;
+  setCurrent(v, item, false);
+  layout(v, item);
+  const name = item.file.name;
+  if (!fromUrl) {
     setHash(name, true);
     pushedOpen = true;
   } else {
@@ -291,12 +480,16 @@ const onPopState = (): void => {
   const name = assetFromHash();
   const v = getViewer();
   if (name !== undefined) {
-    const index = activeItems.findIndex((item) => item.file.name === name);
+    const index = activeItems.findIndex((it) => it.file.name === name);
     if (index < 0) return;
     if (!v.dialog.open) open(activeItems, index, true);
-    else if (index !== session.index) {
-      session.index = index;
-      render(v);
+    else if (name !== currentName) {
+      const item = activeItems[index];
+      if (item !== undefined) {
+        session.items = activeItems;
+        setCurrent(v, item, false);
+        layout(v, item);
+      }
     }
   } else if (v.dialog.open) {
     programmaticClose = true;
@@ -321,15 +514,13 @@ const collectItems = (gallery: HTMLElement): ReadonlyArray<ArchiveItem> =>
   });
 
 const wireViewerOnce = (v: Viewer): void => {
-  v.prevBtn.addEventListener('click', () => navigate(-1));
-  v.nextBtn.addEventListener('click', () => navigate(1));
+  v.prevBtn.addEventListener('click', () => page(v, -1));
+  v.nextBtn.addEventListener('click', () => page(v, 1));
   v.fullscreenBtn.addEventListener('click', () => toggleFullscreen(v));
-  const holder = v.stage.querySelector<HTMLElement>('.archive-viewer-content');
-  if (holder) {
-    holder.addEventListener('animationend', () => {
-      holder.classList.remove('archive-anim-next', 'archive-anim-prev');
-    });
-  }
+
+  v.track.addEventListener('scroll', () => onScroll(v), { passive: true });
+  v.track.addEventListener('scrollend', () => onSettle(v), { passive: true });
+
   v.dialog.addEventListener('close', () => {
     exitFullscreen();
     session.invoker?.focus();
@@ -337,9 +528,18 @@ const wireViewerOnce = (v: Viewer): void => {
     if (pushedOpen) history.back();
     else clearHash();
   });
-  wireSwipe(v);
+
   document.addEventListener('keydown', onKeydown);
   window.addEventListener('popstate', onPopState);
+  /*
+   * Re-centre the active slide on viewport resize (rotation, address bar,
+   * container-query changes) — slide offsets shift, so scroll needs to
+   * follow the currently active slide.
+   */
+  window.addEventListener('resize', () => {
+    const active = sections(v).find((sec) => sec.getAttribute('data-name') === currentName);
+    if (active !== undefined) centre(v, active);
+  });
 };
 
 /**
@@ -376,7 +576,7 @@ export const initArchiveViewer = (): void => {
   /* Deep link: open the item named in the URL hash on load. */
   const initial = assetFromHash();
   if (initial !== undefined) {
-    const index = activeItems.findIndex((item) => item.file.name === initial);
+    const index = activeItems.findIndex((it) => it.file.name === initial);
     if (index >= 0) open(activeItems, index, true);
   }
 };
