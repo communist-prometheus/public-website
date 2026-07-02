@@ -29,9 +29,11 @@ test.describe('archive viewer covers the viewport on mobile', () => {
       };
     });
 
-    // The dialog must be flush with the viewport edges — even 1px slack lets
-    // the archive page underneath show through, which is what the regression
-    // screenshot shows.
+    /*
+     * The dialog must be flush with the viewport edges — even 1px slack lets
+     * the archive page underneath show through, which is what the regression
+     * screenshot shows.
+     */
     expect(geom.left, `dialog.left = ${geom.left}`).toBe(0);
     expect(geom.top, `dialog.top = ${geom.top}`).toBe(0);
     expect(geom.width, `dialog.width = ${geom.width}, viewport = ${geom.vw}`).toBe(geom.vw);
@@ -47,9 +49,11 @@ test.describe('archive viewer covers the viewport on mobile', () => {
     await visit(page, `${ARCHIVE}#asset=flag.svg`);
     await expectVisible(page, page.locator(DIALOG));
 
-    // If the dialog covers the page, elementFromPoint at the page heading's
-    // location resolves to something INSIDE the dialog (backdrop / stage /
-    // wfr-viewer / etc.). If the regression is present, we hit the H1 itself.
+    /*
+     * If the dialog covers the page, elementFromPoint at the page heading's
+     * location resolves to something INSIDE the dialog (backdrop / stage /
+     * wfr-viewer / etc.). If the regression is present, we hit the H1 itself.
+     */
     const covered = await page.evaluate(() => {
       const h1 = document.querySelector('h1');
       if (h1 === null) return { covered: false, reason: 'no h1' };

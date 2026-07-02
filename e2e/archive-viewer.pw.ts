@@ -169,9 +169,11 @@ test('pointermove pokes chrome back to visible after a hidden state', async ({ p
   await slide.dispatchEvent('click');
   await expect(dialog).toHaveAttribute('data-chrome-hidden', '');
 
-  // Any pointermove on the dialog un-hides — simulate via a bare event so
-  // we don't rely on Playwright's mouse.move sending events that already
-  // toggle chrome from the click path.
+  /*
+   * Any pointermove on the dialog un-hides — simulate via a bare event so
+   * we don't rely on Playwright's mouse.move sending events that already
+   * toggle chrome from the click path.
+   */
   await slide.dispatchEvent('pointermove');
   await expect(dialog).not.toHaveAttribute('data-chrome-hidden');
 });
@@ -246,8 +248,10 @@ test('the fullscreen button reflects fullscreenchange in its aria-pressed / labe
   const btn = page.locator('.archive-viewer-fullscreen');
   await expect(btn).toHaveAttribute('aria-label', 'Toggle fullscreen');
 
-  // Pretend fullscreen entered. The wired listener only reads
-  // document.fullscreenElement, so we shadow it long enough to dispatch.
+  /*
+   * Pretend fullscreen entered. The wired listener only reads
+   * document.fullscreenElement, so we shadow it long enough to dispatch.
+   */
   await page.evaluate(() => {
     Object.defineProperty(document, 'fullscreenElement', {
       configurable: true,
