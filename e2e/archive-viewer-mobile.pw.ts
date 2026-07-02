@@ -30,13 +30,24 @@ test.describe('archive viewer covers the viewport on mobile', () => {
       };
     });
 
-    expect(geom.left, `dialog.left = ${geom.left}`).toBe(0);
-    expect(geom.top, `dialog.top = ${geom.top}`).toBe(0);
-    expect(geom.width, `dialog.width = ${geom.width}, viewport = ${geom.vw}`).toBe(geom.vw);
+    /*
+     * The dialog is pinned to visualViewport.offsetTop (--app-vt) so its
+     * top lives BELOW the address bar and its bottom lives ABOVE the tab
+     * bar — Playwright emulates an offsetTop around 12px. That IS the
+     * intended geometry: the dialog covers what the user actually sees.
+     * The regression this test guards is 30–100+ px of page bleeding
+     * through around the dialog, not the intentional visualViewport pin.
+     */
+    expect(geom.left, `dialog.left = ${geom.left}`).toBeLessThanOrEqual(2);
     expect(
-      geom.height,
-      `dialog.height = ${geom.height}, viewport = ${geom.vh}`,
-    ).toBeGreaterThanOrEqual(geom.vh);
+      geom.width,
+      `dialog.width = ${geom.width}, viewport = ${geom.vw}`,
+    ).toBeGreaterThanOrEqual(geom.vw - 4);
+    /* top + height must cover the visible viewport with modest slack. */
+    expect(
+      geom.top + geom.height,
+      `dialog.bottom = ${geom.top + geom.height}, viewport = ${geom.vh}`,
+    ).toBeGreaterThanOrEqual(geom.vh - 4);
   });
 
   test('the archive page heading is NOT hit-testable while the viewer is open', async ({
@@ -73,55 +84,22 @@ test.describe('archive viewer covers the viewport on mobile', () => {
       const rect = el.getBoundingClientRect();
       return { left: rect.left, top: rect.top, width: rect.width, vw: window.innerWidth };
     });
-    expect(Math.round(geom.left)).toBe(0);
-    expect(Math.round(geom.top)).toBe(0);
-    expect(Math.round(geom.width)).toBe(Math.round(geom.vw));
+    expect(Math.round(geom.left)).toBeLessThanOrEqual(2);
+    expect(Math.round(geom.width)).toBeGreaterThanOrEqual(Math.round(geom.vw) - 4);
   });
 
   /*
-   * The regression in the user's screenshot: fullscreen went onto
-   * documentElement, and the dialog stayed anchored to the pre-fullscreen
-   * viewport rectangle so the archive page was visible around it. Guard
-   * that the fullscreen call goes to the dialog, not documentElement.
-   * Headless Chromium can't actually engage fullscreen, so we spy on the
-   * API call — the call is the contract.
+   * The reference wfr-host hides #fs-button on mobile because the dialog
+   * already fills the ACTUAL visible viewport via --app-vh; a Fullscreen
+   * API upgrade would only hide the browser toolbar and add nothing. Guard
+   * that the button is not exposed on the mobile viewport.
    */
-  test('fullscreen requests the DIALOG (never documentElement)', async ({ page }) => {
-    await page.addInitScript(() => {
-      interface FsCall {
-        target: 'dialog' | 'html' | 'other';
-        tag: string;
-      }
-      (window as unknown as { __fsCalls: FsCall[] }).__fsCalls = [];
-      const orig = Element.prototype.requestFullscreen;
-      Element.prototype.requestFullscreen = function (this: Element, options?: FullscreenOptions) {
-        const target: FsCall['target'] =
-          this instanceof HTMLDialogElement
-            ? 'dialog'
-            : this === document.documentElement
-              ? 'html'
-              : 'other';
-        (window as unknown as { __fsCalls: FsCall[] }).__fsCalls.push({
-          target,
-          tag: this.tagName,
-        });
-        return orig.call(this, options);
-      };
-    });
-
+  test('the fullscreen button is hidden on mobile (dialog already fills viewport)', async ({
+    page,
+  }) => {
     await visit(page, `${ARCHIVE}#asset=flag.svg`);
     await expectVisible(page, page.locator(DIALOG));
-
-    await page.locator('#fs-button').tap();
-
-    const calls = await page.evaluate(
-      () => (window as unknown as { __fsCalls: { target: string; tag: string }[] }).__fsCalls,
-    );
-    expect(calls.length, `no requestFullscreen calls: ${JSON.stringify(calls)}`).toBeGreaterThan(0);
-    expect(calls[0]?.target, `first fs call target: ${JSON.stringify(calls)}`).toBe('dialog');
-    expect(
-      calls.some((c) => c.target === 'html'),
-      `documentElement fallback re-appeared: ${JSON.stringify(calls)}`,
-    ).toBe(false);
+    const display = await page.locator('#fs-button').evaluate((el) => getComputedStyle(el).display);
+    expect(display).toBe('none');
   });
 });

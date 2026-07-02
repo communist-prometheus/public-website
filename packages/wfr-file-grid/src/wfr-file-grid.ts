@@ -51,7 +51,7 @@ export class WfrFileGrid extends LitElement {
 
   #renderTile(file: FileDescriptor, index: number): TemplateResult {
     return html`
-      <wfr-file-tile part="tile" role="listitem" .file=${file} .index=${index}></wfr-file-tile>
+      <wfr-file-tile part="tile" exportparts="button, preview, icon, label" role="listitem" .file=${file} .index=${index}></wfr-file-tile>
     `;
   }
 }
