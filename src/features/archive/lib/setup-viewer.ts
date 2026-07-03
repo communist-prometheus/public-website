@@ -404,9 +404,37 @@ const wireOnce = (s: Shell): void => {
   document.getElementById('fs-button')?.addEventListener('click', () => {
     if (document.fullscreenElement) {
       document.exitFullscreen().catch(() => undefined);
-    } else if (typeof dialog.requestFullscreen === 'function') {
-      dialog.requestFullscreen().catch(() => undefined);
+      return;
     }
+    /*
+     * Chromium rejects `dialog.requestFullscreen()` with "Dialog elements
+     * are invalid" — a modal <dialog> is already in the top layer and the
+     * spec disallows a second one. Try it anyway (it may work on other
+     * engines), then fall back to fullscreening documentElement so the
+     * browser chrome hides on mobile. The CSS `[data-fs]` attribute on
+     * the dialog forces it to fill the new fullscreen viewport instead
+     * of staying anchored to its pre-fullscreen size — the regression
+     * the earlier documentElement fallback introduced.
+     */
+    const dialogFs = dialog.requestFullscreen?.();
+    if (dialogFs !== undefined) {
+      dialogFs.catch(() => {
+        document.documentElement.requestFullscreen().catch(() => undefined);
+      });
+    } else {
+      document.documentElement.requestFullscreen().catch(() => undefined);
+    }
+  });
+
+  /*
+   * Reflect fullscreen state on the dialog so CSS can force it to fill
+   * the fullscreen viewport (fixes the earlier mobile regression where
+   * documentElement fullscreen left the dialog anchored to its pre-
+   * fullscreen box and the archive page bled around it).
+   */
+  document.addEventListener('fullscreenchange', () => {
+    if (document.fullscreenElement !== null) dialog.setAttribute('data-fs', '');
+    else dialog.removeAttribute('data-fs');
   });
 
   document.getElementById('download-button')?.addEventListener('click', () => {

@@ -90,13 +90,14 @@ test.describe('archive viewer covers the viewport on mobile', () => {
 
   /*
    * Fullscreen on mobile hides the browser address bar and gives the
-   * reader ~80 more px. dialog.requestFullscreen() is the correct target
-   * — documentElement.requestFullscreen() leaves the dialog anchored to
-   * the pre-fullscreen viewport rectangle (regression the user reported).
-   * Headless can't actually engage fullscreen; verify the API call target
-   * via a spy on Element.prototype.requestFullscreen.
+   * reader ~80 more px. Try dialog.requestFullscreen() first, fall back
+   * to documentElement.requestFullscreen() when the browser rejects the
+   * dialog form (Chromium: "Dialog elements are invalid"). The earlier
+   * regression — dialog stuck in its pre-fullscreen box while the page
+   * around it fullscreened — is fixed by data-fs on the dialog forcing
+   * a 100vw/100vh layout (guarded by *-fullscreen.pw.ts headed).
    */
-  test('fullscreen requests the DIALOG (never documentElement)', async ({ page }) => {
+  test('fullscreen fires dialog + documentElement fallback', async ({ page }) => {
     await page.addInitScript(() => {
       interface FsCall {
         target: 'dialog' | 'html' | 'other';
@@ -127,6 +128,7 @@ test.describe('archive viewer covers the viewport on mobile', () => {
     expect(display, `#fs-button display = ${display}`).not.toBe('none');
 
     await page.locator('#fs-button').tap();
+    await page.waitForTimeout(300);
 
     const calls = await page.evaluate(
       () => (window as unknown as { __fsCalls: { target: string; tag: string }[] }).__fsCalls,
@@ -135,7 +137,7 @@ test.describe('archive viewer covers the viewport on mobile', () => {
     expect(calls[0]?.target, `first fs call target: ${JSON.stringify(calls)}`).toBe('dialog');
     expect(
       calls.some((c) => c.target === 'html'),
-      `documentElement fallback re-appeared: ${JSON.stringify(calls)}`,
-    ).toBe(false);
+      `expected documentElement fallback after dialog rejection: ${JSON.stringify(calls)}`,
+    ).toBe(true);
   });
 });

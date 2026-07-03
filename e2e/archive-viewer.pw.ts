@@ -129,7 +129,7 @@ test('the settings button toggles the wfr-settings-panel', async ({ page }) => {
  * it has no real display to fullscreen onto, so we verify the CORRECT API
  * was CALLED via a spy — the call target is the contract.
  */
-test('fullscreen button calls requestFullscreen on the dialog (not documentElement)', async ({
+test('fullscreen button tries the dialog first, falls back to documentElement', async ({
   page,
 }) => {
   await page.addInitScript(() => {
@@ -157,14 +157,29 @@ test('fullscreen button calls requestFullscreen on the dialog (not documentEleme
   await visit(page, `${ARCHIVE}#asset=flag.svg`);
   await expectVisible(page, page.locator(DIALOG));
   await page.locator('#fs-button').click({ force: true });
+  /*
+   * Fallback is async (documentElement.requestFullscreen fires from the
+   * dialog.requestFullscreen rejection's .catch). Give it a beat to land.
+   */
+  await page.waitForTimeout(300);
 
   const calls = await page.evaluate(
     () => (window as unknown as { __fsCalls: { target: string; tag: string }[] }).__fsCalls,
   );
   expect(calls.length, `no requestFullscreen calls: ${JSON.stringify(calls)}`).toBeGreaterThan(0);
+  /* Dialog first — always. */
   expect(calls[0]?.target, `first fs target: ${JSON.stringify(calls)}`).toBe('dialog');
+  /*
+   * On headless Chromium the dialog call is rejected ("Dialog elements are
+   * invalid") so a documentElement fallback follows. That fallback is what
+   * makes fullscreen actually engage on browsers that reject dialog
+   * fullscreen — data-fs on the dialog forces its layout to fill the new
+   * fullscreen viewport (guarded by *-fullscreen.pw.ts under the headed
+   * project). Reference host has no fallback, so their button is a silent
+   * no-op there.
+   */
   expect(
     calls.some((c) => c.target === 'html'),
-    `documentElement fallback re-appeared: ${JSON.stringify(calls)}`,
-  ).toBe(false);
+    `expected the documentElement fallback to fire after the dialog rejection: ${JSON.stringify(calls)}`,
+  ).toBe(true);
 });

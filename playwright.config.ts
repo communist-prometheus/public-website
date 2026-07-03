@@ -42,6 +42,7 @@ export default defineConfig({
         '**/lighthouse.pw.ts',
         '**/mobile.pw.ts',
         '**/*-mobile.pw.ts',
+        '**/*-fullscreen.pw.ts',
         '**/verify-*.pw.ts',
       ],
     },
@@ -54,6 +55,24 @@ export default defineConfig({
         hasTouch: true,
       },
       testMatch: ['**/mobile.pw.ts', '**/*-mobile.pw.ts'],
+    },
+    {
+      /*
+       * Fullscreen tests need a headed Chromium (headless silently rejects
+       * requestFullscreen) so `document.fullscreenElement` actually becomes
+       * non-null. Kept in its own project so a headless CI can skip it via
+       * `--project=chromium` and still get the rest of the suite.
+       */
+      name: 'fullscreen',
+      use: {
+        browserName: 'chromium',
+        viewport: { width: 1280, height: 720 },
+        launchOptions: {
+          headless: false,
+          channel: 'chromium',
+        },
+      },
+      testMatch: '**/*-fullscreen.pw.ts',
     },
     {
       name: 'lighthouse',

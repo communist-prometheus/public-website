@@ -156,6 +156,30 @@ import { withBase } from '../lib/base';
     animation: wfr-fade 0.2s ease;
   }
 
+  /*
+   * Fullscreen fill. When documentElement enters fullscreen (dialog.requestFullscreen
+   * is rejected by Chromium — "Dialog elements are invalid" — so we fall back to
+   * documentElement), the dialog would otherwise stay anchored to its pre-fullscreen
+   * `min(64rem, 95vw)` rectangle and the fullscreened page would show around it.
+   * data-fs (set on fullscreenchange) forces the dialog to fill the new viewport.
+   */
+  dialog#viewer-dialog[data-fs] {
+    position: fixed !important;
+    inset: 0 !important;
+    inline-size: 100vw !important;
+    max-inline-size: 100vw !important;
+    block-size: 100vh !important;
+    max-block-size: 100vh !important;
+    margin: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+  }
+  /* Free up the reserved scrollbar gutter in fullscreen — body has
+     overflow: clip, no scrollbar to reserve for anyway. */
+  html:has(dialog#viewer-dialog[data-fs]) {
+    scrollbar-gutter: auto !important;
+  }
+
   .viewer-dialog .chrome {
     display: flex;
     align-items: center;
