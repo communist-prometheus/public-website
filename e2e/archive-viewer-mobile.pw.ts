@@ -89,17 +89,53 @@ test.describe('archive viewer covers the viewport on mobile', () => {
   });
 
   /*
-   * The reference wfr-host hides #fs-button on mobile because the dialog
-   * already fills the ACTUAL visible viewport via --app-vh; a Fullscreen
-   * API upgrade would only hide the browser toolbar and add nothing. Guard
-   * that the button is not exposed on the mobile viewport.
+   * Fullscreen on mobile hides the browser address bar and gives the
+   * reader ~80 more px. dialog.requestFullscreen() is the correct target
+   * — documentElement.requestFullscreen() leaves the dialog anchored to
+   * the pre-fullscreen viewport rectangle (regression the user reported).
+   * Headless can't actually engage fullscreen; verify the API call target
+   * via a spy on Element.prototype.requestFullscreen.
    */
-  test('the fullscreen button is hidden on mobile (dialog already fills viewport)', async ({
-    page,
-  }) => {
+  test('fullscreen requests the DIALOG (never documentElement)', async ({ page }) => {
+    await page.addInitScript(() => {
+      interface FsCall {
+        target: 'dialog' | 'html' | 'other';
+        tag: string;
+      }
+      (window as unknown as { __fsCalls: FsCall[] }).__fsCalls = [];
+      const orig = Element.prototype.requestFullscreen;
+      Element.prototype.requestFullscreen = function (this: Element, options?: FullscreenOptions) {
+        const target: FsCall['target'] =
+          this instanceof HTMLDialogElement
+            ? 'dialog'
+            : this === document.documentElement
+              ? 'html'
+              : 'other';
+        (window as unknown as { __fsCalls: FsCall[] }).__fsCalls.push({
+          target,
+          tag: this.tagName,
+        });
+        return orig.call(this, options);
+      };
+    });
+
     await visit(page, `${ARCHIVE}#asset=flag.svg`);
     await expectVisible(page, page.locator(DIALOG));
+
+    /* fs-button IS visible on mobile (we override the reference's display:none). */
     const display = await page.locator('#fs-button').evaluate((el) => getComputedStyle(el).display);
-    expect(display).toBe('none');
+    expect(display, `#fs-button display = ${display}`).not.toBe('none');
+
+    await page.locator('#fs-button').tap();
+
+    const calls = await page.evaluate(
+      () => (window as unknown as { __fsCalls: { target: string; tag: string }[] }).__fsCalls,
+    );
+    expect(calls.length, `no requestFullscreen calls: ${JSON.stringify(calls)}`).toBeGreaterThan(0);
+    expect(calls[0]?.target, `first fs call target: ${JSON.stringify(calls)}`).toBe('dialog');
+    expect(
+      calls.some((c) => c.target === 'html'),
+      `documentElement fallback re-appeared: ${JSON.stringify(calls)}`,
+    ).toBe(false);
   });
 });

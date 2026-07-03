@@ -334,11 +334,13 @@ import { withBase } from '../lib/base';
     .viewer-dialog wfr-viewer {
       --wfr-cell-padding: 0.3rem 0.45rem;
     }
-    /* The dialog already fills the screen on mobile — fullscreen would only
-       hide the toolbar, so drop the control here. */
-    #fs-button {
-      display: none;
-    }
+    /*
+     * On mobile the dialog fills the VISIBLE viewport (--app-vh) but the
+     * browser address bar still occupies real screen. Real fullscreen via
+     * `dialog.requestFullscreen()` hides the address bar and gives the
+     * reader ~80 more px — worth keeping the button. (The reference host
+     * hides #fs-button here; we don't, per user request.)
+     */
     wfr-file-grid {
       min-block-size: 26rem;
     }
