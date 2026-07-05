@@ -59,7 +59,7 @@
     "@typescript-eslint/parser": "^8.55.0",
     "eslint": "^10.0.0",
     "eslint-plugin-astro": "^1.5.0",
-    "eslint-plugin-jsdoc": "^62.5.4",
+    "eslint-plugin-jsdoc": "^63.0.11",
     "husky": "^9.1.7",
     "lighthouse": "^13.0.3",
     "lint-staged": "^16.2.7",
