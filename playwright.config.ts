@@ -38,7 +38,13 @@ export default defineConfig({
        * probe ran during the deploy that was supposed to fix them
        * and went red on the live URL that was still the old build.)
        */
-      testIgnore: ['**/lighthouse.pw.ts', '**/mobile.pw.ts', '**/verify-*.pw.ts'],
+      testIgnore: [
+        '**/lighthouse.pw.ts',
+        '**/mobile.pw.ts',
+        '**/*-mobile.pw.ts',
+        '**/*-fullscreen.pw.ts',
+        '**/verify-*.pw.ts',
+      ],
     },
     {
       name: 'mobile',
@@ -48,7 +54,25 @@ export default defineConfig({
         isMobile: true,
         hasTouch: true,
       },
-      testMatch: '**/mobile.pw.ts',
+      testMatch: ['**/mobile.pw.ts', '**/*-mobile.pw.ts'],
+    },
+    {
+      /*
+       * Fullscreen tests need a headed Chromium (headless silently rejects
+       * requestFullscreen) so `document.fullscreenElement` actually becomes
+       * non-null. Kept in its own project so a headless CI can skip it via
+       * `--project=chromium` and still get the rest of the suite.
+       */
+      name: 'fullscreen',
+      use: {
+        browserName: 'chromium',
+        viewport: { width: 1280, height: 720 },
+        launchOptions: {
+          headless: false,
+          channel: 'chromium',
+        },
+      },
+      testMatch: '**/*-fullscreen.pw.ts',
     },
     {
       name: 'lighthouse',

@@ -1,550 +1,80 @@
 ---
-import { getImage, Picture } from 'astro:assets';
-import type { ImageMetadata } from 'astro';
-import { type ArchiveAsset, getArchiveAssets } from '@/features/archive/helpers/getArchiveItems';
+/*
+ * Archive gallery — 1:1 port of wfr-host-astro's Grid + Viewer wiring.
+ * The tiles are rendered by <wfr-file-grid>; the shared viewer shell is
+ * `<ArchiveViewer>`. Files are computed here per album and passed through
+ * both components.
+ *
+ * The mount script (setFiles + setupViewer + wfr-file-grid registration)
+ * lives here so all three imports share the same `files.ts` module — if
+ * Grid.astro and Viewer.astro had their own scripts, Vite would emit two
+ * bundles that each carry their own copy of the singleton, and setFiles
+ * would populate a different module than getFiles reads.
+ */
+import { getArchiveFileDescriptors } from '@/features/archive/lib/adapter';
+import ArchiveFileGrid from './ArchiveFileGrid.astro';
+import ArchiveViewer from './ArchiveViewer.astro';
 
 interface Props {
   readonly slug: string;
-  /** Render the first thumbnail eagerly (above-the-fold detail page). */
-  readonly eagerFirst?: boolean;
   /** Cap the number of tiles (the foot-of-article widget passes a few). */
   readonly limit?: number;
 }
 
-const { slug, eagerFirst = false, limit } = Astro.props;
-
-const all = getArchiveAssets(slug);
-const assets = typeof limit === 'number' ? all.slice(0, limit) : all;
-
-/* Gallery thumbnails are a responsive grid: full-width on phones,
- * ~3-up on tablet, ~4-up on desktop. The largest a single thumb ever
- * gets is ~360px, so cap the candidate widths there. */
-const THUMB_WIDTHS = [200, 360, 540];
-const THUMB_SIZES = '(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 220px';
-
-/* The viewer should load a viewport-appropriate variant, not the raw
- * multi-MB original (R2.6). Pre-resolve an optimised ~1600px webp per
- * raster image; vector SVGs are tiny and pass through unprocessed. */
-const FULL_WIDTH = 1600;
-const resolveFull = async (image: ImageMetadata): Promise<string> =>
-  image.format === 'svg'
-    ? image.src
-    : (await getImage({ src: image, width: FULL_WIDTH, format: 'webp' })).src;
-
-const fullByName = new Map<string, string>();
-await Promise.all(
-  assets.flatMap((asset) =>
-    asset.kind === 'image'
-      ? [resolveFull(asset.image).then((url) => fullByName.set(asset.name, url))]
-      : [],
-  ),
-);
-
-const imageOf = (asset: ArchiveAsset): ImageMetadata | undefined =>
-  asset.kind === 'image' ? asset.image : undefined;
+const { slug, limit } = Astro.props;
+const all = await getArchiveFileDescriptors(slug);
+const files = typeof limit === 'number' ? all.slice(0, limit) : all;
 ---
 
-{
-  assets.length > 0 && (
-    <ul class="archive-gallery" data-archive-gallery>
-      {assets.map((asset, index) => {
-        const image = imageOf(asset);
-        return (
-          <li>
-            <button
-              type="button"
-              class:list={['archive-thumb', { 'archive-thumb-file': asset.kind === 'file' }]}
-              data-archive-item
-              data-kind={asset.kind}
-              data-name={asset.name}
-              data-download={asset.downloadUrl}
-              data-full={image ? fullByName.get(asset.name) : undefined}
-              data-ext={asset.kind === 'file' ? asset.ext : undefined}
-              aria-label={`Open ${asset.name} in viewer`}
-            >
-              {image ? (
-                <Picture
-                  src={image}
-                  widths={THUMB_WIDTHS}
-                  sizes={THUMB_SIZES}
-                  formats={['avif', 'webp']}
-                  alt=""
-                  loading={eagerFirst && index === 0 ? 'eager' : 'lazy'}
-                />
-              ) : (
-                <span class="archive-file-tile">
-                  <span class="archive-file-ext" aria-hidden="true">
-                    {asset.kind === 'file' ? asset.ext : ''}
-                  </span>
-                  <span class="archive-file-name">{asset.name}</span>
-                </span>
-              )}
-            </button>
-          </li>
-        );
-      })}
-    </ul>
-  )
-}
+{files.length > 0 && (
+  <div class="archive-gallery" data-archive-gallery>
+    <ArchiveFileGrid files={files} />
+  </div>
+)}
+
+<ArchiveViewer />
 
 <script>
-  import { initArchiveLightbox } from '@/features/archive/scripts/archive-lightbox';
+  import '@web-file-reader/file-grid';
+  import type { FileDescriptor } from '@web-file-reader/core';
+  import { setFiles } from '../lib/files';
+  import { setupViewer } from '../lib/setup-viewer';
 
-  // `astro:page-load` fires on the initial load AND after every view
-  // transition, always against the live DOM — so the viewer is never
-  // built against a staging document that gets swapped away.
-  document.addEventListener('astro:page-load', initArchiveLightbox);
+  interface WithFilesProp extends HTMLElement {
+    files?: readonly FileDescriptor[];
+  }
+
+  const initGallery = (): void => {
+    /*
+     * Populate every <wfr-file-grid> on the page and mirror the first one's
+     * files into the shared `files.ts` singleton — the viewer paging / URL
+     * sync reads from it. A blog page can carry multiple albums but the
+     * viewer only follows one; the first grid on the page wins.
+     */
+    let firstFiles: readonly FileDescriptor[] | undefined;
+    for (const grid of document.querySelectorAll<WithFilesProp>('wfr-file-grid[data-files]')) {
+      if (grid.dataset['ready'] === '1') continue;
+      const raw = grid.getAttribute('data-files');
+      if (raw === null) continue;
+      try {
+        const list = JSON.parse(raw) as readonly FileDescriptor[];
+        grid.files = list;
+        grid.dataset['ready'] = '1';
+        if (firstFiles === undefined) firstFiles = list;
+      } catch {
+        /* malformed JSON — noscript fallback still works */
+      }
+    }
+    if (firstFiles !== undefined) setFiles(firstFiles);
+    setupViewer();
+  };
+
+  document.addEventListener('astro:page-load', initGallery);
+  initGallery();
 </script>
 
 <style>
   .archive-gallery {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--spacing-sm);
-  }
-
-  @media (min-width: 640px) {
-    .archive-gallery {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-
-  @media (min-width: 1024px) {
-    .archive-gallery {
-      grid-template-columns: repeat(4, 1fr);
-    }
-  }
-
-  .archive-thumb {
     display: block;
-    width: 100%;
-    min-height: 44px;
-    padding: 0;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    background: var(--color-surface);
-    cursor: pointer;
-    overflow: hidden;
-    aspect-ratio: 1 / 1;
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-  }
-
-  .archive-thumb:hover {
-    border-color: var(--color-accent);
-  }
-
-  .archive-thumb:focus-visible {
-    outline: 2px solid var(--color-focus-ring);
-    outline-offset: 2px;
-  }
-
-  .archive-thumb :global(img) {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-
-  /* A non-image asset renders as a pictogram tile, same footprint as an
-   * image thumb, so the grid stays uniform — no image/file divide. */
-  .archive-thumb-file {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-xs);
-    padding: var(--spacing-sm);
-    background: var(--color-surface-elevated);
-  }
-
-  .archive-file-tile {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-sm);
-    width: 100%;
-    height: 100%;
-  }
-
-  .archive-file-ext {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 3.5rem;
-    padding: 0.35rem 0.6rem;
-    border-radius: var(--radius-sm);
-    background: var(--color-accent);
-    color: var(--color-on-accent);
-    font-weight: 700;
-    font-size: 0.8125rem;
-    letter-spacing: 0.04em;
-  }
-
-  .archive-file-name {
-    max-width: 100%;
-    font-size: 0.8125rem;
-    line-height: 1.3;
-    color: var(--color-text-secondary);
-    text-align: center;
-    overflow-wrap: anywhere;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-</style>
-
-<style is:global>
-  /*
-   * Shared viewer overlay built imperatively by archive-lightbox.ts.
-   * Global because the <dialog> is appended to <body>, outside any
-   * scoped component subtree. Tokens only; dark backdrop via ::backdrop.
-   */
-  .archive-viewer {
-    width: 100vw;
-    height: 100dvh;
-    max-width: 100vw;
-    max-height: 100dvh;
-    margin: 0;
-    padding: 0;
-    border: none;
-    /* Near-opaque so the page never bleeds through the viewer. */
-    background: rgb(8 8 8 / 0.985);
-    color: #fff;
-    overflow: hidden;
-  }
-
-  .archive-viewer::backdrop {
-    background: rgb(0 0 0 / 0.85);
-  }
-
-  .archive-viewer[open] {
-    display: grid;
-    grid-template-rows: auto 1fr;
-  }
-
-  .archive-viewer-bar {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-sm) var(--spacing-md);
-  }
-
-  .archive-viewer-counter {
-    margin-right: auto;
-    font-variant-numeric: tabular-nums;
-    font-size: 0.9375rem;
-  }
-
-  .archive-viewer-bar button,
-  .archive-viewer-prev,
-  .archive-viewer-next {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 44px;
-    min-height: 44px;
-    padding: 0;
-    border: none;
-    border-radius: var(--radius-sm);
-    background: rgb(255 255 255 / 0.12);
-    color: #fff;
-    font-size: 1.5rem;
-    line-height: 1;
-    cursor: pointer;
-  }
-
-  .archive-viewer-bar button:hover:not(:disabled),
-  .archive-viewer-prev:hover:not(:disabled),
-  .archive-viewer-next:hover:not(:disabled) {
-    background: rgb(255 255 255 / 0.24);
-  }
-
-  .archive-viewer button:focus-visible {
-    outline: 2px solid #fff;
-    outline-offset: 2px;
-  }
-
-  .archive-viewer button:disabled {
-    opacity: 0.35;
-    cursor: default;
-  }
-
-  .archive-viewer-stage {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0;
-    padding: var(--spacing-sm);
-    min-height: 0;
-  }
-
-  /* Arrow visibility rides a custom property so every rule just sets
-   * `--arrow-op` and the single `opacity` declaration reads the cascaded
-   * winner — no opacity-specificity fights between the disabled and
-   * reveal states. */
-  .archive-viewer-prev,
-  .archive-viewer-next {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 2;
-    --arrow-op: 1;
-    opacity: var(--arrow-op);
-    transition: opacity var(--transition-fast, 0.15s) ease;
-  }
-
-  .archive-viewer-prev {
-    left: var(--spacing-sm);
-  }
-
-  .archive-viewer-next {
-    right: var(--spacing-sm);
-  }
-
-  /* A direction with no neighbour is dimmed, but kept in the tab order
-   * and revealable — never `disabled` (which drops it from focus) and
-   * never gone for good. */
-  .archive-viewer-prev[aria-disabled='true'],
-  .archive-viewer-next[aria-disabled='true'] {
-    --arrow-op: 0.3;
-    cursor: default;
-  }
-
-  /* On a hover-capable pointer the arrows stay out of the way until the
-   * viewer is hovered OR an arrow is focused (keyboard/Tab) — so they
-   * always come back on focus instead of vanishing. Touch devices (no
-   * hover) keep them visible, since swipe + tap are the only inputs. */
-  @media (hover: hover) {
-    .archive-viewer-prev,
-    .archive-viewer-next,
-    .archive-viewer-prev[aria-disabled='true'],
-    .archive-viewer-next[aria-disabled='true'] {
-      --arrow-op: 0;
-    }
-
-    .archive-viewer:hover .archive-viewer-prev,
-    .archive-viewer:hover .archive-viewer-next,
-    .archive-viewer-stage:focus-within .archive-viewer-prev,
-    .archive-viewer-stage:focus-within .archive-viewer-next,
-    .archive-viewer-prev:focus-visible,
-    .archive-viewer-next:focus-visible {
-      --arrow-op: 1;
-    }
-
-    .archive-viewer:hover .archive-viewer-prev[aria-disabled='true'],
-    .archive-viewer:hover .archive-viewer-next[aria-disabled='true'],
-    .archive-viewer-stage:focus-within .archive-viewer-prev[aria-disabled='true'],
-    .archive-viewer-stage:focus-within .archive-viewer-next[aria-disabled='true'] {
-      --arrow-op: 0.3;
-    }
-  }
-
-  /* Holds the current item (image / doc / pictogram). On prev/next it
-   * slides + fades in from the travel direction — a scoped animation, not
-   * a top-layer View Transition (which janks inside a modal <dialog>). */
-  .archive-viewer-content {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-  }
-
-  @keyframes archive-pane-next {
-    from {
-      opacity: 0;
-      transform: translateX(28px);
-    }
-  }
-
-  @keyframes archive-pane-prev {
-    from {
-      opacity: 0;
-      transform: translateX(-28px);
-    }
-  }
-
-  .archive-viewer-content.archive-anim-next {
-    animation: archive-pane-next 0.24s ease both;
-  }
-
-  .archive-viewer-content.archive-anim-prev {
-    animation: archive-pane-prev 0.24s ease both;
-  }
-
-  .archive-viewer[data-reduced-motion] .archive-viewer-content.archive-anim-next,
-  .archive-viewer[data-reduced-motion] .archive-viewer-content.archive-anim-prev {
-    animation: none;
-  }
-
-  .archive-viewer-image {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    user-select: none;
-    -webkit-user-select: none;
-    touch-action: pan-y;
-  }
-
-  /* The global reset `img { display: block }` (author origin) defeats the
-   * UA `[hidden]` rule, so a srcless image stayed visible as a broken box
-   * next to the file panel. Re-hide it (and the doc pane, which we set to
-   * flex) from the author layer. */
-  .archive-viewer-image[hidden],
-  .archive-viewer-doc[hidden] {
-    display: none;
-  }
-
-  /* Inline document pane (text / pdf / docx), rendered by the lazily
-   * imported archive-renderers chunk. Scrolls within the viewer. */
-  .archive-viewer-doc {
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    -webkit-overflow-scrolling: touch;
-    background: #f4f4f4;
-  }
-
-  .archive-doc-text {
-    margin: 0;
-    padding: var(--spacing-lg);
-    min-height: 100%;
-    box-sizing: border-box;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-    font:
-      0.875rem / 1.6 ui-monospace,
-      'SF Mono',
-      monospace;
-    color: #1a1a1a;
-  }
-
-  .archive-doc-frame {
-    width: 100%;
-    height: 100%;
-    border: 0;
-    background: #fff;
-  }
-
-  .archive-doc-docx {
-    width: 100%;
-    color: #111;
-  }
-
-  /* Loading spinner shown while the (optimised) image decodes, so a
-   * click never lands on a blank stage with no feedback. */
-  .archive-viewer-stage.is-loading::after {
-    content: '';
-    position: absolute;
-    width: 2.5rem;
-    height: 2.5rem;
-    border: 3px solid rgb(255 255 255 / 0.3);
-    border-top-color: #fff;
-    border-radius: 50%;
-    animation: archive-spin 0.8s linear infinite;
-  }
-
-  .archive-viewer-stage.is-loading .archive-viewer-image {
-    opacity: 0;
-  }
-
-  @keyframes archive-spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-
-  .archive-viewer[data-reduced-motion] .archive-viewer-stage.is-loading::after {
-    animation: none;
-  }
-
-  /* Pictogram preview for a non-image asset: filename + download,
-   * shown inside the viewer per R2.5 instead of a broken image. */
-  .archive-viewer-file {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-md);
-    padding: var(--spacing-lg);
-    text-align: center;
-  }
-
-  .archive-viewer-file-ext {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 6rem;
-    padding: 1rem 1.25rem;
-    border-radius: var(--radius-md);
-    background: var(--color-accent);
-    color: var(--color-on-accent);
-    font-weight: 700;
-    font-size: 1.75rem;
-    letter-spacing: 0.04em;
-  }
-
-  .archive-viewer-file-name {
-    margin: 0;
-    max-width: min(90vw, 40rem);
-    font-size: 1.0625rem;
-    overflow-wrap: anywhere;
-  }
-
-  .archive-viewer-file-download,
-  .archive-viewer-download {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4em;
-    min-height: 44px;
-    padding: 0 var(--spacing-md);
-    border-radius: var(--radius-sm);
-    background: rgb(255 255 255 / 0.12);
-    color: #fff;
-    font-weight: 500;
-    text-decoration: none;
-  }
-
-  .archive-viewer-file-download:hover,
-  .archive-viewer-download:hover {
-    background: rgb(255 255 255 / 0.24);
-  }
-
-  .archive-viewer-download {
-    min-width: 44px;
-    justify-content: center;
-  }
-
-  .archive-viewer-file[hidden] {
-    display: none;
-  }
-
-  .archive-viewer-live {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    padding: 0;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    clip-path: inset(50%);
-    white-space: nowrap;
-    border: 0;
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    .archive-viewer:not([data-reduced-motion]) .archive-viewer-image {
-      transition: opacity var(--transition-fast);
-    }
   }
 </style>

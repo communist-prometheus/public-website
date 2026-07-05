@@ -1,6 +1,9 @@
 {
   "type": "module",
   "version": "0.0.1",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "fetch-content": "bun scripts/fetch-content.ts",
     "fetch-favicons": "bun scripts/fetch-favicons.ts",
@@ -25,8 +28,23 @@
   "dependencies": {
     "@astrojs/rss": "^4.0.18",
     "@astrojs/sitemap": "^3.7.2",
-    "astro": "^5.17.1",
-    "docx-preview": "^0.3.7"
+    "esbuild": "^0.25.0",
+    "js-yaml": "^4.1.0",
+    "sharp": "^0.34.0",
+    "vite": "^6.4.1",
+    "@web-file-reader/core": "workspace:*",
+    "@web-file-reader/file-grid": "workspace:*",
+    "@web-file-reader/navigation": "workspace:*",
+    "@web-file-reader/provider-archive": "workspace:*",
+    "@web-file-reader/provider-csv": "workspace:*",
+    "@web-file-reader/provider-docx": "workspace:*",
+    "@web-file-reader/provider-fb2": "workspace:*",
+    "@web-file-reader/provider-image": "workspace:*",
+    "@web-file-reader/provider-markdown": "workspace:*",
+    "@web-file-reader/provider-pdf": "workspace:*",
+    "@web-file-reader/settings": "workspace:*",
+    "@web-file-reader/viewer": "workspace:*",
+    "astro": "^5.17.1"
   },
   "packageManager": "bun@latest",
   "devDependencies": {

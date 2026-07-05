@@ -24,6 +24,7 @@
     "node_modules",
     "src/sw",
     "src/**/*.test.ts",
-    "vitest.config.ts"
+    "vitest.config.ts",
+    "packages"
   ]
 }

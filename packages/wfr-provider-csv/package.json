@@ -1,0 +1,33 @@
+{
+  "name": "@web-file-reader/provider-csv",
+  "version": "0.1.0",
+  "description": "CSV / TSV provider for the web-file-reader viewer. Parses delimited text into an accessible table; delimiter & header settings, optional pagination.",
+  "type": "module",
+  "license": "MIT",
+  "keywords": [
+    "web-file-reader",
+    "provider",
+    "csv",
+    "tsv",
+    "table",
+    "lazy"
+  ],
+  "sideEffects": false,
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    },
+    "./lazy": {
+      "types": "./src/lazy.ts",
+      "import": "./src/lazy.ts"
+    }
+  },
+  "dependencies": {
+    "@web-file-reader/core": "workspace:*"
+  },
+  "private": true
+}

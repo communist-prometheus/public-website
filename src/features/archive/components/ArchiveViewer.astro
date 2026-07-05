@@ -1,0 +1,400 @@
+---
+import { withBase } from '../lib/base';
+---
+
+<!--
+  Port of @web-file-reader/host-astro Viewer.astro + Layout.astro styles.
+  The dialog is a modal CARD on desktop (min(64rem, 95vw)) and full-viewport
+  on mobile via VisualViewport-tracked --app-vh; a top-layer <dialog>
+  otherwise takes the LARGE viewport height and its bottom slides under the
+  mobile address bar. #fs-button is dropped on mobile because the dialog
+  already occupies the screen.
+-->
+<script is:inline>
+  /*
+   * Real-device viewport fit for the modal dialog. Runs at head-inline time
+   * (before first paint) so --app-vh is available immediately. Tracks
+   * visualViewport.height/offsetTop and exposes them as CSS custom
+   * properties the dialog's mobile block-size binds to.
+   */
+  (() => {
+    const root = document.documentElement;
+    if (root.dataset['wfrVvSynced'] === '1') return;
+    root.dataset['wfrVvSynced'] = '1';
+    const vv = window.visualViewport;
+    const sync = () => {
+      const h = vv ? vv.height : window.innerHeight;
+      root.style.setProperty('--app-vh', h + 'px');
+      root.style.setProperty('--app-vt', (vv ? vv.offsetTop : 0) + 'px');
+    };
+    sync();
+    if (vv) {
+      vv.addEventListener('resize', sync);
+      vv.addEventListener('scroll', sync);
+    }
+    window.addEventListener('resize', sync);
+    window.addEventListener('orientationchange', sync);
+  })();
+</script>
+
+<dialog id="viewer-dialog" class="viewer-dialog" aria-label="File viewer" tabindex="-1">
+  <div class="chrome">
+    <span class="chrome-title" id="viewer-title"></span>
+    <span class="chrome-actions">
+      <button id="download-button" type="button" aria-label="Download file">Download</button>
+      <button id="settings-button" type="button" aria-haspopup="dialog" aria-expanded="false">
+        Settings
+      </button>
+      <button id="fs-button" type="button">Fullscreen</button>
+      <a id="close-button" href={withBase('')} aria-label="Close viewer">Close</a>
+    </span>
+  </div>
+
+  <wfr-settings-panel id="settings-panel" hidden></wfr-settings-panel>
+
+  <div class="stage">
+    <div id="track" class="track" role="group" aria-label="Files" tabindex="-1">
+      <section class="slide"><wfr-viewer class="pane"></wfr-viewer></section>
+      <section class="slide"><wfr-viewer class="pane"></wfr-viewer></section>
+      <section class="slide"><wfr-viewer class="pane"></wfr-viewer></section>
+    </div>
+    <wfr-viewer-nav id="nav"></wfr-viewer-nav>
+  </div>
+</dialog>
+
+<style is:global>
+  /*
+   * Design tokens — kept scoped to the viewer subtree via `body:has(...)` so
+   * they don't override the archive page's own Canvas/CanvasText rules. On
+   * open, we clip page overflow and clamp body to the visible viewport (via
+   * --app-vh) so the modal never lets background scroll bleed through.
+   */
+  html:has(dialog#viewer-dialog[open]),
+  body:has(dialog#viewer-dialog[open]) {
+    overflow: clip;
+  }
+  body:has(dialog#viewer-dialog[open]) {
+    block-size: var(--app-vh, 100svh);
+    min-block-size: 0;
+  }
+
+  /* ==== wfr-file-grid tile styling — via ::part() ==== */
+  wfr-file-grid {
+    display: block;
+    --wfr-grid-min: 8rem;
+    --wfr-grid-gap: 1rem;
+    /* Reserve the grid's height so hydrating tiles never reflows the
+       content below it (CLS stays at zero). */
+    min-block-size: 17rem;
+  }
+  @media (max-width: 49rem) {
+    wfr-file-grid {
+      min-block-size: 25rem;
+    }
+  }
+  wfr-file-grid::part(grid) {
+    grid-auto-rows: 8rem;
+  }
+  wfr-file-grid::part(button) {
+    block-size: 100%;
+    justify-content: center;
+    padding: 1rem;
+    border: 1px solid var(--color-border, currentColor);
+    border-radius: 0.75rem;
+    background: var(--color-surface, transparent);
+    transition:
+      border-color 0.15s,
+      transform 0.15s;
+  }
+  @media (hover: hover) {
+    wfr-file-grid::part(button):hover {
+      border-color: var(--color-accent, currentColor);
+      transform: translateY(-2px);
+    }
+  }
+  wfr-file-grid::part(preview) {
+    inline-size: 3.5rem;
+    block-size: 3.5rem;
+  }
+  wfr-file-grid::part(icon) {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: contain;
+    font-size: 2.5rem;
+  }
+  wfr-file-grid::part(label) {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary, inherit);
+    word-break: break-word;
+    text-align: center;
+  }
+
+  /* ==== Viewer dialog — desktop-first modal card ==== */
+  dialog#viewer-dialog {
+    inline-size: min(64rem, 95vw);
+    max-block-size: min(90dvh, 60rem);
+    block-size: min(90dvh, 60rem);
+    padding: 0;
+    border: 1px solid var(--color-border, color-mix(in srgb, CanvasText 18%, Canvas));
+    border-radius: 0.75rem;
+    background: var(--color-surface, Canvas);
+    color: var(--color-text-primary, CanvasText);
+    overflow: hidden;
+  }
+  dialog#viewer-dialog[open] {
+    display: flex;
+    flex-direction: column;
+    animation: wfr-dialog-in 0.2s ease;
+  }
+  dialog#viewer-dialog:focus,
+  dialog#viewer-dialog:focus-visible {
+    outline: none;
+  }
+  dialog#viewer-dialog[open]::backdrop {
+    background: color-mix(in srgb, CanvasText 45%, transparent);
+    backdrop-filter: blur(2px);
+    animation: wfr-fade 0.2s ease;
+  }
+
+  /*
+   * Fullscreen fill. When documentElement enters fullscreen (dialog.requestFullscreen
+   * is rejected by Chromium — "Dialog elements are invalid" — so we fall back to
+   * documentElement), the dialog would otherwise stay anchored to its pre-fullscreen
+   * `min(64rem, 95vw)` rectangle and the fullscreened page would show around it.
+   * data-fs (set on fullscreenchange) forces the dialog to fill the new viewport.
+   */
+  dialog#viewer-dialog[data-fs] {
+    position: fixed !important;
+    inset: 0 !important;
+    inline-size: 100vw !important;
+    max-inline-size: 100vw !important;
+    block-size: 100vh !important;
+    max-block-size: 100vh !important;
+    margin: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+  }
+  /* Free up the reserved scrollbar gutter in fullscreen — body has
+     overflow: clip, no scrollbar to reserve for anyway. */
+  html:has(dialog#viewer-dialog[data-fs]) {
+    scrollbar-gutter: auto !important;
+  }
+
+  .viewer-dialog .chrome {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.5rem 0.75rem;
+    border-block-end: 1px solid var(--color-border, color-mix(in srgb, CanvasText 18%, Canvas));
+    flex: none;
+  }
+  .viewer-dialog .chrome-title {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .viewer-dialog .chrome-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex: none;
+  }
+  .viewer-dialog .chrome-actions button,
+  .viewer-dialog .chrome-actions a {
+    font: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 2.75rem;
+    padding: 0.35rem 0.7rem;
+    border: 1px solid var(--color-border, color-mix(in srgb, CanvasText 18%, Canvas));
+    border-radius: 0.5rem;
+    background: var(--color-surface, color-mix(in srgb, CanvasText 4%, Canvas));
+    color: inherit;
+    text-decoration: none;
+  }
+  .viewer-dialog .chrome-actions button:focus-visible,
+  .viewer-dialog .chrome-actions a:focus-visible {
+    outline: 2px solid var(--color-accent, color-mix(in srgb, CanvasText 70%, Canvas));
+    outline-offset: 2px;
+  }
+
+  /* ==== Carousel: prev / current / next panes ==== */
+  .viewer-dialog .stage {
+    position: relative;
+    flex: 1 1 auto;
+    min-block-size: 0;
+    display: flex;
+  }
+  .viewer-dialog .track {
+    flex: 1 1 auto;
+    inline-size: 100%;
+    min-block-size: 0;
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+    /* Stop the browser from auto-adjusting scrollLeft when we reorder slides
+       during recentre — its correction fights ours and shows as a jump. */
+    overflow-anchor: none;
+  }
+  .viewer-dialog .track::-webkit-scrollbar {
+    display: none;
+  }
+  .viewer-dialog .slide {
+    flex: 0 0 100%;
+    inline-size: 100%;
+    min-inline-size: 0;
+    block-size: 100%;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    display: flex;
+  }
+  .viewer-dialog .slide[hidden] {
+    display: none;
+  }
+  .viewer-dialog wfr-viewer.pane {
+    flex: 1 1 auto;
+    min-inline-size: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    position: relative;
+  }
+  .viewer-dialog wfr-viewer {
+    --wfr-page-gap: 1rem;
+    --wfr-fullscreen-bg: Canvas;
+  }
+  .viewer-dialog wfr-viewer::part(surface) {
+    padding: 1rem;
+    background: color-mix(in srgb, CanvasText 6%, Canvas);
+    display: flex;
+    flex-direction: column;
+  }
+  .viewer-dialog wfr-viewer::part(page) {
+    background: Canvas;
+    color: CanvasText;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 4px color-mix(in srgb, CanvasText 15%, transparent);
+    padding: 1.25rem 1.5rem;
+    max-inline-size: 50rem;
+    margin-inline: auto;
+    inline-size: 100%;
+    overflow-x: auto;
+    animation: wfr-fade 0.18s ease both;
+  }
+
+  /* ==== Auto-hiding paging controls (from wfr-viewer-nav) ==== */
+  .viewer-dialog wfr-viewer-nav {
+    display: block;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+  }
+  .viewer-dialog wfr-viewer-nav::part(nav) {
+    position: absolute;
+    inset-block: 0;
+    inset-inline: 0;
+    justify-content: space-between;
+    align-items: center;
+    padding-inline: 0.5rem;
+    /* The nav container overlays the whole scroll surface. The component sets
+       it to `pointer-events: auto` when visible, which would swallow
+       wheel/touch and BREAK scrolling on mobile. Force it transparent to
+       pointers; only the prev/next buttons below opt back in. */
+    pointer-events: none;
+  }
+  .viewer-dialog wfr-viewer-nav::part(prev),
+  .viewer-dialog wfr-viewer-nav::part(next) {
+    pointer-events: auto;
+    inline-size: 2.75rem;
+    block-size: 2.75rem;
+    display: grid;
+    place-items: center;
+    font-size: 1.5rem;
+    border-radius: 50%;
+    border: 1px solid color-mix(in srgb, CanvasText 18%, Canvas);
+    background: color-mix(in srgb, Canvas 80%, transparent);
+    color: CanvasText;
+    backdrop-filter: blur(4px);
+  }
+
+  /* ==== Settings panel ==== */
+  .viewer-dialog wfr-settings-panel {
+    display: block;
+    flex: none;
+    padding: 0.75rem 1rem;
+    border-block-end: 1px solid color-mix(in srgb, CanvasText 18%, Canvas);
+    background: color-mix(in srgb, CanvasText 4%, Canvas);
+  }
+  .viewer-dialog wfr-settings-panel[hidden] {
+    display: none;
+  }
+
+  /* ==== Mobile: viewer fills the ACTUAL visible viewport via --app-vh ==== */
+  @media (max-width: 640px) {
+    dialog#viewer-dialog {
+      inline-size: 100vw;
+      max-inline-size: 100vw;
+      /* Bind to the ACTUAL visible height measured via VisualViewport
+         (--app-vh), pinned to its top offset (--app-vt). svh is only the
+         fallback before the inline script runs — on real devices the top-
+         layer dialog otherwise takes the large-viewport height and its
+         bottom slides under the address bar. */
+      block-size: var(--app-vh, 100svh);
+      max-block-size: var(--app-vh, 100svh);
+      inset-block-start: var(--app-vt, 0px);
+      margin-block: 0;
+      border: none;
+      border-radius: 0;
+    }
+    .viewer-dialog wfr-viewer::part(page) {
+      padding: 1rem;
+      font-size: 0.85rem;
+    }
+    .viewer-dialog wfr-viewer {
+      --wfr-cell-padding: 0.3rem 0.45rem;
+    }
+    /*
+     * On mobile the dialog fills the VISIBLE viewport (--app-vh) but the
+     * browser address bar still occupies real screen. Real fullscreen via
+     * `dialog.requestFullscreen()` hides the address bar and gives the
+     * reader ~80 more px — worth keeping the button. (The reference host
+     * hides #fs-button here; we don't, per user request.)
+     */
+    wfr-file-grid {
+      min-block-size: 26rem;
+    }
+  }
+
+  @keyframes wfr-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes wfr-dialog-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.99);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    wfr-file-grid::part(button),
+    dialog#viewer-dialog[open],
+    dialog#viewer-dialog[open]::backdrop,
+    .viewer-dialog wfr-viewer::part(page) {
+      animation: none;
+      transition: none;
+    }
+  }
+</style>

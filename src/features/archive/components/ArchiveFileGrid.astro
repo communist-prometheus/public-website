@@ -1,0 +1,47 @@
+---
+/*
+ * Port of @web-file-reader/host-astro Grid.astro. The grid is a `<wfr-file-grid>`
+ * fed with a FileDescriptor[] on the client. The mount script lives in the
+ * parent ArchiveGallery.astro so it shares the same module graph as
+ * setup-viewer.ts — otherwise Vite would emit `files.ts` twice and setFiles
+ * would populate a different singleton than the one getFiles reads.
+ */
+import type { FileDescriptor } from '@web-file-reader/core';
+
+interface Props {
+  readonly files: readonly FileDescriptor[];
+}
+
+const { files } = Astro.props;
+---
+
+<wfr-file-grid
+  id="file-grid"
+  data-files={JSON.stringify(files)}
+  label="Archive files"
+></wfr-file-grid>
+
+<noscript>
+  <ul class="archive-noscript">
+    {files.map((file) => (
+      <li>
+        <a href={file.source.kind === 'url' ? file.source.url : '#'} download>
+          {file.name}
+        </a>
+      </li>
+    ))}
+  </ul>
+</noscript>
+
+<style>
+  wfr-file-grid {
+    display: block;
+    --wfr-grid-min: 9rem;
+    --wfr-grid-gap: 1rem;
+  }
+  .archive-noscript {
+    list-style: disc;
+    margin: 0;
+    padding-left: 1.5rem;
+  }
+</style>

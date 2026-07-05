@@ -8,7 +8,7 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["**", "!!e2e-toolkit"]
+    "includes": ["**", "!!e2e-toolkit", "!packages"]
   },
   "formatter": {
     "enabled": true,
