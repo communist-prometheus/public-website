@@ -139,27 +139,48 @@ test.describe('Language coverage — switcher href is path-aware', () => {
    * corpus carries the article. The listing probes (`/en/`,
    * `/en/blog`) cover the chrome that exists in every language.
    */
-  const fromPaths = [
-    '/en/',
-    '/en/blog',
-    '/ru/blog/appeal-to-russian-workers',
-    '/en/positions/digital-sovereignty',
-    '/it/blog/appeal-to-russian-workers',
-  ] as const;
+  /*
+   * Listing paths render every language in the switcher unconditionally.
+   * Detail paths only render the languages the article has been
+   * translated into (availableLangs prop), because a switcher link to
+   * a non-existent translation would 404 on click. Group the probes so
+   * the detail-page cases only assert against their real availableLangs.
+   */
+  const listingPaths = ['/en/', '/en/blog', '/en/positions/digital-sovereignty'] as const;
+  const detailProbes: ReadonlyArray<{
+    readonly path: string;
+    readonly available: readonly string[];
+  }> = [
+    /*
+     * `appeal-to-russian-workers` ships in en / es / it / ru — bl / pl / uk
+     * translations don't exist, so the switcher hides those options.
+     */
+    { path: '/ru/blog/appeal-to-russian-workers', available: ['en', 'es', 'it', 'ru'] },
+    { path: '/it/blog/appeal-to-russian-workers', available: ['en', 'es', 'it', 'ru'] },
+  ];
 
-  for (const from of fromPaths) {
+  const assertHref =
+    (from: string, target: string) =>
+    async ({ page }: { page: import('@playwright/test').Page }) => {
+      await visit(page, from);
+      const href = await page
+        .locator(`${switcherSel} [data-testid="lang-option-${target}"]`)
+        .first()
+        .getAttribute('href');
+      const expected = from.replace(/^\/[a-z]{2}/, `/${target}`).replace(/\/$/, '');
+      const normalised = (href ?? '').replace(/\/$/, '');
+      const wanted = expected === '' ? `/${target}` : expected;
+      expect(normalised, `href on ${from} for ${target}`).toBe(wanted);
+    };
+
+  for (const from of listingPaths) {
     for (const target of codes) {
-      test(`href on ${from} for ${target} preserves path`, async ({ page }) => {
-        await visit(page, from);
-        const href = await page
-          .locator(`${switcherSel} [data-testid="lang-option-${target}"]`)
-          .first()
-          .getAttribute('href');
-        const expected = from.replace(/^\/[a-z]{2}/, `/${target}`).replace(/\/$/, '');
-        const normalised = (href ?? '').replace(/\/$/, '');
-        const wanted = expected === '' ? `/${target}` : expected;
-        expect(normalised, `href on ${from} for ${target}`).toBe(wanted);
-      });
+      test(`href on ${from} for ${target} preserves path`, assertHref(from, target));
+    }
+  }
+  for (const { path: from, available } of detailProbes) {
+    for (const target of available) {
+      test(`href on ${from} for ${target} preserves path`, assertHref(from, target));
     }
   }
 });
