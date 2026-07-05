@@ -44,7 +44,7 @@
     "@web-file-reader/provider-pdf": "workspace:*",
     "@web-file-reader/settings": "workspace:*",
     "@web-file-reader/viewer": "workspace:*",
-    "astro": "^5.17.1"
+    "astro": "^7.0.6"
   },
   "packageManager": "bun@latest",
   "devDependencies": {
