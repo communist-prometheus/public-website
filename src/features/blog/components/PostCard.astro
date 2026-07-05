@@ -98,8 +98,15 @@ const href = Astro.props.href ?? `/${lang}/blog/${slug}`;
   .post-content {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xs);
-    padding: clamp(var(--spacing-xs), 2vw, var(--spacing-md));
+    gap: var(--spacing-sm);
+    /*
+     * Padding bumped from clamp(xs, 2vw, md) to clamp(sm, 3vw, md) so
+     * the inner text has real breathing room. On a 375 vw mobile the
+     * old clamp collapsed to `0.5rem` (2vw = 7.5 px, min = xs = 8 px),
+     * which put the description flush against the card edge — the
+     * "no padding" complaint from the user.
+     */
+    padding: clamp(var(--spacing-sm), 3vw, var(--spacing-md));
     flex: 1;
     min-width: 0;
     min-height: 0;
@@ -161,10 +168,17 @@ const href = Astro.props.href ?? `/${lang}/blog/${slug}`;
     flex: 1;
     margin: 0;
     font-size: 0.9rem;
-    line-height: 1.45;
+    line-height: 1.5;
     display: -webkit-box;
-    -webkit-line-clamp: 12;
-    line-clamp: 12;
+    /*
+     * Clamp to 4 lines (was 12). At 12 lines the card was rendering
+     * almost the entire frontmatter description — the "куча текста"
+     * the user reported. 4 lines gives a legible preview and pins the
+     * browser's `…` predictably at the end of line 4, so it stops
+     * looking like it's on a "random line" mid-paragraph.
+     */
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
     -webkit-box-orient: vertical;
     overflow: hidden;
     min-height: 0;
