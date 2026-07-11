@@ -1,0 +1,51 @@
+name: CI
+
+# Pull requests had no checks at all: `deploy.yml` only fires on a push
+# to master/develop, so nothing was validated until the code was already
+# on its way out. Unit tests in particular never ran anywhere — a stale
+# deriveSummary assertion sat red for as long as it took to notice.
+on:
+  pull_request:
+    branches: [master, develop]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    # Content is fetched by `prebuild`. Pin it to master so a PR is
+    # always checked against the content shape production actually has —
+    # which is what the e2e assertions below are written against.
+    env:
+      CONTENT_BRANCH: master
+    steps:
+      - name: Cloning git repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          # e2e-toolkit is a submodule; without it the e2e tsconfig path
+          # mapping points at an empty directory and astro check fails.
+          submodules: true
+
+      - name: Installing tools and dependencies
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+      - run: bun install --frozen-lockfile
+
+      - name: Running unit tests
+        run: bun run test:unit
+
+      # `build` is format + lint + astro check + build, so this covers
+      # the static checks too. It also fetches content, which the e2e
+      # step below needs.
+      - name: Building application (static site)
+        run: bun run build
+
+      - name: Installing Playwright browsers
+        run: bunx playwright install --with-deps chromium
+
+      - name: Running E2E tests (chromium, skip lighthouse/mobile)
+        run: bunx playwright test --project=chromium --reporter=line
