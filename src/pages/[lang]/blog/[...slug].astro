@@ -15,7 +15,8 @@ import { deriveDescription } from '@/features/content/helpers/deriveDescription'
 import { getCategoryLabel } from '@/features/content/helpers/getCategoryLabel';
 import { formatArticleDate } from '@/features/i18n/format-date';
 import MissingTranslation from '@/features/i18n/MissingTranslation.astro';
-import { resolveIssueSlug } from '@/features/newspaper/helpers/resolveArticleIssue';
+import { getAllIssues } from '@/features/magazine/helpers/getMagazineItems';
+import { issueRef, resolveIssueSlug } from '@/features/magazine/helpers/resolveArticleIssue';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 
 /*
@@ -96,16 +97,16 @@ const articleLD = post
   : undefined;
 
 /*
- * The badge keys off EITHER the article's own `newspaper` slug OR a
+ * The badge keys off EITHER the article's own issue back-link OR a
  * reverse lookup across issues whose `articles[]` list this article —
  * so an article referenced only from the issue side still gets the
  * "published in" link (see tickets#29).
  */
-const newspaperRef = await (async () => {
+const magazineRef = await (async () => {
   if (!post || !slug) return undefined;
   // Only link back to a published issue — same gate as everywhere else.
-  const issues = await getCollection('newspaper', ({ data }) => data.published === true);
-  const issueSlug = resolveIssueSlug(issues, slug, post.data.newspaper);
+  const issues = await getAllIssues();
+  const issueSlug = resolveIssueSlug(issues, slug, issueRef(post.data));
   if (!issueSlug) return undefined;
   const slugFrom = (id: string) => id.split('/').at(0) ?? id;
   const byKey = new Map(issues.map((i) => [`${i.data.lang}/${slugFrom(i.id)}`, i] as const));
@@ -114,7 +115,7 @@ const newspaperRef = await (async () => {
   return {
     title: issue.data.title,
     image: issue.data.image,
-    href: `/${lang}/newspaper/${issueSlug}`,
+    href: `/${lang}/magazine/${issueSlug}`,
   };
 })();
 ---
@@ -146,20 +147,20 @@ const newspaperRef = await (async () => {
               {publishedDate && formatArticleDate(publishedDate, lang)}
             </time>
           </p>
-          {newspaperRef && (
-            <p class="newspaper-ref">
-              <a href={newspaperRef.href} class="newspaper-link">
-                {newspaperRef.image && (
+          {magazineRef && (
+            <p class="magazine-ref">
+              <a href={magazineRef.href} class="magazine-link">
+                {magazineRef.image && (
                   <Picture
-                    src={newspaperRef.image}
+                    src={magazineRef.image}
                     widths={[80, 160]}
                     sizes="48px"
                     formats={['avif', 'webp']}
                     alt=""
-                    class="newspaper-cover"
+                    class="magazine-cover"
                   />
                 )}
-                <span class="newspaper-title">↳ {newspaperRef.title}</span>
+                <span class="magazine-title">↳ {magazineRef.title}</span>
               </a>
             </p>
           )}
@@ -245,12 +246,12 @@ const newspaperRef = await (async () => {
     font-size: 0.875rem;
   }
 
-  .newspaper-ref {
+  .magazine-ref {
     margin-top: var(--spacing-sm);
     font-size: 0.875rem;
   }
 
-  .newspaper-link {
+  .magazine-link {
     display: inline-flex;
     align-items: center;
     gap: var(--spacing-sm);
@@ -262,7 +263,7 @@ const newspaperRef = await (async () => {
     text-decoration: none;
   }
 
-  .newspaper-link :global(.newspaper-cover) {
+  .magazine-link :global(.magazine-cover) {
     width: 36px;
     height: 48px;
     object-fit: cover;
@@ -271,11 +272,11 @@ const newspaperRef = await (async () => {
     flex-shrink: 0;
   }
 
-  .newspaper-title {
+  .magazine-title {
     line-height: 1.3;
   }
 
-  .newspaper-link:hover {
+  .magazine-link:hover {
     background: var(--color-surface);
     color: var(--color-accent);
   }

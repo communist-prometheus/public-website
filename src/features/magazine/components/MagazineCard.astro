@@ -32,15 +32,15 @@ const {
  * the listing. PDF/FB2 paths are auto-discovered from the issue's
  * `assets/` dir — they ship under whatever name the editor chose
  * (slug-based, gazette.pdf for legacy issues, etc.). The
- * newspaper-pdfs/newspaper-fb2 build integrations copy them through
+ * magazine-pdfs/magazine-fb2 build integrations copy them through
  * to dist as-is.
  */
-const detailPath = `/${lang}/newspaper/${slug}`;
+const detailPath = `/${lang}/magazine/${slug}`;
 const pdfAsset = findIssueAsset(slug, lang, '.pdf');
 const fb2Asset = findIssueAsset(slug, lang, '.fb2');
 ---
 
-<article class="newspaper-card" data-testid="newspaper-card">
+<article class="magazine-card" data-testid="magazine-card">
   <a href={detailPath} class="cover-link">
     {image && (
       <div class="cover">
@@ -60,7 +60,7 @@ const fb2Asset = findIssueAsset(slug, lang, '.fb2');
         label={pdfLabel}
         format="pdf"
         size={pdfAsset.size}
-        testId="newspaper-pdf"
+        testId="magazine-pdf"
       />
     )}
     {fb2Asset && (
@@ -69,14 +69,14 @@ const fb2Asset = findIssueAsset(slug, lang, '.fb2');
         label={fb2Label}
         format="fb2"
         size={fb2Asset.size}
-        testId="newspaper-fb2"
+        testId="magazine-fb2"
       />
     )}
   </div>
 </article>
 
 <style>
-  .newspaper-card {
+  .magazine-card {
     padding: clamp(var(--spacing-sm), 3vw, var(--spacing-lg));
     background: var(--color-surface-elevated);
     border-left: 3px solid var(--color-warning, #ff9800);
@@ -85,7 +85,7 @@ const fb2Asset = findIssueAsset(slug, lang, '.fb2');
     overflow: hidden;
   }
 
-  .newspaper-card:hover {
+  .magazine-card:hover {
     box-shadow: var(--shadow-md);
   }
 

@@ -66,7 +66,7 @@ Priority URLs (re-request whenever they change substantively):
 `/ru/manifest`, `/en/manifest`, `/it/manifest`, `/es/manifest`,
 `/pl/manifest`, `/uk/manifest`, `/bl/manifest`.
 
-Everything else (blog posts, positions, newspaper issues) Google
+Everything else (blog posts, positions, magazine issues) Google
 discovers on its own via sitemap + internal linking — don't waste
 the manual quota on them.
 

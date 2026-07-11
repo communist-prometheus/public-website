@@ -4,12 +4,12 @@
 # IMPORTANT: CF Workers Static Assets allows only ONE `*` splat per
 # URL pattern (unlike CF Pages, which allows multiple). A rule with
 # two splats is silently ignored — and silently-ignored is exactly
-# how this file regressed before: `/newspaper/*/assets/*.fb2` looked
+# how this file regressed before: `/magazine/*/assets/*.fb2` looked
 # right, deployed cleanly, and never applied. Asset URLs land in
 # the browser with no Content-Type, the body sniffs as XML, and the
 # download opens in the XML viewer / saves as `.xml`.
 #
-# The single splat is greedy across `/`, so `/newspaper/*.fb2`
+# The single splat is greedy across `/`, so `/magazine/*.fb2`
 # captures both the slug and the per-lang suffix.
 
 # Content-hashed build assets are immutable — the filename changes
@@ -43,13 +43,15 @@
   Cache-Control: no-cache, no-store, must-revalidate
 
 # Force .fb2 (FictionBook) downloads instead of inline XML preview.
-/newspaper/*.fb2
+# The old `/newspaper/*` paths 301 to these via `_redirects`, so the
+# headers only ever need to name the current location.
+/magazine/*.fb2
   Content-Type: application/x-fictionbook+xml
   Content-Disposition: attachment
 
 # Same for any incidentally-served *.docx (the editor never
 # persists docx, but be defensive — saves a "broken file" support
 # ticket if one ever leaks through).
-/newspaper/*.docx
+/magazine/*.docx
   Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document
   Content-Disposition: attachment

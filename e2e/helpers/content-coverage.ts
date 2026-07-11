@@ -45,7 +45,13 @@ export const buildSectionAvailability = (): ReadonlyMap<string, ReadonlySet<stri
   const sections: ReadonlyArray<readonly [string, ReadonlySet<string>]> = [
     ['blog', collectionLangs('blog')],
     ['positions', collectionLangs('positions')],
-    ['newspaper', collectionLangs('newspaper')],
+    /*
+     * The content repo still ships the issues under `newspaper/` until
+     * its folder rename lands; the site serves them at /magazine either
+     * way. Union the two so this map is right on both sides of that
+     * commit — only one of them ever has entries.
+     */
+    ['magazine', new Set([...collectionLangs('magazine'), ...collectionLangs('newspaper')])],
     ['manifest', pageLangs('manifest')],
     ['about', pageLangs('about')],
   ];
@@ -68,7 +74,7 @@ export const buildSectionAvailability = (): ReadonlyMap<string, ReadonlySet<stri
  *
  * @param map Output of buildSectionAvailability.
  * @param lang Language code.
- * @param section Section slug — blog, positions, newspaper,
+ * @param section Section slug — blog, positions, magazine,
  * manifest, about, home.
  * @returns true when content exists.
  */

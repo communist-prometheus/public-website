@@ -1,7 +1,7 @@
 /*
  * Frontmatter `description` is the canonical SEO + card summary, but
  * editors sometimes leave it empty (the schema marks it optional on
- * pages and tolerates a blank string on blog/positions/newspaper).
+ * pages and tolerates a blank string on blog/positions/magazine).
  *
  * When that happens, fall back to the first non-trivial line of the
  * article body so the card / meta description / og:description still

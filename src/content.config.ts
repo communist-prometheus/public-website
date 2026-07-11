@@ -34,10 +34,13 @@ const blogCollection = defineCollection({
       image: image().optional(),
       lang: langEnum,
       /*
-       * Optional newspaper-issue slug this article appeared in. The
-       * blog detail page renders "Published in: <issue>" linking back
-       * to /<lang>/newspaper/<slug> when present.
+       * Optional magazine-issue slug this article appeared in. The blog
+       * detail page renders "Published in: <issue>" linking back to
+       * /<lang>/magazine/<slug> when present. `newspaper` is the
+       * pre-rename key published articles still carry until the content
+       * repo's frontmatter migration lands — read via `issueRef`.
        */
+      magazine: z.string().optional(),
       newspaper: z.string().optional(),
       /*
        * Optional archive-item slug attached to this article. The blog
@@ -108,6 +111,13 @@ const commonCollection = defineCollection({
     blog: z.string().optional(),
     positions: z.string().optional(),
     manifest: z.string().optional(),
+    /*
+     * Nav label for the magazine section. `newspaper` is the pre-rename
+     * key the menu entries still carry until the content repo migrates;
+     * the nav builder falls back to it so the link never disappears
+     * mid-migration.
+     */
+    magazine: z.string().optional(),
     newspaper: z.string().optional(),
     /* Nav label for the archive section (menu entry). */
     archive: z.string().optional(),
@@ -116,7 +126,7 @@ const commonCollection = defineCollection({
     copyright: z.string().optional(),
     readMore: z.string().optional(),
     /*
-     * Newspaper-issue download labels. Distinct keys so editors can
+     * Magazine-issue download labels. Distinct keys so editors can
      * localise PDF and FB2 buttons separately and so the layout no
      * longer reuses `readMore` (which was visually wrong: a "Read
      * more" button that actually downloads a binary).
@@ -138,35 +148,49 @@ const commonCollection = defineCollection({
   }),
 });
 
-const newspaperCollection = defineCollection({
-  type: 'content',
-  schema: ({ image }) =>
-    z.object({
-      title: z.string(),
-      /* Optional: see blogCollection. */
-      description: z.string().optional(),
-      pubDate: z.date().optional(),
-      // See blog: absent / non-true is draft.
-      published: z.boolean().optional(),
-      publishDate: z.date().optional(),
-      image: image().optional(),
-      lang: langEnum,
-      /*
-       * Optional ordered list of blog-article slugs in this issue.
-       * The newspaper detail page renders these as a TOC linking to
-       * /<lang>/blog/<slug>. Slugs reference the blog collection,
-       * so removing a referenced article leaves a stale link — kept
-       * intentional so editors notice and fix the TOC.
-       */
-      articles: z.array(z.string()).optional(),
-    }),
-});
+const issuesCollection = () =>
+  defineCollection({
+    type: 'content',
+    schema: ({ image }) =>
+      z.object({
+        title: z.string(),
+        /* Optional: see blogCollection. */
+        description: z.string().optional(),
+        pubDate: z.date().optional(),
+        // See blog: absent / non-true is draft.
+        published: z.boolean().optional(),
+        publishDate: z.date().optional(),
+        image: image().optional(),
+        lang: langEnum,
+        /*
+         * Optional ordered list of blog-article slugs in this issue.
+         * The magazine detail page renders these as a TOC linking to
+         * /<lang>/blog/<slug>. Slugs reference the blog collection,
+         * so removing a referenced article leaves a stale link — kept
+         * intentional so editors notice and fix the TOC.
+         */
+        articles: z.array(z.string()).optional(),
+      }),
+  });
+
+const magazineCollection = issuesCollection();
+
+/*
+ * TRANSITIONAL: the same schema over the pre-rename `newspaper/`
+ * directory. The content repo's folder rename auto-merges to master and
+ * rebuilds prod on its own schedule, so the build has to read whichever
+ * directory is present. `getCollection` on an absent directory warns and
+ * returns [] rather than failing, so exactly one of these is ever
+ * populated. Drop it once the content repo is migrated.
+ */
+const newspaperCollection = issuesCollection();
 
 export const collections = {
   blog: blogCollection,
   pages: pagesCollection,
   positions: positionsCollection,
   common: commonCollection,
+  magazine: magazineCollection,
   newspaper: newspaperCollection,
   archive: archiveCollection,
 };

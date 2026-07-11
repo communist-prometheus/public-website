@@ -29,7 +29,7 @@ const sectionByPath: Readonly<Record<string, string>> = {
   '/manifest': 'manifest',
   '/blog': 'blog',
   '/positions': 'positions',
-  '/newspaper': 'newspaper',
+  '/magazine': 'magazine',
 };
 const pages = Object.keys(sectionByPath);
 const availability = buildSectionAvailability();
@@ -40,11 +40,11 @@ test.describe('Language coverage — every code in settings must work', () => {
   for (const { code, label } of languages) {
     test.describe(`${label} (${code})`, () => {
       /*
-       * The listing routes (`/blog`, `/positions`, `/newspaper`)
+       * The listing routes (`/blog`, `/positions`, `/magazine`)
        * must serve a 200 for EVERY supported language even when no
        * issues are published in that lang yet — the listing page
        * shows an empty-state instead of 404. Pre-fix the user hit
-       * `/en/newspaper` (no English issues yet) and got the
+       * `/en/magazine` (no English issues yet) and got the
        * site-wide "This page does not exist" 404; the deploy gate
        * had no failing test because the suite skipped empty langs
        * by design.
@@ -56,7 +56,7 @@ test.describe('Language coverage — every code in settings must work', () => {
       for (const p of pages) {
         const section = sectionByPath[p] ?? 'home';
         const isListingOrHome =
-          p === '' || p === '/blog' || p === '/positions' || p === '/newspaper';
+          p === '' || p === '/blog' || p === '/positions' || p === '/magazine';
         const exists = isListingOrHome || hasSection(availability, code, section);
         const variant = exists ? test : test.skip;
         variant(`/${code}${p} renders with lang="${code}"`, async ({ page }) => {

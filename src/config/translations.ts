@@ -76,7 +76,17 @@ export const getNavLinks = async (
     { key: 'blog', href: `/${lang}/blog`, label: menu.data.blog },
     { key: 'positions', href: `/${lang}/positions`, label: menu.data.positions },
     { key: 'manifest', href: `/${lang}/manifest`, label: menu.data.manifest },
-    { key: 'newspaper', href: `/${lang}/newspaper`, label: menu.data.newspaper },
+    {
+      key: 'magazine',
+      href: `/${lang}/magazine`,
+      /*
+       * The menu entries still key the label as `newspaper` until the
+       * content repo migrates. Without the fallback the link would
+       * silently drop out of the nav in that window (a missing label is
+       * treated as "not translated" below).
+       */
+      label: menu.data.magazine ?? menu.data.newspaper,
+    },
     { key: 'archive', href: `/${lang}/archive`, label: menu.data.archive },
     { key: 'about', href: `/${lang}/about`, label: menu.data.about },
     { key: 'links', href: `/${lang}/links`, label: menu.data.links },

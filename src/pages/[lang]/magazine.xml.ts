@@ -1,14 +1,16 @@
-import { getCollection } from 'astro:content';
 import rss from '@astrojs/rss';
 import type { APIContext } from 'astro';
 import { SUPPORTED_LANGUAGES } from '@/config/i18n';
+import { getMagazineItems } from '@/features/magazine/helpers/getMagazineItems';
 
 /**
- * Per-locale newspaper feed at `/<lang>/newspaper.xml`.
- * Lists every published newspaper issue in that locale, newest first,
+ * Per-locale magazine feed at `/<lang>/magazine.xml`.
+ * Lists every published magazine issue in that locale, newest first,
  * with the issue page as the link and `publishDate` as `pubDate`.
  * Consumed by the comms-worker newsletter to announce a new issue (and
- * to point at the current one) — see services/comms-worker.
+ * to point at the current one) — see services/comms-worker. The old
+ * `/<lang>/newspaper.xml` path 301s here, so a worker that has not been
+ * redeployed yet keeps resolving the feed.
  *
  * @returns one feed per supported language.
  */
@@ -24,29 +26,24 @@ interface FeedParams {
 }
 
 /**
- * Build the newspaper RSS feed for the requested locale.
+ * Build the magazine RSS feed for the requested locale.
  * @param context - Astro endpoint context carrying `params.lang`.
  * @returns RSS XML response.
  */
 export const GET = async (context: APIContext) => {
   const params: FeedParams = context.params;
   const lang = params.lang ?? 'en';
-  const issues = await getCollection(
-    'newspaper',
-    ({ data }) => data.published === true && data.lang === lang,
-  );
-  const items = issues
-    .map((issue) => ({
-      title: issue.data.title,
-      link: `/${lang}/newspaper/${slugFrom(issue.id)}`,
-      pubDate: issue.data.publishDate ?? issue.data.pubDate,
-      description: issue.data.description ?? issue.data.title,
-    }))
-    .sort((a, b) => (b.pubDate?.getTime() ?? 0) - (a.pubDate?.getTime() ?? 0));
+  const issues = await getMagazineItems(lang);
+  const items = issues.map((issue) => ({
+    title: issue.data.title,
+    link: `/${lang}/magazine/${slugFrom(issue.id)}`,
+    pubDate: issue.data.publishDate ?? issue.data.pubDate,
+    description: issue.data.description ?? issue.data.title,
+  }));
 
   return rss({
-    title: 'Communist Prometheus — Newspaper',
-    description: 'Newspaper issues from Communist Prometheus',
+    title: 'Communist Prometheus — Magazine',
+    description: 'Magazine issues from Communist Prometheus',
     site: context.site?.toString() ?? SITE_URL,
     items,
     customData: `<language>${lang}</language>`,
