@@ -3,6 +3,8 @@ import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from '@/config/i18n';
 import { getCommonData, getPageData } from '@/config/translations';
 import { getBlogPosts } from '@/features/blog/helpers/getBlogPosts';
 import Hero from '@/features/home/components/Hero.astro';
+import MagazineWidget from '@/features/home/components/MagazineWidget.astro';
+import ManifestWidget from '@/features/home/components/ManifestWidget.astro';
 import NewsSection from '@/features/home/components/NewsSection.astro';
 import PositionsWidget from '@/features/positions/components/PositionsWidget.astro';
 import { getPositions } from '@/features/positions/helpers/getPositions';
@@ -39,8 +41,10 @@ const readMoreLabel = labels?.data.readMore ?? 'Read more';
     {heroIntro ? <p>{heroIntro}</p> : null}
     <a class="button hero-cta" href={`/${lang}/about`}>{readMoreLabel} →</a>
   </Hero>
+  <MagazineWidget lang={lang} />
   <PositionsWidget lang={lang} positions={latestPositions} />
   <NewsSection posts={latestPosts} lang={lang} latestNewsLabel={latestNews ?? ''} viewAllLabel={viewAllPosts ?? ''} />
+  <ManifestWidget lang={lang} />
 </BaseLayout>
 
 <style>
