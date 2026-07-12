@@ -1,5 +1,6 @@
 ---
 import type { Language } from '@/config/i18n';
+import SearchBox from '@/features/search/components/SearchBox.astro';
 import ThemeToggle from '@/features/theme/components/ThemeToggle.astro';
 import LanguageSwitcher from './LanguageSwitcher.astro';
 import Nav from './Nav.astro';
@@ -22,6 +23,9 @@ const { lang, availableLangs } = Astro.props;
       <div class="header-actions">
         <div class="desktop-only" data-testid="desktop-nav">
           <Nav lang={lang} />
+        </div>
+        <div class="desktop-only">
+          <SearchBox lang={lang} variant="header" />
         </div>
         <div class="desktop-only">
           <LanguageSwitcher lang={lang} availableLangs={availableLangs} />

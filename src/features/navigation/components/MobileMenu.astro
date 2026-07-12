@@ -1,6 +1,7 @@
 ---
 import type { Language } from '@/config/i18n';
 import { getMenuData, getNavLinks } from '@/config/translations';
+import SearchBox from '@/features/search/components/SearchBox.astro';
 import ThemeToggle from '@/features/theme/components/ThemeToggle.astro';
 import LanguageSwitcher from './LanguageSwitcher.astro';
 
@@ -85,6 +86,9 @@ const menuLabel = nav?.data.menu ?? 'Menu';
     aria-modal="true"
     aria-label={menuLabel}
   >
+    <div class="popup-search">
+      <SearchBox lang={lang} variant="mobile" />
+    </div>
     <ul class="popup-links">
       {links.map(({ href, label }) => (
         <li><a href={href}>{label}</a></li>

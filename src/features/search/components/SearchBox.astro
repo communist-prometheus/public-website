@@ -1,0 +1,208 @@
+---
+import { searchStrings } from '../i18n';
+
+interface Props {
+  readonly lang: string;
+  /**
+   * `header` is the compact bar in the top bar, `hero` the wide box on the
+   * home and results pages, `mobile` the one inside the burger menu.
+   *
+   * `mobile` looks like `hero` but is its own variant so the two are
+   * addressable apart: several of these render on the same page, and a
+   * test — or a script — that cannot tell them apart grabs the wrong one.
+   */
+  readonly variant?: 'header' | 'hero' | 'mobile';
+}
+
+const { lang, variant = 'header' } = Astro.props;
+const t = searchStrings(lang);
+const id = `search-${variant}`;
+
+/*
+ * A real <form> pointing at the search page, so the box works with no JS
+ * at all: type, press Enter, land on /{lang}/search?q=… server-rendered.
+ * The script below upgrades it into a live combobox; it never becomes the
+ * only way in.
+ */
+---
+
+<form
+  class:list={['search', variant]}
+  role="search"
+  action={`/${lang}/search`}
+  method="get"
+  data-search
+  data-lang={lang}
+  data-testid={`search-${variant}`}
+>
+  <label class="sr-only" for={id}>{t.label}</label>
+  <input
+    id={id}
+    class="input"
+    type="search"
+    name="q"
+    autocomplete="off"
+    placeholder={t.placeholder}
+    role="combobox"
+    aria-expanded="false"
+    aria-controls={`${id}-listbox`}
+    aria-autocomplete="list"
+    data-search-input
+    data-testid={`search-input-${variant}`}
+  />
+  <div class="panel" data-search-panel hidden>
+    <ul
+      id={`${id}-listbox`}
+      class="list"
+      role="listbox"
+      aria-label={t.resultsTitle}
+      data-search-list
+      data-testid="search-results"
+    ></ul>
+    <p class="empty" data-search-empty hidden data-testid="search-empty">
+      {t.noResults}
+    </p>
+  </div>
+  <p class="sr-only" aria-live="polite" data-search-status></p>
+</form>
+
+<script>
+  import { setupSearch } from '../search-client';
+
+  const init = (): void => {
+    document
+      .querySelectorAll<HTMLFormElement>('[data-search]')
+      .forEach(setupSearch);
+  };
+
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>
+
+<style>
+  .search {
+    position: relative;
+  }
+
+  .input {
+    inline-size: 100%;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    font-size: 0.875rem;
+  }
+
+  .input:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 1px;
+  }
+
+  .header .input {
+    inline-size: clamp(9rem, 16vw, 15rem);
+  }
+
+  .hero .input,
+  .mobile .input {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 1rem;
+  }
+
+  /*
+   * `absolute`, never `fixed`: the header takes a `transform` when it
+   * retracts on scroll, and a fixed child of a transformed ancestor is
+   * positioned against that ancestor instead of the viewport.
+   */
+  .panel {
+    position: absolute;
+    z-index: 300;
+    inset-inline: 0;
+    inset-block-start: calc(100% + 0.35rem);
+    max-block-size: min(60vh, 28rem);
+    overflow-y: auto;
+    background: var(--color-surface-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+  }
+
+  .hero .panel,
+  .mobile .panel {
+    inline-size: 100%;
+  }
+
+  .list {
+    list-style: none;
+    margin: 0;
+    padding: 0.25rem;
+  }
+
+  .empty {
+    margin: 0;
+    padding: var(--spacing-sm);
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+  }
+
+  /*
+   * Result rows are built by the script, so Astro's scoping never reaches
+   * them — they carry no scope attribute. Style them through :global,
+   * nested under .panel so the rules stay confined to this component.
+   */
+  .panel :global(.hit-link) {
+    display: grid;
+    gap: 0.15rem;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-primary);
+    text-decoration: none;
+  }
+
+  .panel :global(.hit-link:hover),
+  .panel :global([aria-selected='true'] .hit-link) {
+    background: var(--color-surface);
+  }
+
+  .panel :global(.hit-section) {
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-text-secondary);
+  }
+
+  .panel :global(.hit-title) {
+    font-weight: 600;
+    font-size: 0.9375rem;
+  }
+
+  .panel :global(.hit-snippet) {
+    margin: 0;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--color-text-secondary);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .panel :global(.hit-mark) {
+    background: var(--color-warning, #ff9800);
+    color: var(--color-text-primary);
+    border-radius: 2px;
+    padding-inline: 0.1em;
+  }
+
+  .sr-only {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>
