@@ -1,0 +1,162 @@
+---
+import { Picture } from 'astro:assets';
+import CpButton from '@/components/cp/CpButton.astro';
+import type { Language } from '@/config/i18n';
+import { getLabelsData, getMenuData } from '@/config/translations';
+import { deriveSummary } from '@/features/content/helpers/deriveSummary';
+import { formatArticleDate } from '@/features/i18n/format-date';
+import { getMagazineItems } from '@/features/magazine/helpers/getMagazineItems';
+
+interface Props {
+  readonly lang: Language;
+}
+
+const { lang } = Astro.props;
+
+/*
+ * The newest published issue in this language, or nothing. `getMagazineItems`
+ * already carries the publish gate and sorts newest first, so this widget
+ * cannot advertise a draft or an issue the build did not emit a page for.
+ */
+const [issue] = await getMagazineItems(lang);
+
+const menu = await getMenuData(lang);
+/* The menu already carries the localised section name — no new content field. */
+const heading = menu?.data.magazine ?? menu?.data.newspaper ?? 'Magazine';
+
+const labels = await getLabelsData(lang);
+const readMore = labels?.data.readMore ?? 'Read more';
+const viewAll = labels?.data.viewAll ?? 'View all';
+
+const slug = issue ? (issue.id.split('/').at(0) ?? issue.id) : '';
+const href = `/${lang}/magazine/${slug}`;
+const summary = issue ? (issue.data.description ?? deriveSummary(issue.body) ?? '') : '';
+
+/*
+ * Issues ship with no description and an empty body, so without the date
+ * the panel is a tall cover next to a title and nothing else. The date is
+ * what a reader actually wants to know about an issue anyway.
+ */
+const published = issue?.data.publishDate ?? issue?.data.pubDate;
+---
+
+{
+  issue && (
+    <section class="magazine-widget" data-testid="magazine-widget">
+      <div class="container">
+        <div class="widget-header">
+          <h2>{heading}</h2>
+          <a href={`/${lang}/magazine`}>
+            <CpButton variant="secondary">{viewAll}</CpButton>
+          </a>
+        </div>
+        <a class="issue" href={href} data-testid="magazine-widget-link">
+          {issue.data.image && (
+            <div class="cover">
+              <Picture
+                src={issue.data.image}
+                widths={[200, 400]}
+                sizes="(max-width: 640px) 40vw, 200px"
+                formats={['avif', 'webp']}
+                alt=""
+              />
+            </div>
+          )}
+          <div class="body">
+            <h3>{issue.data.title}</h3>
+            {published && (
+              <time class="date" datetime={published.toISOString()}>
+                {formatArticleDate(published, lang)}
+              </time>
+            )}
+            {summary && <p class="summary">{summary}</p>}
+            <span class="cta">{readMore} →</span>
+          </div>
+        </a>
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .magazine-widget {
+    padding-block: var(--spacing-2xl);
+  }
+
+  .widget-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-xl);
+  }
+
+  h2 {
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    font-weight: 600;
+  }
+
+  .issue {
+    display: grid;
+    grid-template-columns: minmax(0, 200px) 1fr;
+    gap: clamp(var(--spacing-md), 4vw, var(--spacing-xl));
+    align-items: start;
+    padding: clamp(var(--spacing-sm), 3vw, var(--spacing-lg));
+    background: var(--color-surface-elevated);
+    border-left: 3px solid var(--color-warning, #ff9800);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    color: var(--color-text-primary);
+    text-decoration: none;
+    transition: box-shadow var(--transition-fast);
+  }
+
+  .issue:hover {
+    box-shadow: var(--shadow-md);
+  }
+
+  .cover :global(img) {
+    inline-size: 100%;
+    block-size: auto;
+    border-radius: var(--radius-sm);
+    display: block;
+  }
+
+  .body {
+    display: grid;
+    gap: var(--spacing-sm);
+  }
+
+  h3 {
+    font-size: clamp(1.125rem, 3vw, 1.5rem);
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  .date {
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+  }
+
+  .summary {
+    color: var(--color-text-secondary);
+    line-height: 1.7;
+  }
+
+  .cta {
+    color: var(--color-accent);
+    font-weight: 500;
+  }
+
+  .issue:hover .cta {
+    color: var(--color-accent-hover);
+  }
+
+  /* The cover is the point of the block — keep it, but stop it dominating. */
+  @media (width < 640px) {
+    .issue {
+      grid-template-columns: minmax(0, 40%) 1fr;
+      gap: var(--spacing-md);
+    }
+  }
+</style>
