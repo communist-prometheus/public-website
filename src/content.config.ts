@@ -148,32 +148,38 @@ const commonCollection = defineCollection({
   }),
 });
 
-const issuesCollection = () =>
-  defineCollection({
-    type: 'content',
-    schema: ({ image }) =>
-      z.object({
-        title: z.string(),
-        /* Optional: see blogCollection. */
-        description: z.string().optional(),
-        pubDate: z.date().optional(),
-        // See blog: absent / non-true is draft.
-        published: z.boolean().optional(),
-        publishDate: z.date().optional(),
-        image: image().optional(),
-        lang: langEnum,
-        /*
-         * Optional ordered list of blog-article slugs in this issue.
-         * The magazine detail page renders these as a TOC linking to
-         * /<lang>/blog/<slug>. Slugs reference the blog collection,
-         * so removing a referenced article leaves a stale link — kept
-         * intentional so editors notice and fix the TOC.
-         */
-        articles: z.array(z.string()).optional(),
-      }),
-  });
-
-const magazineCollection = issuesCollection();
+/*
+ * The two issue collections are spelled out rather than produced by a
+ * shared factory ON PURPOSE. admin-website mirrors this file and guards
+ * the mirror against drift by SCRAPING this source with the regex
+ * `const (\w+)Collection = defineCollection\(` (see
+ * e2e-realmode/astro-schema-drift.spec.ts). A factory call is invisible
+ * to it, so every collection here must keep that literal shape or the
+ * admin's guard silently stops seeing it.
+ */
+const magazineCollection = defineCollection({
+  type: 'content',
+  schema: ({ image }) =>
+    z.object({
+      title: z.string(),
+      /* Optional: see blogCollection. */
+      description: z.string().optional(),
+      pubDate: z.date().optional(),
+      // See blog: absent / non-true is draft.
+      published: z.boolean().optional(),
+      publishDate: z.date().optional(),
+      image: image().optional(),
+      lang: langEnum,
+      /*
+       * Optional ordered list of blog-article slugs in this issue.
+       * The magazine detail page renders these as a TOC linking to
+       * /<lang>/blog/<slug>. Slugs reference the blog collection,
+       * so removing a referenced article leaves a stale link — kept
+       * intentional so editors notice and fix the TOC.
+       */
+      articles: z.array(z.string()).optional(),
+    }),
+});
 
 /*
  * TRANSITIONAL: the same schema over the pre-rename `newspaper/`
@@ -183,7 +189,20 @@ const magazineCollection = issuesCollection();
  * returns [] rather than failing, so exactly one of these is ever
  * populated. Drop it once the content repo is migrated.
  */
-const newspaperCollection = issuesCollection();
+const newspaperCollection = defineCollection({
+  type: 'content',
+  schema: ({ image }) =>
+    z.object({
+      title: z.string(),
+      description: z.string().optional(),
+      pubDate: z.date().optional(),
+      published: z.boolean().optional(),
+      publishDate: z.date().optional(),
+      image: image().optional(),
+      lang: langEnum,
+      articles: z.array(z.string()).optional(),
+    }),
+});
 
 export const collections = {
   blog: blogCollection,
