@@ -6,7 +6,6 @@ import Hero from '@/features/home/components/Hero.astro';
 import NewsSection from '@/features/home/components/NewsSection.astro';
 import PositionsWidget from '@/features/positions/components/PositionsWidget.astro';
 import { getPositions } from '@/features/positions/helpers/getPositions';
-import SearchBox from '@/features/search/components/SearchBox.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 
 export const getStaticPaths = () => SUPPORTED_LANGUAGES.map((lang) => ({ params: { lang } }));
@@ -38,7 +37,6 @@ const readMoreLabel = labels?.data.readMore ?? 'Read more';
 <BaseLayout title={title} {...(description ? { description } : {})} lang={lang}>
   <Hero title={heroTitle ?? ''}>
     {heroIntro ? <p>{heroIntro}</p> : null}
-    <SearchBox lang={lang} variant="hero" />
     <a class="button hero-cta" href={`/${lang}/about`}>{readMoreLabel} →</a>
   </Hero>
   <PositionsWidget lang={lang} positions={latestPositions} />
