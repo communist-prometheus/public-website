@@ -1,0 +1,71 @@
+---
+import CpButton from '@/components/cp/CpButton.astro';
+import type { Language } from '@/config/i18n';
+import { getLabelsData, getPageData } from '@/config/translations';
+import { deriveSummary } from '@/features/content/helpers/deriveSummary';
+
+interface Props {
+  readonly lang: Language;
+}
+
+const { lang } = Astro.props;
+
+/*
+ * No default-language fallback here, unlike the Hero. `/{lang}/manifest`
+ * only exists for languages that actually have the page (see
+ * `getSectionAvailability`), so offering the link where it does not would
+ * send the reader to a 404.
+ */
+const page = await getPageData('manifest', lang);
+
+const labels = await getLabelsData(lang);
+const readMore = labels?.data.readMore ?? 'Read more';
+
+const summary = page ? (page.data.description ?? deriveSummary(page.body) ?? '') : '';
+---
+
+{
+  page && (
+    <section class="manifest-widget" data-testid="manifest-widget">
+      <div class="container">
+        <div class="card">
+          {/* The document's real name, not a section label: this block IS the
+              manifesto, and the button is the way in, not the title. */}
+          <h2>{page.data.title}</h2>
+          {summary && <p class="summary">{summary}</p>}
+          <a href={`/${lang}/manifest`} data-testid="manifest-widget-link">
+            <CpButton variant="primary">{readMore} →</CpButton>
+          </a>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .manifest-widget {
+    padding-block: var(--spacing-2xl);
+  }
+
+  .card {
+    display: grid;
+    justify-items: start;
+    gap: var(--spacing-md);
+    padding: clamp(var(--spacing-lg), 5vw, var(--spacing-2xl));
+    background: var(--color-surface);
+    border-left: 3px solid var(--color-accent);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  }
+
+  h2 {
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    font-weight: 600;
+  }
+
+  .summary {
+    margin: 0;
+    max-inline-size: 60ch;
+    color: var(--color-text-secondary);
+    line-height: 1.7;
+  }
+</style>
