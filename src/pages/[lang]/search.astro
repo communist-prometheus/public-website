@@ -25,6 +25,32 @@ const t = searchStrings(lang);
     <div class="container">
       <h1>{t.resultsTitle}</h1>
       <SearchBox lang={lang} variant="hero" />
+
+      {/*
+        Hidden until the script arms it: without JavaScript the button
+        would be a control that does nothing. It appears only once there
+        is a query and a loaded index behind it.
+      */}
+      <div class="tools">
+        <button
+          type="button"
+          class="semantic"
+          aria-pressed="false"
+          data-semantic
+          data-testid="semantic-button"
+          hidden
+        >
+          {t.semanticLabel}
+        </button>
+        <p
+          class="semantic-status"
+          role="status"
+          data-semantic-status
+          data-testid="semantic-status"
+        >
+        </p>
+      </div>
+
       <div class="page-results" data-search-page data-lang={lang} data-testid="search-page-results"></div>
     </div>
   </div>
@@ -47,6 +73,50 @@ const t = searchStrings(lang);
     font-size: clamp(1.75rem, 5vw, 2.5rem);
     font-weight: 700;
     margin-bottom: var(--spacing-lg);
+  }
+
+  .tools {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+    margin-block-start: var(--spacing-md);
+  }
+
+  .semantic {
+    padding: var(--spacing-xs) var(--spacing-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    font-size: 0.875rem;
+    cursor: pointer;
+  }
+
+  .semantic:hover:not(:disabled) {
+    border-color: var(--color-accent);
+  }
+
+  .semantic[aria-pressed='true'] {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--color-bg);
+  }
+
+  .semantic:disabled {
+    cursor: progress;
+    opacity: 0.6;
+  }
+
+  .semantic:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+
+  .semantic-status {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary);
   }
 
   .page-results {

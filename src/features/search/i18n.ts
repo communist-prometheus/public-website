@@ -15,6 +15,13 @@ export interface SearchStrings {
   readonly placeholder: string;
   readonly noResults: string;
   readonly resultsTitle: string;
+  /** The button that hands the query to the model. */
+  readonly semanticLabel: string;
+  readonly semanticBusy: string;
+  readonly semanticTitle: string;
+  readonly semanticError: string;
+  /** The way back: rank by spelling again. */
+  readonly exactTitle: string;
   readonly sections: Readonly<Record<SearchSection, string>>;
 }
 
@@ -23,6 +30,11 @@ const EN: SearchStrings = {
   placeholder: 'Search articles…',
   noResults: 'Nothing found.',
   resultsTitle: 'Search',
+  semanticLabel: 'Search by meaning',
+  semanticBusy: 'Searching by meaning…',
+  semanticTitle: 'By meaning',
+  semanticError: 'Meaning search is unavailable right now.',
+  exactTitle: 'By words',
   sections: {
     blog: 'Blog',
     positions: 'Positions',
@@ -39,6 +51,11 @@ const STRINGS: Readonly<Record<string, SearchStrings>> = {
     placeholder: 'Искать по статьям…',
     noResults: 'Ничего не найдено.',
     resultsTitle: 'Поиск',
+    semanticLabel: 'Искать по смыслу',
+    semanticBusy: 'Ищем по смыслу…',
+    semanticTitle: 'По смыслу',
+    semanticError: 'Поиск по смыслу сейчас недоступен.',
+    exactTitle: 'По словам',
     sections: {
       blog: 'Блог',
       positions: 'Позиции',
@@ -52,6 +69,11 @@ const STRINGS: Readonly<Record<string, SearchStrings>> = {
     placeholder: 'Cerca negli articoli…',
     noResults: 'Nessun risultato.',
     resultsTitle: 'Ricerca',
+    semanticLabel: 'Cerca per significato',
+    semanticBusy: 'Ricerca per significato…',
+    semanticTitle: 'Per significato',
+    semanticError: 'La ricerca per significato non è disponibile.',
+    exactTitle: 'Per parole',
     sections: {
       blog: 'Blog',
       positions: 'Posizioni',
@@ -65,6 +87,11 @@ const STRINGS: Readonly<Record<string, SearchStrings>> = {
     placeholder: 'Buscar artículos…',
     noResults: 'No se encontró nada.',
     resultsTitle: 'Búsqueda',
+    semanticLabel: 'Buscar por significado',
+    semanticBusy: 'Buscando por significado…',
+    semanticTitle: 'Por significado',
+    semanticError: 'La búsqueda por significado no está disponible.',
+    exactTitle: 'Por palabras',
     sections: {
       blog: 'Blog',
       positions: 'Posiciones',

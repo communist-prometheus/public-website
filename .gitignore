@@ -53,3 +53,6 @@ public/favicons/
 
 # npm lockfile — bun.lock is the single source of dependency truth
 package-lock.json
+
+# Wrangler build scratch
+.wrangler/

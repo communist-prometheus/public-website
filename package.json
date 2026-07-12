@@ -12,7 +12,8 @@
     "predev": "bun run fetch-content && bun run check-frontmatter && bun run fetch-favicons && bun run build-favicons",
     "prebuild": "bun run fetch-content && bun run check-frontmatter && bun run fetch-favicons && bun run build-favicons",
     "dev": "astro dev",
-    "build": "biome format . && biome check . && eslint . && astro check && astro build",
+    "build": "biome format . && biome check . && eslint . && astro check && bun run check:worker && astro build",
+    "check:worker": "tsc -p src/worker/tsconfig.json",
     "preview": "astro preview",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
@@ -53,6 +54,7 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.6",
     "@biomejs/biome": "^2.3.14",
+    "@cloudflare/workers-types": "^5.20260712.1",
     "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.58.2",
     "@resvg/resvg-js": "^2.6.2",

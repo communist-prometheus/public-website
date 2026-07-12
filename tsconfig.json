@@ -23,6 +23,7 @@
     ".vite-cache",
     "node_modules",
     "src/sw",
+    "src/worker",
     "src/**/*.test.ts",
     "vitest.config.ts",
     "packages"
