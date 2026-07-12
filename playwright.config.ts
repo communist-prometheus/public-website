@@ -34,7 +34,7 @@ export default defineConfig({
        * They must NOT run inside the deploy job's e2e step — the deploy
        * is what brings the change to prod, so a probe asserting that
        * change would always fail until the deploy completes. (See
-       * `e2e/verify-newspaper-asset-headers.pw.ts` — the FB2 headers
+       * `e2e/verify-magazine-asset-headers.pw.ts` — the FB2 headers
        * probe ran during the deploy that was supposed to fix them
        * and went red on the live URL that was still the old build.)
        */

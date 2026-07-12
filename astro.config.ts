@@ -2,8 +2,8 @@ import sitemap from '@astrojs/sitemap';
 import { defineConfig } from 'astro/config';
 import archiveFiles from './src/integrations/archive-files';
 import contentMedia from './src/integrations/content-media';
-import newspaperFb2 from './src/integrations/newspaper-fb2';
-import newspaperPdfs from './src/integrations/newspaper-pdfs';
+import magazineFb2 from './src/integrations/magazine-fb2';
+import magazinePdfs from './src/integrations/magazine-pdfs';
 import swManifest from './src/integrations/sw-manifest';
 
 /*
@@ -27,8 +27,8 @@ export default defineConfig({
   prefetch: { prefetchAll: true, defaultStrategy: 'viewport' },
   integrations: [
     contentMedia(),
-    newspaperPdfs(),
-    newspaperFb2(),
+    magazinePdfs(),
+    magazineFb2(),
     archiveFiles(),
     swManifest(),
     sitemap({

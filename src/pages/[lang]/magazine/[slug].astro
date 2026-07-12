@@ -1,23 +1,25 @@
 ---
-import { type CollectionEntry, getCollection } from 'astro:content';
+import { getCollection } from 'astro:content';
 import { type Language, SUPPORTED_LANGUAGES } from '@/config/i18n';
 import { getLabelsData } from '@/config/translations';
 import { getArticleSlug } from '@/features/blog/helpers/getBlogPosts';
 import SuggestChangesLink from '@/features/content/components/SuggestChangesLink.astro';
 import MissingTranslation from '@/features/i18n/MissingTranslation.astro';
-import DownloadLink from '@/features/newspaper/components/DownloadLink.astro';
-import { findIssueAsset } from '@/features/newspaper/helpers/findIssueAsset';
+import DownloadLink from '@/features/magazine/components/DownloadLink.astro';
+import { magazineRepoDir } from '@/features/magazine/helpers/contentDir';
+import { findIssueAsset } from '@/features/magazine/helpers/findIssueAsset';
+import { getAllIssues, type MagazineIssue } from '@/features/magazine/helpers/getMagazineItems';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 
 /*
- * Newspaper issue detail page. Mirrors the blog/positions
+ * Magazine issue detail page. Mirrors the blog/positions
  * cross-language pattern: emit one path per (lang × slug-that-exists-
  * in-any-language); render the issue when the target locale carries
  * it, otherwise render the MissingTranslation card. URL is preserved
  * either way.
  */
 export const getStaticPaths = async () => {
-  const issues = await getCollection('newspaper', ({ data }) => data.published === true);
+  const issues = await getAllIssues();
   const slugFrom = (id: string) => id.split('/').at(0) ?? id;
   const slugs = new Set(issues.map((i) => slugFrom(i.id)));
   const byKey = new Map(issues.map((i) => [`${i.data.lang}/${slugFrom(i.id)}`, i] as const));
@@ -43,7 +45,7 @@ export const getStaticPaths = async () => {
 };
 
 interface Props {
-  readonly issue?: CollectionEntry<'newspaper'>;
+  readonly issue?: MagazineIssue;
   readonly availableLangs: ReadonlyArray<Language>;
 }
 
@@ -101,7 +103,7 @@ const fb2Asset = issue ? findIssueAsset(slug, lang, '.fb2') : undefined;
 >
   <div class="section">
     <div class="container">
-      <a href={`/${lang}/newspaper`} class="back-link">{backLabel}</a>
+      <a href={`/${lang}/magazine`} class="back-link">{backLabel}</a>
       {issue ? (
         <article class="issue">
           <header class="issue-header">
@@ -114,7 +116,7 @@ const fb2Asset = issue ? findIssueAsset(slug, lang, '.fb2') : undefined;
                   label={pdfLabel}
                   format="pdf"
                   size={pdfAsset.size}
-                  testId="newspaper-pdf"
+                  testId="magazine-pdf"
                 />
               )}
               {fb2Asset && (
@@ -123,7 +125,7 @@ const fb2Asset = issue ? findIssueAsset(slug, lang, '.fb2') : undefined;
                   label={fb2Label}
                   format="fb2"
                   size={fb2Asset.size}
-                  testId="newspaper-fb2"
+                  testId="magazine-fb2"
                 />
               )}
             </div>
@@ -143,13 +145,13 @@ const fb2Asset = issue ? findIssueAsset(slug, lang, '.fb2') : undefined;
               </ol>
             </section>
           )}
-          <SuggestChangesLink collection="newspaper" entryId={issue.id} />
+          <SuggestChangesLink collection={magazineRepoDir()} entryId={issue.id} />
         </article>
       ) : (
         <MissingTranslation
           lang={lang}
           availableLangs={availableLangs}
-          relativePath={`/newspaper/${slug}`}
+          relativePath={`/magazine/${slug}`}
         />
       )}
     </div>

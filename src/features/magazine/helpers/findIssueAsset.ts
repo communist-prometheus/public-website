@@ -1,5 +1,6 @@
 import { existsSync, readdirSync, statSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { join, resolve } from 'node:path';
+import { magazineContentDir } from './contentDir';
 
 interface IssueAsset {
   readonly file: string;
@@ -44,7 +45,7 @@ export const findIssueAsset = (
   lang: string,
   ext: string,
 ): IssueAssetWithPath | undefined => {
-  const dir = resolve(`src/content/newspaper/${slug}/assets`);
+  const dir = join(magazineContentDir(), slug, 'assets');
   const files = scan(dir);
   if (files.length === 0) return undefined;
   const langHit = files.find((f) => matchesLang(f, slug, lang, ext));
@@ -52,5 +53,10 @@ export const findIssueAsset = (
   const anyHit = legacyHit ?? files.find((f) => matchesAnyExt(f, ext));
   if (anyHit === undefined) return undefined;
   const asset = sized(dir, anyHit);
-  return { ...asset, url: `/newspaper/${slug}/assets/${asset.file}` };
+  /*
+   * Served path, not the source path: the build integrations copy the
+   * assets to `dist/magazine/…` regardless of which directory the
+   * content repo currently ships them in.
+   */
+  return { ...asset, url: `/magazine/${slug}/assets/${asset.file}` };
 };

@@ -14,6 +14,8 @@
     "dev": "astro dev",
     "build": "biome format . && biome check . && eslint . && astro check && astro build",
     "preview": "astro preview",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest",
     "astro": "astro",
     "check": "astro check",
     "lint": "biome check . && eslint .",
@@ -65,7 +67,8 @@
     "lint-staged": "^16.2.7",
     "playwright-lighthouse": "^4.0.0",
     "to-ico": "^1.1.5",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.10"
   },
   "lint-staged": {
     "*": [

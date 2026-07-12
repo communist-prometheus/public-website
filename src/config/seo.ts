@@ -36,7 +36,7 @@ const hreflangByCode: Readonly<Record<string, string>> = {
  * Google has a fallback for regions without explicit targeting.
  *
  * Pass `allowedLangs` on per-translation pages (blog/positions/
- * newspaper/archive) to advertise ONLY the locales the content is
+ * magazine/archive) to advertise ONLY the locales the content is
  * actually published in — otherwise Google is pointed at locales that
  * now 404, since an unpublished language version is no longer built.
  * @param currentPath - Astro.url.pathname for the page being rendered
