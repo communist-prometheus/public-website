@@ -24,11 +24,14 @@ describe('deriveSummary', () => {
     expect(deriveSummary('![alt](pic.png)\n\nReal text.')).toBe('Real text.');
   });
 
-  it('truncates at ~160 chars on a word boundary with ellipsis', () => {
+  it('truncates at MAX_LEN on a word boundary with ellipsis', () => {
     const long = 'word '.repeat(80).trim();
     const out = deriveSummary(long);
-    expect(out?.length).toBeLessThanOrEqual(161);
+    /* MAX_LEN (320) plus the appended ellipsis. */
+    expect(out?.length).toBeLessThanOrEqual(321);
     expect(out?.endsWith('…')).toBe(true);
+    /* Cut on a space, never mid-word. */
+    expect(out?.slice(0, -1).endsWith('word')).toBe(true);
   });
 
   it('returns undefined when the body has no readable text', () => {

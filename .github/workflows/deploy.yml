@@ -46,6 +46,11 @@ jobs:
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
       - run: bun install --frozen-lockfile
 
+      # Content-only redeploys can't break a unit test, but they cost
+      # seconds to check and a deploy is the last gate before prod.
+      - name: Running unit tests
+        run: bun run test:unit
+
       - name: Building application (static site)
         run: bun run build
 

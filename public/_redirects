@@ -1,0 +1,23 @@
+# Cloudflare Workers Static Assets redirect rules.
+# https://developers.cloudflare.com/workers/static-assets/redirects/
+#
+# The section was renamed newspaper -> magazine. These 301s keep every
+# URL that was ever indexed, linked from a newsletter, or saved as a
+# download working. They are permanent on purpose: a 302 leaves the old
+# path in Google's index and keeps splitting link equity between two
+# URLs for the same issue.
+#
+# IMPORTANT: same constraint as `_headers` — CF Workers Static Assets
+# allows only ONE `*` splat per pattern and silently drops a rule that
+# breaks it. `:lang` is a placeholder (matches one path segment), which
+# does NOT count against that budget. `src/features/magazine/helpers/
+# redirectRules.test.ts` fails the build if a rule regresses.
+
+# Listing, per-locale RSS feed, and issue pages.
+/:lang/newspaper.xml  /:lang/magazine.xml     301
+/:lang/newspaper      /:lang/magazine         301
+/:lang/newspaper/*    /:lang/magazine/:splat  301
+
+# Issue downloads (PDF/FB2) live outside the locale prefix — the old
+# links are what the published issues' download buttons pointed at.
+/newspaper/*          /magazine/:splat        301

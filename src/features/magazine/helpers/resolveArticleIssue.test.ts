@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { type IssueArticles, resolveIssueSlug } from './resolveArticleIssue';
+import { type IssueArticles, issueRef, resolveIssueSlug } from './resolveArticleIssue';
 
 const ISSUES: readonly IssueArticles[] = [
   {
@@ -11,11 +11,11 @@ const ISSUES: readonly IssueArticles[] = [
 ];
 
 describe('resolveIssueSlug', () => {
-  it('prefers the article own newspaper field', () => {
+  it('prefers the article own issue field', () => {
     expect(resolveIssueSlug(ISSUES, 'anything', 'vypusk-13')).toBe('vypusk-13');
   });
 
-  it('reverse-looks-up the issue when no newspaper field is set', () => {
+  it('reverse-looks-up the issue when no issue field is set', () => {
     expect(resolveIssueSlug(ISSUES, 'weekly-chronicle')).toBe('vypusk-14');
   });
 
@@ -25,5 +25,23 @@ describe('resolveIssueSlug', () => {
 
   it('returns undefined when no issue references the article', () => {
     expect(resolveIssueSlug(ISSUES, 'orphan-article')).toBeUndefined();
+  });
+});
+
+describe('issueRef', () => {
+  it('reads the canonical magazine field', () => {
+    expect(issueRef({ magazine: 'vypusk-14' })).toBe('vypusk-14');
+  });
+
+  it('falls back to the legacy newspaper field', () => {
+    expect(issueRef({ newspaper: 'vypusk-13' })).toBe('vypusk-13');
+  });
+
+  it('prefers magazine when a file carries both keys mid-migration', () => {
+    expect(issueRef({ magazine: 'vypusk-14', newspaper: 'vypusk-13' })).toBe('vypusk-14');
+  });
+
+  it('returns undefined when the article belongs to no issue', () => {
+    expect(issueRef({})).toBeUndefined();
   });
 });
