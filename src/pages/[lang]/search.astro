@@ -1,0 +1,108 @@
+---
+import { SUPPORTED_LANGUAGES } from '@/config/i18n';
+import SearchBox from '@/features/search/components/SearchBox.astro';
+import { searchStrings } from '@/features/search/i18n';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+
+/*
+ * Full results, addressable by URL — a search worth sharing survives
+ * being pasted into a chat. It is also where the header form lands when
+ * JavaScript never arrives: the box is a real GET form, so pressing Enter
+ * always gets the reader here.
+ *
+ * The results themselves are rendered client-side from the same index the
+ * dropdown uses. Rendering them at build time is not an option: there is
+ * no server, and one static page per possible query does not exist.
+ */
+export const getStaticPaths = async () => SUPPORTED_LANGUAGES.map((lang) => ({ params: { lang } }));
+
+const { lang } = Astro.params;
+const t = searchStrings(lang);
+---
+
+<BaseLayout title={t.resultsTitle} description={t.placeholder} lang={lang}>
+  <div class="section">
+    <div class="container">
+      <h1>{t.resultsTitle}</h1>
+      <SearchBox lang={lang} variant="hero" />
+      <div class="page-results" data-search-page data-lang={lang} data-testid="search-page-results"></div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import { setupSearchPage } from '@/features/search/search-page';
+
+  const init = (): void => {
+    const root = document.querySelector<HTMLElement>('[data-search-page]');
+    if (root !== null) setupSearchPage(root).catch(() => undefined);
+  };
+
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>
+
+<style>
+  h1 {
+    font-size: clamp(1.75rem, 5vw, 2.5rem);
+    font-weight: 700;
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .page-results {
+    margin-block-start: var(--spacing-xl);
+  }
+
+  /* Rows are created by the script — see the note in SearchBox.astro. */
+  .page-results :global(.search-page-list) {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--spacing-md);
+  }
+
+  .page-results :global(.hit-link) {
+    display: grid;
+    gap: 0.2rem;
+    padding: var(--spacing-md);
+    border-left: 3px solid var(--color-border);
+    color: var(--color-text-primary);
+    text-decoration: none;
+  }
+
+  .page-results :global(.hit-link:hover) {
+    border-left-color: var(--color-accent);
+    background: var(--color-surface);
+  }
+
+  .page-results :global(.hit-section) {
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-text-secondary);
+  }
+
+  .page-results :global(.hit-title) {
+    font-weight: 600;
+    font-size: 1.0625rem;
+  }
+
+  .page-results :global(.hit-snippet) {
+    margin: 0;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--color-text-secondary);
+  }
+
+  .page-results :global(.hit-mark) {
+    background: var(--color-warning, #ff9800);
+    color: var(--color-text-primary);
+    border-radius: 2px;
+    padding-inline: 0.1em;
+  }
+
+  .page-results :global(.search-page-empty) {
+    color: var(--color-text-secondary);
+  }
+</style>

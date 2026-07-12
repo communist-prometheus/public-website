@@ -6,35 +6,12 @@
  * - Strip markdown decorations (headings, lists, bold, italic, …).
  * - Take the first non-trivial paragraph.
  * - Truncate on a word boundary at ~MAX_LEN characters; append …
+ *
+ * The stripper itself lives in `stripMarkdown` — the search index needs
+ * exactly the same "words a reader can actually see", and one copy of
+ * that rule is enough.
  */
-
-/* Patterns that drop the match entirely (no capture group). */
-const DROP_PATTERNS: ReadonlyArray<RegExp> = [
-  /^---[\s\S]*?\n---\s*/,
-  /^#{1,6}\s+.*$/gm,
-  /^>\s*/gm,
-  /^\s*[-*+]\s+/gm,
-  /^\s*\d+\.\s+/gm,
-  /<\/?[a-z][^>]*>/gi,
-  /!\[[^\]]*\]\([^)]*\)/g,
-];
-
-/* Patterns that keep the visible text inside the capture group. */
-const KEEP_PATTERNS: ReadonlyArray<RegExp> = [
-  /\*\*([^*]+)\*\*/g,
-  /__([^_]+)__/g,
-  /\*([^*]+)\*/g,
-  /_([^_]+)_/g,
-  /`([^`]+)`/g,
-  /\[([^\]]+)\]\([^)]*\)/g,
-];
-
-const stripMarkdown = (raw: string): string => {
-  let out = raw;
-  for (const re of DROP_PATTERNS) out = out.replace(re, '');
-  for (const re of KEEP_PATTERNS) out = out.replace(re, (_, captured: string) => captured);
-  return out;
-};
+import { stripMarkdown } from './stripMarkdown';
 
 const MAX_LEN = 320;
 
