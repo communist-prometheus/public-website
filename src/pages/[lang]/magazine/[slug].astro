@@ -1,4 +1,5 @@
 ---
+import { Picture } from 'astro:assets';
 import { getCollection } from 'astro:content';
 import { type Language, SUPPORTED_LANGUAGES } from '@/config/i18n';
 import { getLabelsData } from '@/config/translations';
@@ -53,7 +54,8 @@ const { issue, availableLangs } = Astro.props as Props;
 const { lang, slug } = Astro.params;
 
 const labels = (await getLabelsData(lang)) ?? (await getLabelsData('en'));
-const backLabel = labels?.data.backToList ?? '← Back';
+/* The field is `backToList` — the copy should say so, not just "Back". */
+const backLabel = labels?.data.backToList ?? '← Back to list';
 const pdfLabel = labels?.data.downloadPdf ?? 'Download PDF';
 const fb2Label = labels?.data.downloadFb2 ?? 'Download FB2';
 
@@ -87,6 +89,15 @@ const tocEntries = await (async (): Promise<ReadonlyArray<TocEntry>> => {
     });
 })();
 
+/*
+ * Issues ship with no `description` and an empty body, so the page went out
+ * with no meta description at all — Lighthouse SEO 92, and a search result
+ * with nothing under the title. Fall back to the issue's own name: it is
+ * the honest minimum, and an editorial description in the content repo
+ * still wins over it the moment one is written.
+ */
+const metaDescription = issue?.data.description ?? issue?.data.title;
+
 const pdfAsset = issue ? findIssueAsset(slug, lang, '.pdf') : undefined;
 const fb2Asset = issue ? findIssueAsset(slug, lang, '.fb2') : undefined;
 ---
@@ -95,9 +106,7 @@ const fb2Asset = issue ? findIssueAsset(slug, lang, '.fb2') : undefined;
   title={issue
     ? `${issue.data.title} - Communist Prometheus`
     : 'Communist Prometheus'}
-  {...(issue?.data.description
-    ? { description: issue.data.description }
-    : {})}
+  {...(metaDescription ? { description: metaDescription } : {})}
   lang={lang}
   availableLangs={availableLangs}
 >
@@ -107,6 +116,18 @@ const fb2Asset = issue ? findIssueAsset(slug, lang, '.fb2') : undefined;
       {issue ? (
         <article class="issue">
           <header class="issue-header">
+            {issue.data.image && (
+              <div class="cover">
+                <Picture
+                  src={issue.data.image}
+                  widths={[320, 640]}
+                  sizes="(max-width: 640px) 70vw, 320px"
+                  formats={['avif', 'webp']}
+                  alt=""
+                  data-testid="issue-cover"
+                />
+              </div>
+            )}
             <h1>{issue.data.title}</h1>
             <p class="issue-description">{issue.data.description}</p>
             <div class="downloads">
@@ -179,6 +200,25 @@ const fb2Asset = issue ? findIssueAsset(slug, lang, '.fb2') : undefined;
   .issue-header {
     margin-bottom: var(--spacing-2xl);
     text-align: center;
+  }
+
+  /*
+   * The cover is the issue's identity — the reader recognises it before
+   * they read the title. `alt=""` on purpose: the title sits right below
+   * it, so announcing the cover again would only repeat it.
+   */
+  .cover {
+    max-inline-size: 320px;
+    margin-inline: auto;
+    margin-block-end: var(--spacing-lg);
+  }
+
+  .cover :global(img) {
+    inline-size: 100%;
+    block-size: auto;
+    display: block;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-md);
   }
 
   h1 {

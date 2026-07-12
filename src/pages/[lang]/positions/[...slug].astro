@@ -54,7 +54,8 @@ const rendered = entry ? await entry.render() : undefined;
 const Content = rendered?.Content;
 const headings = rendered?.headings ?? [];
 const labels = (await getLabelsData(lang)) ?? (await getLabelsData(DEFAULT_LANGUAGE));
-const backLabel = labels?.data.backToList ?? '← Back';
+/* The field is `backToList` — the copy should say so, not just "Back". */
+const backLabel = labels?.data.backToList ?? '← Back to list';
 const tocLabel = labels?.data.tableOfContents ?? 'Contents';
 
 const pageTitle = entry ? `${entry.data.title} - Communist Prometheus` : 'Communist Prometheus';

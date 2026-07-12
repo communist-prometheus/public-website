@@ -14,6 +14,7 @@ import { buildSectionAvailability, hasSection } from './helpers/content-coverage
  * and the back-link to the listing.
  */
 const LISTING_HEADING = 'h1';
+const ISSUE_COVER = '[data-testid="issue-cover"]';
 const ISSUE_CARD = '[data-testid="magazine-card"]';
 const PDF_LINK = '[data-testid="magazine-pdf"]';
 const BACK_LINK = '.back-link';
@@ -42,6 +43,19 @@ test.describe('Magazine section', () => {
 
     const back = await page.locator(BACK_LINK).getAttribute('href');
     expect(back).toBe('/ru/magazine');
+
+    /*
+     * The cover is how a reader recognises an issue — it belongs on the
+     * issue's own page, not only on the card that links to it.
+     */
+    await expectVisible(page, page.locator(ISSUE_COVER).first());
+
+    /*
+     * "Back" says nothing about where it goes. The label's own field is
+     * called `backToList`; the copy now says so.
+     */
+    const label = await page.locator(BACK_LINK).textContent();
+    expect(label?.toLowerCase()).toContain('к списку');
   });
 
   test('the per-locale RSS feed is served at magazine.xml', async ({ request }) => {
