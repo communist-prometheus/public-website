@@ -15,17 +15,32 @@ import { type Env, json } from './env';
  * The Worker reads the index through the ASSETS binding — the same file
  * the browser downloads, from the deploy that is already live — so there
  * is no separate content pipeline to drift from what readers see.
+ *
+ * Two shapes, and the split matters:
+ *
+ *   { lang }             → PLAN: which documents are stale
+ *   { lang, docs: [id] } → INDEX exactly these, no questions asked
+ *
+ * Vectorize is eventually consistent: for a few seconds after an upsert,
+ * `getByIds` still answers with what was there before. Re-planning after
+ * every batch therefore keeps handing back documents that were just done,
+ * and the job re-embeds them in a circle. So the plan is drawn ONCE, by
+ * the caller, and the batches that follow name their documents.
  */
 
 /*
- * An article here can be 72 000 characters — about 90 passages. Two per
- * request keeps a single call well inside the Worker's limits; the caller
- * loops until `remaining` reaches zero.
+ * An article here can be 72 000 characters — about 90 passages, five model
+ * calls. Two documents a request keeps a single call well inside the
+ * Worker's budget; the caller walks the plan.
  */
-const DOCS_PER_CALL = 2;
+const MAX_DOCS_PER_CALL = 2;
+
+/* Vectorize takes at most 100 ids in one lookup. */
+const LOOKUP_LIMIT = 100;
 
 interface Body {
   readonly lang?: unknown;
+  readonly docs?: unknown;
 }
 
 const chunkId = (docId: string, at: number): string => `${docId}#${at}`;
@@ -40,18 +55,28 @@ interface Head {
   readonly chunks: number;
 }
 
-const headOf = async (env: Env, docId: string): Promise<Head | undefined> => {
-  const found = await env.VECTORIZE.getByIds([chunkId(docId, 0)]);
-  const { hash, chunks } = (found.at(0)?.metadata ?? {}) as Partial<Record<keyof Head, unknown>>;
-  if (typeof hash !== 'string' || typeof chunks !== 'number') return undefined;
-  return { hash, chunks };
+const headsOf = async (
+  env: Env,
+  docs: readonly SearchDoc[],
+): Promise<ReadonlyMap<string, Head>> => {
+  const found = new Map<string, Head>();
+  for (let at = 0; at < docs.length; at += LOOKUP_LIMIT) {
+    const batch = docs.slice(at, at + LOOKUP_LIMIT);
+    const vectors = await env.VECTORIZE.getByIds(batch.map((doc) => chunkId(doc.id, 0)));
+    for (const vector of vectors) {
+      const { hash, chunks } = (vector.metadata ?? {}) as Partial<Record<keyof Head, unknown>>;
+      if (typeof hash === 'string' && typeof chunks === 'number') {
+        found.set(vector.id, { hash, chunks });
+      }
+    }
+  }
+  return found;
 };
 
-const indexDoc = async (env: Env, doc: SearchDoc): Promise<void> => {
-  const head = await headOf(env, doc.id);
-  if (head !== undefined && head.hash === doc.hash) return;
-
+const indexDoc = async (env: Env, doc: SearchDoc, head?: Head): Promise<void> => {
   const chunks = chunkBody(doc.body);
+  if (chunks.length === 0) return;
+
   /*
    * The title and description carry the article's subject more plainly
    * than any single paragraph does — prepend them to the first passage so
@@ -93,15 +118,40 @@ const loadIndex = async (env: Env, lang: string): Promise<readonly SearchDoc[]> 
   return body.docs ?? [];
 };
 
+const wanted = (body: Body): readonly string[] | undefined =>
+  Array.isArray(body.docs)
+    ? body.docs.filter((id): id is string => typeof id === 'string')
+    : undefined;
+
+const plan = async (env: Env, lang: string, docs: readonly SearchDoc[]): Promise<Response> => {
+  const heads = await headsOf(env, docs);
+  const stale = docs
+    .filter((doc) => heads.get(chunkId(doc.id, 0))?.hash !== doc.hash)
+    .map((doc) => doc.id);
+  return json({ lang, total: docs.length, stale });
+};
+
+const indexBatch = async (
+  env: Env,
+  lang: string,
+  docs: readonly SearchDoc[],
+  ids: readonly string[],
+): Promise<Response> => {
+  const batch = docs.filter((doc) => ids.includes(doc.id)).slice(0, MAX_DOCS_PER_CALL);
+  const heads = await headsOf(env, batch);
+  for (const doc of batch) {
+    await indexDoc(env, doc, heads.get(chunkId(doc.id, 0)));
+  }
+  return json({ lang, indexed: batch.map((doc) => doc.id) });
+};
+
 /**
- * `POST /api/reindex` — re-embed the documents whose content changed.
+ * `POST /api/reindex` — plan, or re-embed a named batch.
  *
- * Guarded by a shared secret and driven by CI after a deploy. Processes a
- * bounded batch and reports what is left, so the caller loops rather than
- * asking one request to embed the whole site.
+ * Guarded by a shared secret and driven by CI after a deploy.
  * @param request Incoming request.
  * @param env Worker bindings.
- * @returns How many documents were re-embedded, and how many remain.
+ * @returns The stale list, or what this call embedded.
  */
 export const handleReindex = async (request: Request, env: Env): Promise<Response> => {
   if (request.method !== 'POST') return json({ error: 'method' }, 405);
@@ -110,25 +160,11 @@ export const handleReindex = async (request: Request, env: Env): Promise<Respons
     return json({ error: 'forbidden' }, 403);
   }
 
-  const body = (await request.json().catch(() => undefined)) as Body | undefined;
-  const lang = typeof body?.lang === 'string' ? body.lang : '';
+  const body = ((await request.json().catch(() => undefined)) ?? {}) as Body;
+  const lang = typeof body.lang === 'string' ? body.lang : '';
   if (lang === '') return json({ error: 'lang' }, 400);
 
   const docs = await loadIndex(env, lang);
-
-  const stale: SearchDoc[] = [];
-  for (const doc of docs) {
-    const head = await headOf(env, doc.id);
-    if (head === undefined || head.hash !== doc.hash) stale.push(doc);
-  }
-
-  const batch = stale.slice(0, DOCS_PER_CALL);
-  for (const doc of batch) await indexDoc(env, doc);
-
-  return json({
-    lang,
-    total: docs.length,
-    indexed: batch.length,
-    remaining: stale.length - batch.length,
-  });
+  const ids = wanted(body);
+  return ids === undefined ? plan(env, lang, docs) : indexBatch(env, lang, docs, ids);
 };
