@@ -96,14 +96,51 @@ const call = async <T>(base: string, secret: string, body: Record<string, unknow
   throw new Error('reindex: worker never came up');
 };
 
-const reindexLanguage = async (base: string, secret: string, lang: string): Promise<void> => {
-  const { total, stale } = await call<Plan>(base, secret, { lang });
-  console.log(`[reindex] ${lang}: ${stale.length} stale of ${total}`);
-
+const embedAll = async (
+  base: string,
+  secret: string,
+  lang: string,
+  stale: readonly string[],
+): Promise<void> => {
   for (let at = 0; at < stale.length; at += DOCS_PER_CALL) {
     const docs = stale.slice(at, at + DOCS_PER_CALL);
     await call(base, secret, { lang, docs });
     console.log(`[reindex] ${lang}: embedded ${docs.join(', ')}`);
+  }
+};
+
+/*
+ * Verify, because a write can go missing.
+ *
+ * On dev, four magazine issues were embedded, the Worker reported all
+ * four, and only one was in the store afterwards — a second attempt put
+ * the other three in. So an accepted upsert is not a stored one, and a
+ * job that never looks back would call that deploy a success while the
+ * search quietly ran on last week's text.
+ *
+ * The wait is for Vectorize itself: it applies writes asynchronously, so
+ * asking immediately would report as missing what is merely in flight.
+ */
+const SETTLE_MS = 30_000;
+
+const reindexLanguage = async (base: string, secret: string, lang: string): Promise<void> => {
+  const { total, stale } = await call<Plan>(base, secret, { lang });
+  console.log(`[reindex] ${lang}: ${stale.length} stale of ${total}`);
+  if (stale.length === 0) return;
+
+  await embedAll(base, secret, lang, stale);
+
+  await sleep(SETTLE_MS);
+  const missed = (await call<Plan>(base, secret, { lang })).stale;
+  if (missed.length === 0) return;
+
+  console.log(`[reindex] ${lang}: ${missed.length} did not land, retrying`);
+  await embedAll(base, secret, lang, missed);
+
+  await sleep(SETTLE_MS);
+  const lost = (await call<Plan>(base, secret, { lang })).stale;
+  if (lost.length > 0) {
+    throw new Error(`reindex ${lang}: not stored after two attempts: ${lost.join(', ')}`);
   }
 };
 
