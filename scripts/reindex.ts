@@ -3,13 +3,13 @@
  *
  * The Worker does the actual work — it reads the freshly deployed index
  * through its own ASSETS binding, so it can never embed a version of an
- * article that is not the one being served. This script only drives it:
- * one call per batch, until the Worker says nothing is left.
+ * article that is not the one being served. This script only drives it.
  *
- * It is bounded on purpose. The Worker embeds a couple of documents per
- * call to stay inside its CPU budget, so a first run over a fresh index
- * takes many calls — but a normal deploy, where one article changed,
- * takes one.
+ * It asks ONCE what is stale, then walks that list. It does not re-ask
+ * between batches: Vectorize is eventually consistent, so for a few
+ * seconds after a write the store still reports the old state, and a job
+ * that re-plans between batches keeps re-embedding what it has just done —
+ * which is exactly what it did, in a circle, on dev.
  *
  * Run: bun scripts/reindex.ts --base https://dev.comprom.org
  * Needs REINDEX_SECRET in the environment; without it the Worker answers
@@ -18,17 +18,16 @@
 import { existsSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
-interface Progress {
+interface Plan {
   readonly total: number;
-  readonly indexed: number;
-  readonly remaining: number;
+  readonly stale: readonly string[];
 }
 
 /*
- * A runaway guard, not a budget: at 2 documents a call this is far more
- * than a full cold rebuild of every language would ever need.
+ * The Worker embeds at most this many documents per call — see its own
+ * MAX_DOCS_PER_CALL. Asking for more would silently drop the rest.
  */
-const MAX_CALLS = 400;
+const DOCS_PER_CALL = 2;
 
 const arg = (name: string): string | undefined => {
   const at = process.argv.indexOf(`--${name}`);
@@ -46,53 +45,66 @@ const languagesIn = (dist: string): readonly string[] =>
     .map((e) => e.name)
     .filter((name) => existsSync(join(dist, name, 'search-index.json')));
 
-const post = async (base: string, secret: string, lang: string): Promise<Response> =>
-  fetch(`${base}/api/reindex`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Reindex-Key': secret,
-    },
-    body: JSON.stringify({ lang }),
-  });
-
-const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+const sleep = (ms: number): Promise<void> => new Promise((done) => setTimeout(done, ms));
 
 /*
  * A deploy does not become live everywhere the moment wrangler returns.
  * Until it does, the edge still answers `/api/*` from the asset store —
  * and a POST at a static file is a 405. That is the deploy still landing,
  * not a broken Worker, so wait it out rather than fail the pipeline.
+ *
+ * A 5xx gets the same patience but much less of it: the model and the
+ * vector store are remote services, and one blip should not fail a deploy
+ * that is otherwise fine. Three tries, then say so.
  */
 const NOT_LIVE_YET = new Set([404, 405]);
 const LIVE_TRIES = 20;
 const LIVE_WAIT_MS = 6000;
+const SERVER_TRIES = 3;
+const SERVER_WAIT_MS = 5000;
 
-const callOnce = async (base: string, secret: string, lang: string): Promise<Progress> => {
+const post = async (
+  base: string,
+  secret: string,
+  body: Record<string, unknown>,
+): Promise<Response> =>
+  fetch(`${base}/api/reindex`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Reindex-Key': secret },
+    body: JSON.stringify(body),
+  });
+
+const call = async <T>(base: string, secret: string, body: Record<string, unknown>): Promise<T> => {
+  let serverTries = 0;
   for (let attempt = 0; attempt < LIVE_TRIES; attempt += 1) {
-    const res = await post(base, secret, lang);
-    if (res.ok) return (await res.json()) as Progress;
-    if (!NOT_LIVE_YET.has(res.status)) {
-      throw new Error(`reindex ${lang}: ${res.status} ${await res.text()}`);
+    const res = await post(base, secret, body);
+    if (res.ok) return (await res.json()) as T;
+
+    if (NOT_LIVE_YET.has(res.status)) {
+      console.log(`[reindex] worker not live yet (${res.status}), waiting…`);
+      await sleep(LIVE_WAIT_MS);
+      continue;
     }
-    console.log(`[reindex] worker not live yet (${res.status}), waiting…`);
-    await sleep(LIVE_WAIT_MS);
+    if (res.status >= 500 && serverTries < SERVER_TRIES) {
+      serverTries += 1;
+      console.log(`[reindex] ${res.status} from the worker, retry ${serverTries}`);
+      await sleep(SERVER_WAIT_MS);
+      continue;
+    }
+    throw new Error(`reindex: ${res.status} ${(await res.text()).slice(0, 200)}`);
   }
-  throw new Error(`reindex ${lang}: worker never came up`);
+  throw new Error('reindex: worker never came up');
 };
 
 const reindexLanguage = async (base: string, secret: string, lang: string): Promise<void> => {
-  for (let call = 0; call < MAX_CALLS; call += 1) {
-    const { total, indexed, remaining } = await callOnce(base, secret, lang);
-    console.log(`[reindex] ${lang}: ${indexed} embedded, ${remaining} left of ${total}`);
-    if (remaining === 0) return;
-    /*
-     * Nothing left to do but nothing got done either: the Worker is not
-     * making progress, and looping MAX_CALLS times would only hide it.
-     */
-    if (indexed === 0) throw new Error(`reindex ${lang}: stuck`);
+  const { total, stale } = await call<Plan>(base, secret, { lang });
+  console.log(`[reindex] ${lang}: ${stale.length} stale of ${total}`);
+
+  for (let at = 0; at < stale.length; at += DOCS_PER_CALL) {
+    const docs = stale.slice(at, at + DOCS_PER_CALL);
+    await call(base, secret, { lang, docs });
+    console.log(`[reindex] ${lang}: embedded ${docs.join(', ')}`);
   }
-  throw new Error(`reindex ${lang}: gave up after ${MAX_CALLS} calls`);
 };
 
 const main = async (): Promise<void> => {
