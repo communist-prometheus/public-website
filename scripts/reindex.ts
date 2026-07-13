@@ -46,8 +46,8 @@ const languagesIn = (dist: string): readonly string[] =>
     .map((e) => e.name)
     .filter((name) => existsSync(join(dist, name, 'search-index.json')));
 
-const callOnce = async (base: string, secret: string, lang: string): Promise<Progress> => {
-  const res = await fetch(`${base}/api/reindex`, {
+const post = async (base: string, secret: string, lang: string): Promise<Response> =>
+  fetch(`${base}/api/reindex`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -55,10 +55,30 @@ const callOnce = async (base: string, secret: string, lang: string): Promise<Pro
     },
     body: JSON.stringify({ lang }),
   });
-  if (!res.ok) {
-    throw new Error(`reindex ${lang}: ${res.status} ${await res.text()}`);
+
+const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+
+/*
+ * A deploy does not become live everywhere the moment wrangler returns.
+ * Until it does, the edge still answers `/api/*` from the asset store —
+ * and a POST at a static file is a 405. That is the deploy still landing,
+ * not a broken Worker, so wait it out rather than fail the pipeline.
+ */
+const NOT_LIVE_YET = new Set([404, 405]);
+const LIVE_TRIES = 20;
+const LIVE_WAIT_MS = 6000;
+
+const callOnce = async (base: string, secret: string, lang: string): Promise<Progress> => {
+  for (let attempt = 0; attempt < LIVE_TRIES; attempt += 1) {
+    const res = await post(base, secret, lang);
+    if (res.ok) return (await res.json()) as Progress;
+    if (!NOT_LIVE_YET.has(res.status)) {
+      throw new Error(`reindex ${lang}: ${res.status} ${await res.text()}`);
+    }
+    console.log(`[reindex] worker not live yet (${res.status}), waiting…`);
+    await sleep(LIVE_WAIT_MS);
   }
-  return (await res.json()) as Progress;
+  throw new Error(`reindex ${lang}: worker never came up`);
 };
 
 const reindexLanguage = async (base: string, secret: string, lang: string): Promise<void> => {
