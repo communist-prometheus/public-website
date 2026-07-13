@@ -49,12 +49,9 @@ export const semanticSearch = async (
   return (body.hits ?? []).flatMap((hit) => {
     const doc = byId.get(hit.doc);
     if (doc === undefined) return [];
-    return [
-      {
-        doc,
-        score: hit.score,
-        snippet: passageSnippet(doc.body, hit.start, hit.end),
-      },
-    ];
+    const passage = passageSnippet(doc.body, hit.start, hit.end);
+    /* A magazine issue has a cover and a blurb, and no body to quote. */
+    const snippet = passage.text === '' ? { text: doc.description, marks: [] } : passage;
+    return [{ doc, score: hit.score, snippet }];
   });
 };

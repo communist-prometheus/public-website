@@ -1,4 +1,4 @@
-import type { SearchDoc } from '@prometheus/search-core';
+import type { Chunk, SearchDoc } from '@prometheus/search-core';
 import { chunkBody } from '@prometheus/search-core';
 import { embed } from './embed';
 import { type Env, json } from './env';
@@ -73,8 +73,22 @@ const headsOf = async (
   return found;
 };
 
-const indexDoc = async (env: Env, doc: SearchDoc, head?: Head): Promise<void> => {
+/*
+ * A magazine issue is a cover, a title and a blurb — its body is empty.
+ * Skipping it would leave it forever unindexed AND forever "stale", since
+ * the hash lives in chunk 0 and there would be no chunk 0 to hold it: it
+ * would be re-planned on every deploy, for ever, and never done. It also
+ * has a subject a reader can ask for. One passage, from what it does have.
+ */
+const passagesOf = (doc: SearchDoc): readonly Chunk[] => {
   const chunks = chunkBody(doc.body);
+  if (chunks.length > 0) return chunks;
+  const text = `${doc.title}. ${doc.description}`.trim();
+  return text === '' ? [] : [{ text, start: 0, end: 0 }];
+};
+
+const indexDoc = async (env: Env, doc: SearchDoc, head?: Head): Promise<void> => {
+  const chunks = passagesOf(doc);
   if (chunks.length === 0) return;
 
   /*

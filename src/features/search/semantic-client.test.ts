@@ -54,6 +54,13 @@ describe('semanticSearch', () => {
     });
   });
 
+  it('quotes the blurb when there is no body to quote — a magazine issue', async () => {
+    reply([{ doc: 'a', score: 0.6, start: 0, end: 0 }]);
+    const issue = { ...doc('a', ''), description: 'Первый номер' };
+    const hits = await semanticSearch('ru', 'журнал', [issue]);
+    expect(hits[0]?.snippet.text).toBe('Первый номер');
+  });
+
   it('throws when the Worker refuses, so the caller can say so', async () => {
     vi.stubGlobal(
       'fetch',
