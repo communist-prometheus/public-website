@@ -38,8 +38,10 @@ jobs:
         run: |
           if [ "$GITHUB_REF_NAME" = "develop" ]; then
             echo "WRANGLER_COMMAND=deploy --env develop" >> "$GITHUB_ENV"
+            echo "SITE_BASE=https://dev.comprom.org" >> "$GITHUB_ENV"
           else
             echo "WRANGLER_COMMAND=deploy" >> "$GITHUB_ENV"
+            echo "SITE_BASE=https://comprom.org" >> "$GITHUB_ENV"
           fi
 
       - name: Installing tools and dependencies
@@ -88,3 +90,16 @@ jobs:
           # WRANGLER_COMMAND was resolved by the "Resolve branch env"
           # step (deploy --env develop on develop, deploy on master).
           command: ${{ env.WRANGLER_COMMAND }}
+
+      # Semantic search reads a vector store, and a vector store is only
+      # as true as its last update. The Worker re-embeds ONLY the articles
+      # whose content hash moved, so an ordinary deploy costs one call and
+      # a few seconds; a fresh index costs a few minutes, once.
+      #
+      # It runs after the deploy because the Worker indexes what the
+      # deploy is actually serving — it reads the index through its own
+      # ASSETS binding.
+      - name: Re-embedding changed articles
+        run: bun scripts/reindex.ts --base "$SITE_BASE"
+        env:
+          REINDEX_SECRET: ${{ secrets.REINDEX_SECRET }}

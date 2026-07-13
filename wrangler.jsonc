@@ -1,8 +1,18 @@
 {
   "name": "public-website",
   "compatibility_date": "2026-03-23",
+  /*
+   * The site is still static. This Worker exists ONLY for `/api/*`:
+   * semantic search needs a model and a vector store, and neither can
+   * live in a browser. Everything else is served straight from the asset
+   * store — `run_worker_first` names the only paths that wake the Worker,
+   * so an ordinary page load never runs a line of this code.
+   */
+  "main": "src/worker/index.ts",
   "assets": {
     "directory": "./dist",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"],
     /*
      * Serve src/pages/404.astro (built into dist/404.html) for any
      * path that has no asset. CF preserves the requested URL — no
@@ -11,13 +21,55 @@
      */
     "not_found_handling": "404-page"
   },
+  "ai": { "binding": "AI" },
+  "vectorize": [{ "binding": "VECTORIZE", "index_name": "comprom-search" }],
+  /*
+   * A public endpoint that runs a model costs money every time it is
+   * called. The limit is per client IP: a reader who means it will never
+   * notice, a script will.
+   */
+  "unsafe": {
+    "bindings": [
+      {
+        "name": "SEMANTIC_LIMIT",
+        "type": "ratelimit",
+        "namespace_id": "1001",
+        "simple": { "limit": 30, "period": 60 }
+      }
+    ]
+  },
   "env": {
     // Develop environment — deploys from the `develop` branch into a
     // separate CF Worker (public-website-develop) and binds it to
     // dev.comprom.org via the Custom Domain route below.
     "develop": {
       "name": "public-website-develop",
-      "routes": [{ "pattern": "dev.comprom.org", "custom_domain": true }]
+      "routes": [{ "pattern": "dev.comprom.org", "custom_domain": true }],
+      /* Named envs inherit NOTHING from the top level — repeat it all. */
+      "assets": {
+        "directory": "./dist",
+        "binding": "ASSETS",
+        "run_worker_first": ["/api/*"],
+        "not_found_handling": "404-page"
+      },
+      "ai": { "binding": "AI" },
+      /*
+       * Its OWN index. Dev builds from content/develop, prod from
+       * content/master, and a document keeps the same id in both — one
+       * shared index would mean whichever deploy reindexed last decided
+       * what prod readers get back, drafts included.
+       */
+      "vectorize": [{ "binding": "VECTORIZE", "index_name": "comprom-search-develop" }],
+      "unsafe": {
+        "bindings": [
+          {
+            "name": "SEMANTIC_LIMIT",
+            "type": "ratelimit",
+            "namespace_id": "1001",
+            "simple": { "limit": 30, "period": 60 }
+          }
+        ]
+      }
     }
   }
 }

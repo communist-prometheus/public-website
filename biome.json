@@ -8,7 +8,7 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["**", "!!e2e-toolkit", "!packages"]
+    "includes": ["**", "!!e2e-toolkit", "!packages", "!.wrangler"]
   },
   "formatter": {
     "enabled": true,
