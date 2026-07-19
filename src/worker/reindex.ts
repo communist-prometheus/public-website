@@ -35,8 +35,15 @@ import { type Env, json } from './env';
  */
 const MAX_DOCS_PER_CALL = 2;
 
-/* Vectorize takes at most 100 ids in one lookup. */
-const LOOKUP_LIMIT = 100;
+/*
+ * Vectorize caps `getByIds` at 20 ids per call (HTTP 400, code 40007:
+ * "too many ids in payload; max id count is 20") — a hard limit the
+ * published limits table omits. `plan` looks up every document of a
+ * language at once, so a language with 21+ articles (ru: 22) blew past
+ * the cap and the uncaught 400 surfaced as a Cloudflare 1101. Batch at
+ * the cap so no single lookup can exceed it.
+ */
+const LOOKUP_LIMIT = 20;
 
 interface Body {
   readonly lang?: unknown;
