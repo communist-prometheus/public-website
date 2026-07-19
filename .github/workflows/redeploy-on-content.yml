@@ -1,28 +1,31 @@
 name: Redeploy on content update
 
-# Replaces the old subtree-pull workflow. Content is no longer
-# committed into this repo; instead the deploy build clones it from
-# `public-website-content`. So the only thing we need on a content
-# push is to kick off a fresh deploy of the matching branch — we do
-# that with an empty commit on the corresponding branch, which then
-# triggers `Deploy to Cloudflare Workers` via the regular push event.
+# Content is not committed into this repo; the deploy build clones it from
+# `public-website-content`. On a content push we only need to kick off a
+# fresh deploy of the matching branch.
 #
-# Branch mapping is symmetric: a push to `master` of the content repo
-# redeploys `master` here; a push to `develop`/`dev` redeploys the
-# matching branch. The branch comes from the dispatch payload.
+# We do that by DISPATCHING `Deploy to Cloudflare Workers` on that branch —
+# not by pushing an empty commit here. Empty commits polluted the code
+# branches with content-driven history, so a `develop → master` PR carried
+# content churn instead of being a review of code alone. A dispatch leaves
+# the code branches untouched.
+#
+# Branch mapping is symmetric: a content push to `master` redeploys
+# `master` here; a push to `develop` redeploys `develop`. The branch comes
+# from the dispatch payload.
 
 on:
   repository_dispatch:
     types: [content-updated]
 
 # Serialise per branch so two content pushes in quick succession queue
-# behind one another instead of producing competing empty commits.
+# behind one another instead of racing to dispatch the same branch.
 concurrency:
   group: redeploy-${{ github.event.client_payload.branch }}
   cancel-in-progress: false
 
-# Least-privilege GITHUB_TOKEN - deploys use dedicated secrets,
-# nothing here needs repo write access via the ambient token.
+# No repo write needed — the dispatch is an Actions API call authenticated
+# by GH_PAT, which carries the `workflow` scope.
 permissions:
   contents: read
 
@@ -30,23 +33,12 @@ jobs:
   redeploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ github.event.client_payload.branch }}
-          token: ${{ secrets.GH_PAT }}
-
-      - name: Configure git author from content commit
+      - name: Dispatch a deploy of the matching branch
         env:
-          AUTHOR_NAME: ${{ github.event.client_payload.author_name }}
-          AUTHOR_EMAIL: ${{ github.event.client_payload.author_email }}
-        run: |
-          git config user.name "$AUTHOR_NAME"
-          git config user.email "$AUTHOR_EMAIL"
-
-      - name: Empty commit to trigger deploy
-        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
           BRANCH: ${{ github.event.client_payload.branch }}
-          MSG: ${{ github.event.client_payload.commit_message }}
         run: |
-          git commit --allow-empty -m "content: $MSG"
-          git push origin "$BRANCH"
+          gh workflow run deploy.yml \
+            --repo "${{ github.repository }}" \
+            --ref "$BRANCH" \
+            -f content=true

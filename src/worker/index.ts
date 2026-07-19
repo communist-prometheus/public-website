@@ -1,4 +1,5 @@
 import type { Env } from './env';
+import { guardErrors } from './guard';
 import { handleReindex } from './reindex';
 import { handleSemantic } from './semantic';
 
@@ -11,8 +12,8 @@ import { handleSemantic } from './semantic';
  */
 
 const ROUTES: Record<string, (request: Request, env: Env) => Promise<Response>> = {
-  '/api/semantic': handleSemantic,
-  '/api/reindex': handleReindex,
+  '/api/semantic': guardErrors(handleSemantic),
+  '/api/reindex': guardErrors(handleReindex),
 };
 
 export default {
