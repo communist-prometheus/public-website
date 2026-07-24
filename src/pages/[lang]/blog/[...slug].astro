@@ -13,6 +13,7 @@ import ArticleTocSidebar from '@/features/content/components/ArticleTocSidebar.a
 import SuggestChangesLink from '@/features/content/components/SuggestChangesLink.astro';
 import { deriveDescription } from '@/features/content/helpers/deriveDescription';
 import { getCategoryLabel } from '@/features/content/helpers/getCategoryLabel';
+import { getTopic } from '@/features/content/helpers/getTopic';
 import { formatArticleDate } from '@/features/i18n/format-date';
 import MissingTranslation from '@/features/i18n/MissingTranslation.astro';
 import { getAllIssues } from '@/features/magazine/helpers/getMagazineItems';
@@ -80,6 +81,14 @@ const publishedDate = post ? (post.data.publishDate ?? post.data.pubDate) : unde
 const isoDate = publishedDate?.toISOString();
 
 /*
+ * The editorial topic (see settings/topics.json). Resolved once here and
+ * rendered as a gradient banner above the title; undefined when the
+ * article has no topic or an unknown key, so the header degrades to the
+ * plain category badge it always had.
+ */
+const topic = post ? getTopic(post.data.topic, lang) : undefined;
+
+/*
  * Article-level JSON-LD triggers Google's "Article" rich result and
  * lets the publisher (Organization) anchor cleanly to the global
  * Organization block in BaseLayout. Microdata `itemscope` further
@@ -140,6 +149,12 @@ const magazineRef = await (async () => {
       <ArticleTocSidebar headings={headings} label={tocLabel} articleTitle={post.data.title} />
       <div class="container">
         <header class="post-header" id="article-top">
+          {topic && (
+            <aside class="topic-banner" style={`--topic-color: ${topic.color}`} data-topic={topic.key}>
+              <span class="topic-name">{topic.name}</span>
+              {topic.subtitle && <span class="topic-subtitle">{topic.subtitle}</span>}
+            </aside>
+          )}
           <span class="category">{getCategoryLabel(post.data.category, lang)}</span>
           <h1 itemprop="name">{post.data.title}</h1>
           <p class="post-meta">
@@ -219,6 +234,43 @@ const magazineRef = await (async () => {
     margin-inline: auto;
     text-align: center;
     margin-bottom: var(--spacing-xl);
+  }
+
+  /*
+   * Editorial topic banner: a transparent→topic-colour gradient wash
+   * (the colour arrives inline as `--topic-color`) carrying the topic
+   * name in large type and its subtitle beneath, set above the title.
+   * `color-mix` keeps the wash a light tint of whatever colour the
+   * editor picked, so text stays legible in both themes.
+   */
+  .topic-banner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-2xs, 0.25rem);
+    padding: clamp(var(--spacing-md), 4vw, var(--spacing-xl)) var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+    border-radius: var(--radius-lg);
+    border-bottom: 3px solid var(--topic-color);
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      color-mix(in srgb, var(--topic-color) 20%, transparent)
+    );
+  }
+
+  .topic-name {
+    font-size: clamp(1.5rem, 4vw, 2.25rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--topic-color);
+  }
+
+  .topic-subtitle {
+    font-size: clamp(0.9rem, 2vw, 1.05rem);
+    color: var(--color-text-secondary);
   }
 
   .category {
