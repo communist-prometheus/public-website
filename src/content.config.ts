@@ -34,6 +34,16 @@ const blogCollection = defineCollection({
       image: image().optional(),
       lang: langEnum,
       /*
+       * Optional editorial topic key (see settings/topics.json). A topic
+       * is a parallel marker to `category`: it colours the article header
+       * (a transparent→topic-colour gradient with the topic name and
+       * subtitle) and the listing card (coloured border + subtitle tag),
+       * letting readers tell editorial pieces from translations and
+       * likbez readers at a glance. Optional so existing articles and
+       * drafts stay valid; an unknown key degrades to no marker.
+       */
+      topic: z.string().optional(),
+      /*
        * Optional magazine-issue slug this article appeared in. The blog
        * detail page renders "Published in: <issue>" linking back to
        * /<lang>/magazine/<slug> when present. `newspaper` is the
