@@ -8,7 +8,13 @@ const topics: readonly TopicEntry[] = [
     name: { en: 'Editorial', ru: 'От редакции' },
     subtitle: { en: 'The board position', ru: 'Позиция редакции' },
   },
-  { key: 'translation', color: '#2563eb', name: { en: 'Translation' }, subtitle: {} },
+  {
+    key: 'translation',
+    color: '#2563eb',
+    name: { en: 'Translation' },
+    subtitle: { en: 'Translation' },
+    description: { en: 'A long editorial disclaimer about translations.' },
+  },
 ];
 
 describe('resolveTopic', () => {
@@ -21,23 +27,27 @@ describe('resolveTopic', () => {
     expect(resolveTopic(topics, 'does-not-exist', 'ru', 'en')).toBeUndefined();
   });
 
-  it('resolves a known key to its colour and localized text', () => {
-    expect(resolveTopic(topics, 'editorial', 'ru', 'en')).toEqual({
-      key: 'editorial',
-      color: '#b03a2e',
-      name: 'От редакции',
-      subtitle: 'Позиция редакции',
-    });
+  it('resolves colour, name and short subtitle', () => {
+    const topic = resolveTopic(topics, 'editorial', 'ru', 'en');
+    expect(topic?.color).toBe('#b03a2e');
+    expect(topic?.name).toBe('От редакции');
+    expect(topic?.subtitle).toBe('Позиция редакции');
   });
 
-  it('falls back to the default language when the locale is missing', () => {
+  it('uses the long description for the banner when present', () => {
+    const topic = resolveTopic(topics, 'translation', 'en', 'en');
+    expect(topic?.subtitle).toBe('Translation');
+    expect(topic?.description).toBe('A long editorial disclaimer about translations.');
+  });
+
+  it('falls back description to the subtitle when there is no description', () => {
+    const topic = resolveTopic(topics, 'editorial', 'ru', 'en');
+    expect(topic?.description).toBe('Позиция редакции');
+  });
+
+  it('falls back to the default language then the key/empty string', () => {
     const topic = resolveTopic(topics, 'translation', 'it', 'en');
     expect(topic?.name).toBe('Translation');
-  });
-
-  it('falls back to the key for a name and empty string for a subtitle', () => {
-    const topic = resolveTopic(topics, 'translation', 'xx', 'zz');
-    expect(topic?.name).toBe('translation');
-    expect(topic?.subtitle).toBe('');
+    expect(topic?.description).toBe('A long editorial disclaimer about translations.');
   });
 });

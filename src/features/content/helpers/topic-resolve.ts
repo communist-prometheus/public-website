@@ -4,6 +4,8 @@ export interface TopicEntry {
   readonly color: string;
   readonly name: Record<string, string>;
   readonly subtitle: Record<string, string>;
+  /** Optional long disclaimer shown only on the article banner. */
+  readonly description?: Record<string, string>;
 }
 
 /** A topic resolved for one page language, ready to render. */
@@ -11,7 +13,10 @@ export interface ResolvedTopic {
   readonly key: string;
   readonly color: string;
   readonly name: string;
+  /** Short приписка — the listing card tag. */
   readonly subtitle: string;
+  /** Long disclaimer for the article banner; falls back to the subtitle. */
+  readonly description: string;
 }
 
 const localize = (
@@ -22,9 +27,10 @@ const localize = (
 ): string => dict[lang] ?? dict[defaultLang] ?? fallback;
 
 /**
- * Resolve a topic key against a topic set to its colour + localized name
- * and subtitle. Pure and content-free so it unit-tests without the
- * content repo present: the data and default language are injected.
+ * Resolve a topic key against a topic set to its colour, short subtitle
+ * (the card tag) and long description (the article banner disclaimer,
+ * which falls back to the subtitle when absent). Pure and content-free so
+ * it unit-tests without the content repo present.
  *
  * Tolerant by design — an absent or unknown key yields `undefined` (no
  * marker), and a missing locale falls back to the default language, then
@@ -45,10 +51,14 @@ export const resolveTopic = (
   if (!key) return undefined;
   const entry = topics.find((t) => t.key === key);
   if (!entry) return undefined;
+  const subtitle = localize(entry.subtitle, lang, defaultLang, '');
   return {
     key: entry.key,
     color: entry.color,
     name: localize(entry.name, lang, defaultLang, entry.key),
-    subtitle: localize(entry.subtitle, lang, defaultLang, ''),
+    subtitle,
+    description: entry.description
+      ? localize(entry.description, lang, defaultLang, subtitle)
+      : subtitle,
   };
 };

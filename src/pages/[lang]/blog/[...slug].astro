@@ -152,7 +152,7 @@ const magazineRef = await (async () => {
           {topic && (
             <aside class="topic-banner" style={`--topic-color: ${topic.color}`} data-topic={topic.key}>
               <span class="topic-name">{topic.name}</span>
-              {topic.subtitle && <span class="topic-subtitle">{topic.subtitle}</span>}
+              {topic.description && <span class="topic-subtitle">{topic.description}</span>}
             </aside>
           )}
           <span class="category">{getCategoryLabel(post.data.category, lang)}</span>
@@ -247,30 +247,46 @@ const magazineRef = await (async () => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--spacing-2xs, 0.25rem);
-    padding: clamp(var(--spacing-md), 4vw, var(--spacing-xl)) var(--spacing-md);
+    justify-content: center;
+    gap: var(--spacing-sm);
+    /*
+     * `padding-block` (not the 4-value `padding`) guarantees the top and
+     * bottom breathing room are the SAME length, so the name sits equally
+     * far from either edge regardless of how many lines the disclaimer
+     * wraps to.
+     */
+    padding-block: clamp(var(--spacing-lg), 4vw, var(--spacing-2xl));
+    padding-inline: var(--spacing-lg);
     margin-bottom: var(--spacing-lg);
     border-radius: var(--radius-lg);
     border-bottom: 3px solid var(--topic-color);
     background: linear-gradient(
       to bottom,
       transparent,
-      color-mix(in srgb, var(--topic-color) 20%, transparent)
+      color-mix(in srgb, var(--topic-color) 16%, transparent)
     );
   }
 
   .topic-name {
     font-size: clamp(1.5rem, 4vw, 2.25rem);
     font-weight: 800;
-    line-height: 1.1;
+    line-height: 1;
     letter-spacing: 0.02em;
     text-transform: uppercase;
-    color: var(--topic-color);
+    /*
+     * Blend the topic colour toward the theme's primary text so the name
+     * keeps its hue but stays legible on its own tinted background — pure
+     * `--topic-color` on a same-hue wash (e.g. blue on light blue) failed
+     * contrast.
+     */
+    color: color-mix(in srgb, var(--topic-color) 68%, var(--color-text-primary));
   }
 
   .topic-subtitle {
     font-size: clamp(0.9rem, 2vw, 1.05rem);
-    color: var(--color-text-secondary);
+    line-height: 1.5;
+    max-width: 60ch;
+    color: var(--color-text-primary);
   }
 
   .category {
