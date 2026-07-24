@@ -159,7 +159,12 @@ const cardStyle = resolvedTopic ? `--topic-color: ${resolvedTopic.color}` : unde
     display: inline-block;
     padding: 0.15rem 0.55rem;
     background: color-mix(in srgb, var(--topic-color) 15%, transparent);
-    color: var(--topic-color);
+    /*
+     * Blend the label toward the theme text so it clears contrast against
+     * its own tinted pill (plain topic-colour text on a same-hue tint was
+     * unreadable — e.g. blue on light blue).
+     */
+    color: color-mix(in srgb, var(--topic-color) 60%, var(--color-text-primary));
     border: 1px solid var(--topic-color);
     font-size: 0.7rem;
     font-weight: 600;
