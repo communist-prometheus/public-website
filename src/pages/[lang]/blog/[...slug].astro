@@ -237,34 +237,24 @@ const magazineRef = await (async () => {
   }
 
   /*
-   * Editorial topic banner: a transparent→topic-colour gradient wash
-   * (the colour arrives inline as `--topic-color`) carrying the topic
-   * name in large type and its subtitle beneath, set above the title.
-   * `color-mix` keeps the wash a light tint of whatever colour the
-   * editor picked, so text stays legible in both themes.
+   * Editorial topic banner: a flat topic-colour tint (the colour arrives
+   * inline as `--topic-color`) with a bottom accent, carrying the topic
+   * name and its disclaimer above the title. Content is left-aligned and
+   * the padding is tight and symmetric — a transparent-topped gradient
+   * used to leave a big empty gap above the name. `color-mix` keeps the
+   * tint legible in both themes.
    */
   .topic-banner {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-sm);
-    /*
-     * `padding-block` (not the 4-value `padding`) guarantees the top and
-     * bottom breathing room are the SAME length, so the name sits equally
-     * far from either edge regardless of how many lines the disclaimer
-     * wraps to. Kept tight so the name doesn't float too far from the top.
-     */
-    padding-block: clamp(var(--spacing-sm), 2vw, var(--spacing-md));
-    padding-inline: var(--spacing-lg);
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm) var(--spacing-lg);
     margin-bottom: var(--spacing-lg);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-md);
     border-bottom: 3px solid var(--topic-color);
-    background: linear-gradient(
-      to bottom,
-      transparent,
-      color-mix(in srgb, var(--topic-color) 16%, transparent)
-    );
+    background: color-mix(in srgb, var(--topic-color) 13%, transparent);
+    text-align: left;
   }
 
   .topic-name {
@@ -283,9 +273,10 @@ const magazineRef = await (async () => {
   }
 
   .topic-subtitle {
-    font-size: clamp(0.9rem, 2vw, 1.05rem);
-    line-height: 1.5;
-    max-width: 60ch;
+    font-size: clamp(1.05rem, 2.2vw, 1.25rem);
+    line-height: 1.6;
+    max-width: 72ch;
+    text-align: left;
     color: var(--color-text-primary);
   }
 
