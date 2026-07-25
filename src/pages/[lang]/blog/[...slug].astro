@@ -253,9 +253,9 @@ const magazineRef = await (async () => {
      * `padding-block` (not the 4-value `padding`) guarantees the top and
      * bottom breathing room are the SAME length, so the name sits equally
      * far from either edge regardless of how many lines the disclaimer
-     * wraps to.
+     * wraps to. Kept tight so the name doesn't float too far from the top.
      */
-    padding-block: clamp(var(--spacing-lg), 4vw, var(--spacing-2xl));
+    padding-block: clamp(var(--spacing-sm), 2vw, var(--spacing-md));
     padding-inline: var(--spacing-lg);
     margin-bottom: var(--spacing-lg);
     border-radius: var(--radius-lg);
