@@ -247,14 +247,18 @@ const magazineRef = await (async () => {
   .topic-banner {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-xs);
-    padding: var(--spacing-sm) var(--spacing-lg);
+    gap: var(--spacing-sm);
+    padding: clamp(var(--spacing-md), 3vw, var(--spacing-lg))
+      clamp(var(--spacing-md), 4vw, var(--spacing-xl));
+    /*
+     * Pull the banner up into the section's generous top padding so it
+     * sits near the header instead of floating far below it.
+     */
+    margin-top: calc(-1 * var(--spacing-xl));
     margin-bottom: var(--spacing-lg);
     border-radius: var(--radius-md);
     border-bottom: 3px solid var(--topic-color);
     background: color-mix(in srgb, var(--topic-color) 13%, transparent);
-    text-align: left;
   }
 
   .topic-name {
@@ -263,6 +267,9 @@ const magazineRef = await (async () => {
     line-height: 1;
     letter-spacing: 0.02em;
     text-transform: uppercase;
+    text-align: center;
+    /* Balance the wrapped lines of the (short) name for an even look. */
+    text-wrap: balance;
     /*
      * Blend the topic colour toward the theme's primary text so the name
      * keeps its hue but stays legible on its own tinted background — pure
@@ -276,7 +283,12 @@ const magazineRef = await (async () => {
     font-size: clamp(1.05rem, 2.2vw, 1.25rem);
     line-height: 1.6;
     max-width: 72ch;
-    text-align: left;
+    /* Justify both edges (no ragged right); hyphenate so the narrow
+       mobile column doesn't open up rivers of white space. `pretty`
+       still tidies the left-aligned last line. */
+    text-align: justify;
+    hyphens: auto;
+    text-wrap: pretty;
     color: var(--color-text-primary);
   }
 
