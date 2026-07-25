@@ -46,8 +46,10 @@ test('article banner renders for a tagged article, and is absent otherwise', asy
   const tagged = page.locator(TAGGED_CELL);
   const hasTagged = (await tagged.count()) > 0;
 
-  // `.post-card a` targets a real article link (not a CategoryFilter
-  // button, which also carries data-category).
+  /*
+   * `.post-card a` targets a real article link (not a CategoryFilter
+   * button, which also carries data-category).
+   */
   const cardLink = hasTagged
     ? tagged.first().locator('.post-card a').first()
     : page.locator('.post-card a').first();
