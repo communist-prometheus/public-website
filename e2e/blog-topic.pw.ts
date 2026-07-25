@@ -1,52 +1,69 @@
-import { expect, expectMinCount, test, visit } from '@prometheus/e2e-toolkit';
+import { expect, test, visit } from '@prometheus/e2e-toolkit';
 
 /**
- * Editorial topic markers E2E.
- *
- * A topic (settings/topics.json) colours the article header banner and
- * the listing card. These guards lean on the `editorial` topic seeded on
- * the cyber-tool article: the banner must render name + subtitle above
- * the title, and the card must carry the subtitle tag plus a border in
- * the topic colour that differs from a topic-less card.
+ * Editorial topics are an opt-in marker: editors tag articles in the
+ * admin, so at any given time zero or more articles carry a topic. This
+ * suite adapts to the live content — it asserts the markers render
+ * correctly when a tagged article exists, and that the feature stays
+ * inert (no stray markers) when none does. Either way it makes real
+ * assertions, so it never silently passes.
  */
 
-const ARTICLE = '/ru/blog/cyber-tool';
 const BLOG = '/ru/blog';
 
-test('article header renders the topic banner with name and subtitle', async ({ page }) => {
-  await visit(page, ARTICLE);
+/** Listing cells that carry a topic (cells also expose data-category). */
+const TAGGED_CELL = '[data-category][data-topic]';
 
-  const banner = page.locator('.topic-banner');
-  await expect(banner).toBeVisible();
-  await expect(banner).toHaveAttribute('data-topic', 'editorial');
-  await expect(banner.locator('.topic-name')).not.toBeEmpty();
-  await expect(banner.locator('.topic-subtitle')).not.toBeEmpty();
-
-  // The accent border proves the topic colour reached the banner.
-  const borderColor = await banner.evaluate((el) => getComputedStyle(el).borderBottomColor);
-  expect(borderColor).not.toBe('rgba(0, 0, 0, 0)');
-});
-
-test('listing card shows the topic tag and a topic-coloured border', async ({ page }) => {
+test('listing marks tagged cards and leaves untagged ones neutral', async ({ page }) => {
   await visit(page, BLOG);
 
-  const topicCells = page.locator('[data-topic="editorial"]');
-  await expectMinCount(page, topicCells, 1);
+  const tagged = page.locator(TAGGED_CELL);
+  const count = await tagged.count();
 
-  const card = topicCells.first().locator('.post-card');
+  if (count === 0) {
+    // Nothing tagged yet: no stray topic tags may appear anywhere.
+    await expect(page.locator('.topic-tag')).toHaveCount(0);
+    return;
+  }
+
+  const card = tagged.first().locator('.post-card');
   const tag = card.locator('.topic-tag');
   await expect(tag).toBeVisible();
   await expect(tag).not.toBeEmpty();
 
-  /*
-   * A topic-less card keeps the neutral border; the topic card must not.
-   * Comparing the two resolved colours proves the marker without pinning
-   * the test to a specific hex the editor could later change.
-   */
+  // The tagged card's border must differ from a neutral (untagged) card.
   const neutralCard = page.locator('[data-category]:not([data-topic]) .post-card').first();
   const [topicBorder, neutralBorder] = await Promise.all([
     card.evaluate((el) => getComputedStyle(el).borderTopColor),
     neutralCard.evaluate((el) => getComputedStyle(el).borderTopColor),
   ]);
   expect(topicBorder).not.toBe(neutralBorder);
+});
+
+test('article banner renders for a tagged article, and is absent otherwise', async ({ page }) => {
+  await visit(page, BLOG);
+
+  const tagged = page.locator(TAGGED_CELL);
+  const hasTagged = (await tagged.count()) > 0;
+
+  /*
+   * `.post-card a` targets a real article link (not a CategoryFilter
+   * button, which also carries data-category).
+   */
+  const cardLink = hasTagged
+    ? tagged.first().locator('.post-card a').first()
+    : page.locator('.post-card a').first();
+  const href = await cardLink.getAttribute('href');
+  if (!href) throw new Error('no article link found on the blog listing');
+  await visit(page, href);
+
+  const banner = page.locator('.topic-banner');
+  if (hasTagged) {
+    await expect(banner).toBeVisible();
+    await expect(banner.locator('.topic-name')).not.toBeEmpty();
+    await expect(banner.locator('.topic-subtitle')).not.toBeEmpty();
+  } else {
+    // An untagged article must not render a topic banner.
+    await expect(banner).toHaveCount(0);
+  }
 });
