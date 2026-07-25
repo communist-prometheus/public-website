@@ -45,11 +45,12 @@ const readMore = labels?.data.readMore ?? 'Read more';
           <CategoryFilter categories={categories} lang={lang} allLabel={allCategory} />
           <div class="grid grid-2">
             {posts.map((post) => (
-              <div data-category={post.data.category}>
+              <div data-category={post.data.category} data-topic={post.data.topic}>
                 <PostCard
                   title={post.data.title}
                   description={post.data.description ?? deriveSummary(post.body) ?? ''}
                   category={post.data.category}
+                  topic={post.data.topic}
                   slug={getArticleSlug(post)}
                   image={post.data.image}
                   lang={lang}

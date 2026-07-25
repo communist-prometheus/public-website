@@ -3,9 +3,11 @@ interface Props {
   hoverable?: boolean;
   elevated?: boolean;
   class?: string;
+  /** Inline style passthrough — lets a caller set per-card CSS vars (e.g. a topic colour). */
+  style?: string | undefined;
 }
 
-const { hoverable = false, elevated = false, class: className } = Astro.props;
+const { hoverable = false, elevated = false, class: className, style } = Astro.props;
 
 const classes = ['card', hoverable ? 'hoverable' : '', elevated ? 'elevated' : '', className ?? '']
   .filter(Boolean)
@@ -15,7 +17,7 @@ const role = hoverable ? 'button' : 'article';
 const tabindex = hoverable ? '0' : undefined;
 ---
 
-<div class={classes} role={role} tabindex={tabindex}>
+<div class={classes} role={role} tabindex={tabindex} {...(style ? { style } : {})}>
   <slot />
 </div>
 

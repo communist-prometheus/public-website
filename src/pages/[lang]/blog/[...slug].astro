@@ -13,6 +13,7 @@ import ArticleTocSidebar from '@/features/content/components/ArticleTocSidebar.a
 import SuggestChangesLink from '@/features/content/components/SuggestChangesLink.astro';
 import { deriveDescription } from '@/features/content/helpers/deriveDescription';
 import { getCategoryLabel } from '@/features/content/helpers/getCategoryLabel';
+import { getTopic } from '@/features/content/helpers/getTopic';
 import { formatArticleDate } from '@/features/i18n/format-date';
 import MissingTranslation from '@/features/i18n/MissingTranslation.astro';
 import { getAllIssues } from '@/features/magazine/helpers/getMagazineItems';
@@ -80,6 +81,14 @@ const publishedDate = post ? (post.data.publishDate ?? post.data.pubDate) : unde
 const isoDate = publishedDate?.toISOString();
 
 /*
+ * The editorial topic (see settings/topics.json). Resolved once here and
+ * rendered as a gradient banner above the title; undefined when the
+ * article has no topic or an unknown key, so the header degrades to the
+ * plain category badge it always had.
+ */
+const topic = post ? getTopic(post.data.topic, lang) : undefined;
+
+/*
  * Article-level JSON-LD triggers Google's "Article" rich result and
  * lets the publisher (Organization) anchor cleanly to the global
  * Organization block in BaseLayout. Microdata `itemscope` further
@@ -140,6 +149,12 @@ const magazineRef = await (async () => {
       <ArticleTocSidebar headings={headings} label={tocLabel} articleTitle={post.data.title} />
       <div class="container">
         <header class="post-header" id="article-top">
+          {topic && (
+            <aside class="topic-banner" style={`--topic-color: ${topic.color}`} data-topic={topic.key}>
+              <span class="topic-name">{topic.name}</span>
+              {topic.description && <span class="topic-subtitle">{topic.description}</span>}
+            </aside>
+          )}
           <span class="category">{getCategoryLabel(post.data.category, lang)}</span>
           <h1 itemprop="name">{post.data.title}</h1>
           <p class="post-meta">
@@ -219,6 +234,62 @@ const magazineRef = await (async () => {
     margin-inline: auto;
     text-align: center;
     margin-bottom: var(--spacing-xl);
+  }
+
+  /*
+   * Editorial topic banner: a flat topic-colour tint (the colour arrives
+   * inline as `--topic-color`) with a bottom accent, carrying the topic
+   * name and its disclaimer above the title. Content is left-aligned and
+   * the padding is tight and symmetric — a transparent-topped gradient
+   * used to leave a big empty gap above the name. `color-mix` keeps the
+   * tint legible in both themes.
+   */
+  .topic-banner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    padding: clamp(var(--spacing-md), 3vw, var(--spacing-lg))
+      clamp(var(--spacing-md), 4vw, var(--spacing-xl));
+    /*
+     * Pull the banner up into the section's generous top padding so it
+     * sits near the header instead of floating far below it.
+     */
+    margin-top: calc(-1 * var(--spacing-xl));
+    margin-bottom: var(--spacing-lg);
+    border-radius: var(--radius-md);
+    border-bottom: 3px solid var(--topic-color);
+    background: color-mix(in srgb, var(--topic-color) 13%, transparent);
+  }
+
+  .topic-name {
+    font-size: clamp(1.5rem, 4vw, 2.25rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    text-align: center;
+    /* Balance the wrapped lines of the (short) name for an even look. */
+    text-wrap: balance;
+    /*
+     * Blend the topic colour toward the theme's primary text so the name
+     * keeps its hue but stays legible on its own tinted background — pure
+     * `--topic-color` on a same-hue wash (e.g. blue on light blue) failed
+     * contrast.
+     */
+    color: color-mix(in srgb, var(--topic-color) 68%, var(--color-text-primary));
+  }
+
+  .topic-subtitle {
+    font-size: clamp(1.05rem, 2.2vw, 1.25rem);
+    line-height: 1.6;
+    max-width: 72ch;
+    /* Justify both edges (no ragged right); hyphenate so the narrow
+       mobile column doesn't open up rivers of white space. `pretty`
+       still tidies the left-aligned last line. */
+    text-align: justify;
+    hyphens: auto;
+    text-wrap: pretty;
+    color: var(--color-text-primary);
   }
 
   .category {

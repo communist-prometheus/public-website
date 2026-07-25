@@ -4,12 +4,15 @@ import CpCard from '@/components/cp/CpCard.astro';
 import type { Language } from '@/config/i18n';
 import BlogPicture from '@/features/blog/components/BlogPicture.astro';
 import { getCategoryLabel } from '@/features/content/helpers/getCategoryLabel';
+import { getTopic } from '@/features/content/helpers/getTopic';
 
 interface Props {
   title: string;
   description: string;
   /** Optional category badge — omitted for sections without categories (e.g. archive). */
   category?: string | undefined;
+  /** Optional editorial topic key — colours the card border and adds a subtitle tag. */
+  topic?: string | undefined;
   slug: string;
   image?: ImageMetadata | undefined;
   lang: Language;
@@ -28,14 +31,20 @@ interface Props {
   readMoreLabel?: string;
 }
 
-const { title, description, category, slug, image, lang, headingLevel = 3 } = Astro.props;
+const { title, description, category, topic, slug, image, lang, headingLevel = 3 } = Astro.props;
 const href = Astro.props.href ?? `/${lang}/blog/${slug}`;
+const resolvedTopic = getTopic(topic, lang);
+/* The topic colour cascades to the border and tag via this CSS var. */
+const cardStyle = resolvedTopic ? `--topic-color: ${resolvedTopic.color}` : undefined;
 ---
 
-<CpCard hoverable elevated class="post-card">
+<CpCard hoverable elevated class="post-card" style={cardStyle}>
   {image && <div class="post-image"><BlogPicture image={image} alt={title} preset="thumbnail" /></div>}
   <div class="post-content">
-    {category && <span class="category">{getCategoryLabel(category, lang)}</span>}
+    <span class="badges">
+      {category && <span class="category">{getCategoryLabel(category, lang)}</span>}
+      {resolvedTopic?.subtitle && <span class="topic-tag" data-topic={resolvedTopic.key}>{resolvedTopic.subtitle}</span>}
+    </span>
     {/*
       The heading anchor + `::before` overlay pattern: the link is
       attached to the title (so screen readers announce a real
@@ -75,6 +84,13 @@ const href = Astro.props.href ?? `/${lang}/blog/${slug}`;
     overflow: hidden;
     padding: 0;
     position: relative;
+    /*
+     * When the card carries a topic, `--topic-color` is set inline and
+     * paints the border in the topic colour; with no topic the var is
+     * unset and the fallback keeps the default neutral border — so the
+     * marker is opt-in without a separate class.
+     */
+    border-color: var(--topic-color, var(--color-border));
     transition:
       transform var(--transition-base),
       box-shadow var(--transition-fast);
@@ -112,6 +128,14 @@ const href = Astro.props.href ?? `/${lang}/blog/${slug}`;
     min-height: 0;
   }
 
+  .badges {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-xs);
+    flex-shrink: 0;
+  }
+
   .category {
     display: inline-block;
     padding: 0.15rem 0.55rem;
@@ -123,6 +147,29 @@ const href = Astro.props.href ?? `/${lang}/blog/${slug}`;
     width: fit-content;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    flex-shrink: 0;
+  }
+
+  /*
+   * Topic tag: a tinted outline pill in the topic colour, deliberately
+   * lighter than the solid category badge so the two read as distinct
+   * markers. Colour comes from the inline `--topic-color` on the card.
+   */
+  .topic-tag {
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    background: color-mix(in srgb, var(--topic-color) 15%, transparent);
+    /*
+     * Blend the label toward the theme text so it clears contrast against
+     * its own tinted pill (plain topic-colour text on a same-hue tint was
+     * unreadable — e.g. blue on light blue).
+     */
+    color: color-mix(in srgb, var(--topic-color) 60%, var(--color-text-primary));
+    border: 1px solid var(--topic-color);
+    font-size: 0.7rem;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    width: fit-content;
     flex-shrink: 0;
   }
 
