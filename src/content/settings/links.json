@@ -1,0 +1,609 @@
+{
+  "groups": [
+    "organizations",
+    "resources",
+    "friendly"
+  ],
+  "entries": [
+    {
+      "url": "https://www.leftcom.org/",
+      "name": "Internationalist Communist Tendency",
+      "category": "organizations",
+      "inRing": true,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "http://www.igcl.org/",
+      "name": "International Group of the Communist Left",
+      "category": "organizations",
+      "inRing": true,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://barbaria.net/",
+      "name": "Barbaria",
+      "category": "organizations",
+      "inRing": true,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://balanceyavante1.wordpress.com/",
+      "name": "Balance y Avante",
+      "category": "organizations",
+      "inRing": true,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://internationalistcommunists.org/",
+      "name": "League of Internationalist Communists",
+      "category": "organizations",
+      "inRing": true,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://leftdis.wordpress.com/",
+      "name": "Left Discussions",
+      "category": "organizations",
+      "inRing": true,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://arbeidersstemmen.nl/",
+      "name": "Arbeidersstemmen (NL)",
+      "category": "organizations",
+      "inRing": true,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://arbeidersstemmen.wordpress.com/",
+      "name": "Arbeidersstemmen (DE)",
+      "category": "organizations",
+      "inRing": true,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://inter-rev.foroactivo.com/",
+      "name": "Inter-Rev — Foro de la Izquierda Comunista",
+      "category": "organizations",
+      "inRing": true,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://www.leftcommunism.org/",
+      "name": "Left Communism Forum",
+      "category": "organizations",
+      "inRing": true,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://en.internationalism.org/",
+      "name": "International Communist Current",
+      "category": "organizations",
+      "inRing": true,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://www.internationalcommunistparty.org/index.php/it/",
+      "name": "International Communist Party (.org)",
+      "category": "organizations",
+      "inRing": true,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://www.international-communist-party.org/",
+      "name": "International Communist Party (-party.org)",
+      "category": "organizations",
+      "inRing": true,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://www.pcielcomunista.org/index.php/es/",
+      "name": "Partido Comunista Internacional (El Comunista)",
+      "category": "organizations",
+      "inRing": true,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://www.pcint.org/",
+      "name": "Partito Comunista Internazionale (Il Programma Comunista)",
+      "category": "organizations",
+      "inRing": true,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://sinistracomunistainternazionale.com/",
+      "name": "La Sinistra Comunista Internazionale",
+      "category": "organizations",
+      "inRing": true,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://www.quinterna.org/",
+      "name": "n+1 / Quinterna",
+      "category": "organizations",
+      "inRing": true,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://www.raetekommunismus.de/",
+      "name": "Rätekommunismus",
+      "category": "organizations",
+      "inRing": true,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://kosmoprolet.org/",
+      "name": "Kosmoprolet",
+      "category": "organizations",
+      "inRing": true,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://coalizioneoperaia.com/",
+      "name": "Coalizione Operaia",
+      "category": "organizations",
+      "inRing": true,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://www.prospettivamarxista.org/Home.htm",
+      "name": "Prospettiva Marxista",
+      "category": "organizations",
+      "inRing": true,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://www.che-fare.org/",
+      "name": "Che Fare",
+      "category": "organizations",
+      "inRing": true,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://colectivoobrerocomunista.wordpress.com/",
+      "name": "Colectivo Obrero Comunista",
+      "category": "organizations",
+      "inRing": true,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://www.councilist.org/landing-page",
+      "name": "Councilist",
+      "category": "organizations",
+      "inRing": true,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://criticadesapiedada.com.br/",
+      "name": "Crítica Desapiedada",
+      "category": "organizations",
+      "inRing": true,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://communistleft.jinbo.net/xe/",
+      "name": "Internationalist Communist Perspective (Korea)",
+      "category": "organizations",
+      "inRing": true,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://sonoraninternational.org/",
+      "name": "Sonoran International",
+      "category": "organizations",
+      "inRing": true,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://en.internationalistvoice.org/",
+      "name": "Internationalist Voice",
+      "category": "organizations",
+      "inRing": true,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://internationalistperspective.org/",
+      "name": "Internationalist Perspective",
+      "category": "organizations",
+      "inRing": true,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://medium.com/@fiovermelho1917",
+      "name": "Fio Vermelho",
+      "category": "organizations",
+      "inRing": true,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://coletivoruptura.wordpress.com/",
+      "name": "Coletivo Ruptura",
+      "category": "organizations",
+      "inRing": true,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://counselingcommunism.com/",
+      "name": "Counseling Communism",
+      "category": "organizations",
+      "inRing": true,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://www.marxists.org/",
+      "name": "Marxists Internet Archive",
+      "category": "resources",
+      "inRing": false,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://www.sinistra.net/",
+      "name": "Sinistra",
+      "category": "resources",
+      "inRing": false,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://libcom.org/",
+      "name": "libcom.org",
+      "category": "resources",
+      "inRing": false,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://www.daadengedachte.nl/",
+      "name": "Daad en Gedachte",
+      "category": "resources",
+      "inRing": false,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://alter-maulwurf.de/",
+      "name": "Alter Maulwurf",
+      "category": "resources",
+      "inRing": false,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://redtexts.org/",
+      "name": "redtexts.org",
+      "category": "resources",
+      "inRing": false,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://www.aaap.be/Pages/Frontpage.html",
+      "name": "Anton Pannekoek Archives",
+      "category": "resources",
+      "inRing": false,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    },
+    {
+      "url": "https://www.anarchy.bg/",
+      "name": "Federation of Anarcho-Communists of Bulgaria",
+      "category": "friendly",
+      "inRing": false,
+      "descriptions": {
+        "en": "",
+        "ru": "",
+        "it": "",
+        "es": "",
+        "uk": "",
+        "pl": "",
+        "bl": ""
+      }
+    }
+  ]
+}

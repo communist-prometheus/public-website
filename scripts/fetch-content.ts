@@ -52,6 +52,18 @@ const main = (): void => {
     return;
   }
 
+  /*
+   * Monorepo mode: content is tracked in-repo at src/content/ (no nested
+   * .git) and kept in step with public-website-content by a sync Action.
+   * A present-but-not-a-clone target means "use what's committed" — never
+   * clone over it (that would delete tracked content). A stray CONTENT_KEEP
+   * override in local dev still forces a clone by first removing src/content.
+   */
+  if (existsSync(TARGET) && !existsSync(resolve(TARGET, '.git'))) {
+    log(`in-repo content detected at ${TARGET}, using tracked files`);
+    return;
+  }
+
   if (existsSync(resolve(TARGET, '.git'))) {
     log(`refreshing ${TARGET} (branch=${BRANCH})`);
     git(['remote', 'set-url', 'origin', URL], TARGET);

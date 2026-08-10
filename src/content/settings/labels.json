@@ -1,0 +1,111 @@
+[
+  {
+    "key": "technology",
+    "translations": {
+      "en": "Technology",
+      "ru": "Технологии",
+      "it": "Tecnologia",
+      "es": "Tecnología",
+      "pu": "Технология",
+      "bl": "Технология",
+      "pl": "Technologia",
+      "uk": "Технології"
+    }
+  },
+  {
+    "key": "announcement",
+    "translations": {
+      "en": "Anouncement",
+      "ru": "Объявление",
+      "it": "Annuncio",
+      "es": "Anuncio",
+      "bl": "Съобщение",
+      "uk": "Оголошення",
+      "pl": "Ogłoszenie"
+    }
+  },
+  {
+    "key": "community",
+    "translations": {
+      "en": "Community",
+      "ru": "Сообщество",
+      "it": "Comunità",
+      "es": "Comunidad",
+      "bl": "Общност",
+      "pl": "Społeczność",
+      "uk": "Спільнота"
+    }
+  },
+  {
+    "key": "editorial",
+    "translations": {
+      "en": "Editorial",
+      "ru": "Редакционная статья",
+      "it": "Editoriale",
+      "es": "Editorial",
+      "uk": "Редакційна стаття",
+      "bl": "Редакционна статия",
+      "pl": "Artykuł redakcyjny"
+    }
+  },
+  {
+    "key": "international",
+    "translations": {
+      "en": "International politics",
+      "ru": "Международная политика",
+      "it": "Politica internazionale",
+      "es": "Política internacional",
+      "uk": "Міжнародна політика",
+      "bl": "Международна политика",
+      "pl": "Polityka międzynarodowa"
+    }
+  },
+  {
+    "key": "programme",
+    "translations": {
+      "en": "Programme",
+      "ru": "Программа",
+      "it": "Programma",
+      "es": "Programa",
+      "uk": "програма",
+      "bl": "Програма",
+      "pl": "Program"
+    }
+  },
+  {
+    "key": "history",
+    "translations": {
+      "en": "History",
+      "ru": "История",
+      "it": "Storia",
+      "es": "Historia",
+      "uk": "Історія",
+      "bl": "История",
+      "pl": "Historia"
+    }
+  },
+  {
+    "key": "critique",
+    "translations": {
+      "en": "Critique",
+      "ru": "Критика",
+      "it": "Critica",
+      "es": "Crítica",
+      "uk": "Критика",
+      "bl": "Критика",
+      "pl": "Krytyka"
+    }
+  },
+  {
+    "key": "appeal",
+    "translations": {
+      "en": "Appeal",
+      "ru": "Обращения",
+      "it": "Appello",
+      "es": "Llamamiento",
+      "uk": "Звернення",
+      "bl": "Обръщение",
+      "pl": "Apel"
+    }
+  }
+]
