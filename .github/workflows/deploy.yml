@@ -74,11 +74,11 @@ jobs:
       # apply there. Skip E2E on develop deploys; master deploys still
       # gate on green E2E.
       - name: Installing Playwright browsers
-        if: ${{ github.ref_name == 'master' && github.event.inputs.content != 'true' }}
+        if: ${{ github.ref_name == 'master' && github.event.inputs.content != 'true' && !contains(github.event.head_commit.message, '[sync-from-content]') }}
         run: bunx playwright install --with-deps chromium
 
       - name: Running E2E tests (chromium, skip lighthouse/mobile)
-        if: ${{ github.ref_name == 'master' && github.event.inputs.content != 'true' }}
+        if: ${{ github.ref_name == 'master' && github.event.inputs.content != 'true' && !contains(github.event.head_commit.message, '[sync-from-content]') }}
         run: bunx playwright test --project=chromium --reporter=line
 
       # The build above (and the e2e it feeds) keep the archive section

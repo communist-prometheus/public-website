@@ -1,0 +1,76 @@
+name: Sync content back to content repo
+
+# Reverse of sync-content.yml. If someone edits src/content directly in the
+# monorepo (public-website), mirror that change back to the standalone
+# public-website-content repo so the two stay in step both ways.
+#
+# Loop guard: the inbound sync commits carry the `[sync-from-content]`
+# marker and the comprom-sync[bot] committer — those are skipped here so an
+# editor's content push (content repo -> monorepo) does not bounce straight
+# back. A human edit to src/content in the monorepo carries no marker and
+# syncs exactly once, tagged `[sync-from-monorepo]` for the inbound guard.
+
+on:
+  push:
+    branches: [master, develop]
+    paths:
+      - 'src/content/**'
+
+concurrency:
+  group: sync-to-content-${{ github.ref_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    # Skip commits the inbound sync produced (marker or bot committer).
+    if: >-
+      !contains(github.event.head_commit.message, '[sync-from-content]') &&
+      github.event.head_commit.committer.email != 'comprom-sync@users.noreply.github.com'
+    steps:
+      - name: Checkout monorepo (pushed branch)
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ github.ref_name }}
+          path: site
+          fetch-depth: 0
+
+      - name: Checkout content repo (same branch)
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          repository: communist-prometheus/public-website-content
+          ref: ${{ github.ref_name }}
+          token: ${{ secrets.GH_PAT }}
+          path: content
+
+      - name: Reflect src/content back into the content repo
+        run: |
+          set -euo pipefail
+          # Preserve the content repo's own .git and .github; mirror the rest.
+          rsync -a --delete \
+            --exclude='.git' --exclude='.github' \
+            site/src/content/ content/
+
+      - name: Commit as the editor and push (only if changed)
+        working-directory: content
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          # Author = whoever made the monorepo src/content commit.
+          author_line="$(git -C ../site log -1 --format='%an <%ae>')"
+          subject="$(git -C ../site log -1 --format='%s')"
+          git config user.name 'comprom-sync[bot]'
+          git config user.email 'comprom-sync@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then
+            echo "no changes to mirror back"
+            exit 0
+          fi
+          git commit \
+            --author="${author_line}" \
+            -m "content: ${subject} [sync-from-monorepo]"
+          git push origin "HEAD:${BRANCH}"

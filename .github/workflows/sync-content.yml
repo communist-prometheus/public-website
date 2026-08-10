@@ -1,0 +1,93 @@
+name: Sync content into monorepo
+
+# public-website is the monorepo: content is tracked at src/content/.
+# Editors write the standalone public-website-content repo through the
+# admin; on a content push its `trigger-deploy.yml` fires a
+# `content-updated` repository_dispatch here. This workflow reflects the
+# pushed content tree into src/content/ as a SINGLE commit authored by the
+# original editor (the sync bot is only the committer), then pushes — that
+# push is what triggers deploy.yml. No content is cloned at build time.
+#
+# The `[sync-from-content]` marker + bot committer let the reverse sync
+# (sync-to-content.yml) skip this commit so the two directions can't loop.
+#
+# workflow_dispatch is the manual/testing entrypoint (pick a branch);
+# repository_dispatch is the live editor path.
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: Branch to sync (content -> monorepo)
+        type: string
+        required: true
+        default: develop
+  repository_dispatch:
+    types: [content-updated]
+
+concurrency:
+  group: sync-content-${{ github.event.client_payload.branch || github.event.inputs.branch }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    # Skip content pushes that the reverse sync produced, so monorepo edits
+    # mirrored into the content repo don't bounce straight back in.
+    if: >-
+      !contains(github.event.client_payload.commit_message, '[sync-from-monorepo]')
+    env:
+      BRANCH: ${{ github.event.client_payload.branch || github.event.inputs.branch }}
+      # For a manual run these are empty; a fallback identity is applied below.
+      AUTHOR_NAME: ${{ github.event.client_payload.author_name }}
+      AUTHOR_EMAIL: ${{ github.event.client_payload.author_email }}
+      MSG: ${{ github.event.client_payload.commit_message }}
+    steps:
+      - name: Checkout monorepo (target branch)
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ env.BRANCH }}
+          token: ${{ secrets.GH_PAT }}
+          path: site
+          # Full history so the push is a fast-forward, never a force.
+          fetch-depth: 0
+
+      - name: Checkout content (same branch)
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          repository: communist-prometheus/public-website-content
+          ref: ${{ env.BRANCH }}
+          token: ${{ secrets.GH_PAT }}
+          path: content
+
+      - name: Reflect content tree into src/content
+        run: |
+          set -euo pipefail
+          # --delete so removals propagate; exclude VCS + CI dirs so only
+          # content (not the content repo's own .git/.github) lands in-repo.
+          rsync -a --delete \
+            --exclude='.git' --exclude='.github' \
+            content/ site/src/content/
+
+      - name: Commit as the editor and push (only if changed)
+        working-directory: site
+        run: |
+          set -euo pipefail
+          git config user.name 'comprom-sync[bot]'
+          git config user.email 'comprom-sync@users.noreply.github.com'
+          git add src/content
+          if git diff --cached --quiet; then
+            echo "no content changes to sync"
+            exit 0
+          fi
+          author_name="${AUTHOR_NAME:-comprom-sync[bot]}"
+          author_email="${AUTHOR_EMAIL:-comprom-sync@users.noreply.github.com}"
+          subject="$(printf '%s' "${MSG:-manual content sync}" | head -n1)"
+          git commit \
+            --author="${author_name} <${author_email}>" \
+            -m "content: ${subject} [sync-from-content]"
+          # Push on the PAT remote set up by checkout -> triggers deploy.yml.
+          git push origin "HEAD:${BRANCH}"
