@@ -230,3 +230,4 @@ _March 2026_
 [^5]: \- V. Lenin. What Is To Be Done? // Marxists Internet Archive. URL: https://www.marxists.org/archive/lenin/works/1901/witbd/ii.htm
 [^6]: \- L. Trotsky. The Revolution Betrayed; Chapter 3 // Marxists Internet Archive. URL: https://www.marxists.org/archive/trotsky/1936/revbet/ch03.htm
 [^7]: \- K. Marx. Theses On Feuerbach // Marxists Internet Archive. URL: [https://www.marxists.org/archive/marx/works/1845/theses/](https://www.marxists.org/archive/marx/works/1845/theses/)
+<!-- monorepo-live-check -->
