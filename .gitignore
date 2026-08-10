@@ -1,8 +1,11 @@
 # build output
 dist/
 
-# content collection — fetched at build time from public-website-content
-src/content/
+# content collection — tracked in-repo (monorepo). Editors edit the
+# standalone public-website-content repo; a sync Action reflects it here.
+# Only the nested clone marker is ignored so local `fetch-content` runs
+# (dev override) don't stage their own .git.
+src/content/.git/
 
 # generated types
 .astro/

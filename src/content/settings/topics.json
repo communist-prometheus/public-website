@@ -1,0 +1,79 @@
+[
+  {
+    "key": "editorial",
+    "color": "#b03a2e",
+    "name": {
+      "en": "Editorial",
+      "ru": "От редакции",
+      "it": "Dalla redazione",
+      "es": "De la redacción",
+      "bl": "От редакцията",
+      "pl": "Od redakcji",
+      "uk": "Від редакції"
+    },
+    "subtitle": {
+      "en": "The editorial board's own position",
+      "ru": "Собственная позиция редакции",
+      "it": "La posizione della redazione",
+      "es": "La posición de la redacción",
+      "bl": "Собствена позиция на редакцията",
+      "pl": "Własne stanowisko redakcji",
+      "uk": "Власна позиція редакції"
+    },
+    "description": {}
+  },
+  {
+    "key": "translation",
+    "color": "#2563eb",
+    "name": {
+      "en": "Our translation",
+      "ru": "Наш перевод",
+      "it": "La nostra traduzione",
+      "es": "Nuestra traducción",
+      "bl": "Наш превод",
+      "pl": "Nasze tłumaczenie",
+      "uk": "Наш переклад"
+    },
+    "subtitle": {
+      "en": "Our translation",
+      "ru": "Наш перевод",
+      "it": "La nostra traduzione",
+      "es": "Nuestra traducción",
+      "bl": "Наш превод",
+      "pl": "Nasze tłumaczenie",
+      "uk": "Наш переклад"
+    },
+    "description": {
+      "en": "The “Communist Prometheus” group does not consider itself a world communist «party, or even the sole embryo of one», and regards its activity «as part of the practical movement towards communism, as a struggle to build that party». On this basis, we consider it important to exchange experience and hold discussions with other internationalist communist organisations. Accordingly, we publish our own translations of documents, articles and materials of other communist organisations that we consider part of the theoretical heritage of Marxism and an important element in forming the class consciousness of the world proletariat.",
+      "ru": "Группа «Коммунистический Прометей» не считает себя мировой коммунистической «партией или даже единственным её зародышем» и рассматривает свою деятельность «как часть практического движения к коммунизму, как борьбу за создание этой партии». Исходя из этого, мы считаем важным обмениваться опытом и вести дискуссии с другими интернационалистскими коммунистическими организациями. В связи с этим мы публикуем наши собственные переводы документов, статей и материалов других коммунистических организаций, которые считаем частью теоретического наследия марксизма и важным элементом в формировании классового сознания мирового пролетариата.",
+      "it": "Il gruppo «Prometeo Comunista» non si considera un «partito» comunista mondiale «e nemmeno il suo unico embrione», e considera la propria attività «come parte del movimento pratico verso il comunismo, come lotta per la costruzione di quel partito». Su questa base, riteniamo importante scambiare esperienze e condurre discussioni con altre organizzazioni comuniste internazionaliste. Per questo pubblichiamo le nostre traduzioni di documenti, articoli e materiali di altre organizzazioni comuniste che consideriamo parte dell'eredità teorica del marxismo e un elemento importante nella formazione della coscienza di classe del proletariato mondiale.",
+      "es": "El grupo «Prometeo Comunista» no se considera un «partido» comunista mundial «ni siquiera el único embrión de este», y entiende su actividad «como parte del movimiento práctico hacia el comunismo, como una lucha por la construcción de ese partido». Sobre esta base, consideramos importante intercambiar experiencias y mantener discusiones con otras organizaciones comunistas internacionalistas. Por ello publicamos nuestras propias traducciones de documentos, artículos y materiales de otras organizaciones comunistas que consideramos parte de la herencia teórica del marxismo y un elemento importante en la formación de la conciencia de clase del proletariado mundial.",
+      "bl": "Групата «Комунистически Прометей» не се смята за световна комунистическа «партия, нито дори за единствения ѝ зародиш», и разглежда дейността си «като част от практическото движение към комунизма, като борба за изграждането на тази партия». Изхождайки от това, смятаме за важно да обменяме опит и да водим дискусии с други интернационалистически комунистически организации. Във връзка с това публикуваме собствените си преводи на документи, статии и материали на други комунистически организации, които смятаме за част от теоретичното наследство на марксизма и важен елемент във формирането на класовото съзнание на световния пролетариат.",
+      "pl": "Grupa «Komunistyczny Prometeusz» nie uważa się za światową komunistyczną «partię ani nawet jej jedyny zalążek» i traktuje swoją działalność «jako część praktycznego ruchu ku komunizmowi, jako walkę o zbudowanie tej partii». Wychodząc z tego, uważamy za ważne wymianę doświadczeń i prowadzenie dyskusji z innymi internacjonalistycznymi organizacjami komunistycznymi. W związku z tym publikujemy własne tłumaczenia dokumentów, artykułów i materiałów innych organizacji komunistycznych, które uważamy za część teoretycznego dziedzictwa marksizmu i ważny element w kształtowaniu świadomości klasowej światowego proletariatu.",
+      "uk": "Група «Комуністичний Прометей» не вважає себе світовою комуністичною «партією чи навіть єдиним її зародком» і розглядає свою діяльність «як частину практичного руху до комунізму, як боротьбу за створення цієї партії». Виходячи з цього, ми вважаємо важливим обмінюватися досвідом і вести дискусії з іншими інтернаціоналістськими комуністичними організаціями. У зв’язку з цим ми публікуємо власні переклади документів, статей і матеріалів інших комуністичних організацій, які вважаємо частиною теоретичної спадщини марксизму та важливим елементом у формуванні класової свідомості світового пролетаріату."
+    }
+  },
+  {
+    "key": "likbez",
+    "color": "#0f766e",
+    "name": {
+      "en": "Likbez",
+      "ru": "Ликбез",
+      "it": "Likbez",
+      "es": "Likbez",
+      "bl": "Ликбез",
+      "pl": "Likbez",
+      "uk": "Лікнеп"
+    },
+    "subtitle": {
+      "en": "A reader from the classics",
+      "ru": "Подборка из работ классиков",
+      "it": "Una raccolta dai classici",
+      "es": "Una selección de los clásicos",
+      "bl": "Подборка от класиците",
+      "pl": "Wybór z klasyków",
+      "uk": "Добірка з праць класиків"
+    },
+    "description": {}
+  }
+]

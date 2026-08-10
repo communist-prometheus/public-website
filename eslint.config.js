@@ -14,6 +14,7 @@ export default [
       '*.config.ts',
       'bun.lock',
       'packages/**',
+      'src/content/**',
     ],
   },
   {
