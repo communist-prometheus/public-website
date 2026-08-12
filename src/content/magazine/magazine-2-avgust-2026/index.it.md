@@ -1,6 +1,7 @@
 ---
 title: La rivista «Prometeo comunista» №2 — Agosto 2026
 lang: it
+pubDate: 2026-08-01
 published: true
 publishDate: 2026-08-01
 articles:
@@ -15,3 +16,5 @@ articles:
   - approach-to-the-question-of-party
 image: ./assets/cover.it.png
 ---
+
+
