@@ -29,7 +29,7 @@
     "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
-    "@astrojs/rss": "^4.0.18",
+    "@astrojs/rss": "^4.0.19",
     "@astrojs/sitemap": "^3.7.2",
     "@prometheus/search-core": "workspace:*",
     "@web-file-reader/core": "workspace:*",
