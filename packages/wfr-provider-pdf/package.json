@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@web-file-reader/core": "workspace:*",
-    "pdfjs-dist": "^4.9.155"
+    "pdfjs-dist": "^6.1.200"
   },
   "private": true
 }
