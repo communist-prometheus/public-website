@@ -2,7 +2,6 @@
 title: Избыток капитала при избытке населения
 lang: en
 pubDate: 2026-07-13
-magazine: magazine-2-avgust-2026
 description: |-
   In an era when the illusion of neural network dominance proliferates, and financial transactions are executed in fractions of a second, the excerpt from Volume III of Capital published below emerges not as a historical artefact, but as a chillingly accurate anatomical cross-section of the present day. While bourgeois thought writes off crises as “external shocks”, Marx exposes the fundamental paradox of the system: the simultaneous existence of surplus capital and surplus population. He proves that a crisis is not the consequence of a physical overabundance of wealth for humanity, but a mathematical dead end in which gigantic masses of objectified labour lose the ability to yield a sufficient rate of profit, driving the economy into speculative adventures and credit bubbles.
   “Without revolutionary theory there can be no revolutionary movement”, reads the axiom of the first Russian Marxist, Plekhanov. If the fundamental contradiction of capitalism is reduced to problems of “unfair distribution”, the answer becomes a dead-end reformism. However, Marx’s objective science leaves no room for illusions: capitalism is capable of restoring its rate of profit only through the barbaric destruction of accumulated values – mass bankruptcies, the devaluation of labour, and imperialist wars.
