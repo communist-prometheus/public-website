@@ -7,14 +7,13 @@ articles:
   - editorial-note
   - in-search-of-the-way
   - appeal-to-russian-workers
-  - international-review-april-2026
   - iran-imperialism-crisis
   - from-manchester-to-global
   - productivity-apologetics
   - cyber-tool
-  - last-battle-of-the-bolsheviks
   - programme-outline
   - about-the-manifesto
+  - international-review-april-2026
 image: ./assets/cover.en.png
 ---
 
