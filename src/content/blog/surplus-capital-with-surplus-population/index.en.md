@@ -1,16 +1,17 @@
 ---
 title: Excess Capital And Excess Population
 lang: en
+magazine: magazine-2-avgust-2026
 description: In an era when the illusion of neural network dominance proliferates, and financial transactions are executed in fractions of a second, the excerpt from Volume III of Capital published below emerges not as a historical artefact, but as a chillingly accurate anatomical cross-section of the present day. While bourgeois thought writes off crises as “external shocks”, Marx exposes the fundamental paradox of the system: the simultaneous existence of surplus capital and surplus population. He proves that a crisis is not the consequence of a physical overabundance of wealth for humanity, but a mathematical dead end in which gigantic masses of objectified labour lose the ability to yield a sufficient rate of profit, driving the economy into speculative adventures and credit bubbles.
 “Without revolutionary theory there can be no revolutionary movement”, reads the axiom of the first Russian Marxist, Plekhanov. If the fundamental contradiction of capitalism is reduced to problems of “unfair distribution”, the answer becomes a dead-end reformism. However, Marx’s objective science leaves no room for illusions: capitalism is capable of restoring its rate of profit only through the barbaric destruction of accumulated values – mass bankruptcies, the devaluation of labour, and imperialist wars.
 It is necessary to turn to the original source to then observe how Marx’s iron logic forges its path through the technological and social contradictions of the 21st century.
+category: programme
 published: true
 publishDate: 2026-09-05
 ---
 
-**Excess Capital And Excess Population[^1]**
 
-# Karl Marx
+# Karl Marx[^1]
 
 A drop in the rate of profit is attended by a rise in the minimum capital required by an individual capitalist for the productive employment of labour; required both for its exploitation generally, and for making the consumed labour-time suffice as the labour-time necessary for the production of the commodities, so that it does not exceed the average social labour-time required for the production of the commodities. Concentration increases simultaneously, because beyond certain limits a large capital with a small rate of profit accumulates faster than a small capital with a large rate of profit. At a certain high point this increasing concentration in its turn causes a new fall in the rate of profit. The mass of small dispersed capitals is thereby driven along the adventurous road of speculation, credit frauds, stock swindles, and crises. The so-called plethora of capital always applies essentially to a plethora of the capital for which the fall in the rate of profit is not compensated through the mass of profit – this is always true of newly developing fresh offshoots of capital – or to a plethora which places capitals incapable of action on their own at the disposal of the managers of large enterprises in the form of credit. This plethora of capital arises from the same causes as those which call forth relative over-population, and is, therefore, a phenomenon supplementing the latter, although they stand at opposite poles – unemployed capital at one pole, and unemployed worker population at the other.
 
