@@ -6,7 +6,7 @@ magazine: magazine-2-avgust-2026
 category: programme
 description: |-
   The text presented here is merely a brief introduction to a series of articles. It is therefore general in character, offering an overview and a theoretical perspective. In writing it, we did not seek to provide a detailed analysis of individual strikes, but rather to sketch out the political-economic map on the basis of which the world proletariat, wandering and making mistakes, has been moving for the past half-century.
-published: false
+published: true
 publishDate: 2026-07-19
 ---
 
