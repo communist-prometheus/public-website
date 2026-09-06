@@ -4,7 +4,7 @@ lang: en
 pubDate: 2026-08-01
 published: false
 publishDate: 2026-08-01
-articles:
+articles: []
 image: ./assets/cover.ru.png
 ---
 
