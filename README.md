@@ -201,6 +201,22 @@ Your content here...
 
 3. Images go in same directory as post
 
+### Frontmatter validation
+
+`bun run check-frontmatter` (part of `prebuild` / `predev`) parses every
+`src/content/**/*.md` frontmatter with js-yaml and rejects two things the
+Astro build cannot survive: invalid YAML (an unquoted `: ` inside a
+multi-line `description`) and a key left without a value (`articles:` — an
+empty YAML value where the collection schema wants a list; write
+`articles: []`). Every problem is printed as file + line and as a GitHub
+Actions annotation.
+
+Locally the check fails the build. On the deploy (`deploy.yml` sets
+`CONTENT_QUARANTINE=1`) the broken files are removed from the build
+checkout instead — warning annotations plus a job summary list them — so one
+unbuildable article does not block every other editor's publish. The file
+stays in the content repo; fix it there and the next sync republishes it.
+
 ### Category Filtering
 
 Categories auto-populate from post metadata. Click category on blog page to filter.

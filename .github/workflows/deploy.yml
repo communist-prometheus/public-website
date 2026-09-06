@@ -65,8 +65,16 @@ jobs:
       - name: Running unit tests
         run: bun run test:unit
 
+      # CONTENT_QUARANTINE: a content file with unbuildable frontmatter is
+      # left out of the build (warning annotation + job summary) instead of
+      # failing the whole deploy — one editor's bad paste on github.com must
+      # not block every other publish. The prebuild `check-frontmatter`
+      # step names the file + line; the content repo's own check turns red
+      # on the offending push so the author is told.
       - name: Building application (static site)
         run: bun run build
+        env:
+          CONTENT_QUARANTINE: '1'
 
       # E2E asserts a fixed shape of master content (specific languages,
       # specific blog/positions slugs). The develop branch deliberately
