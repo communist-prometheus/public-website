@@ -5,6 +5,7 @@ category: critique
 pubDate: 2026-04-30
 published: true
 lang: it
+topic: likbez
 magazine: magazine-1-mai-2026
 ---
 
