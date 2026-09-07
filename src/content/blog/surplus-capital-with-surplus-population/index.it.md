@@ -1,6 +1,7 @@
 ---
 title: Eccesso di capitale e sovrappopolazione
 lang: it
+topic: likbez
 magazine: magazine-2-avgust-2026
 description: "Nell’epoca in cui si diffonde l’illusione del dominio delle reti neurali, e le transazioni finanziarie si compiono in frazioni di secondo, il frammento del III volume del “Capitale” pubblicato qui di seguito non si presenta come un reperto storico, bensì come una sezione anatomica spaventosamente precisa dell’oggi. Se il pensiero borghese addossa le crisi a \"shock esterni”, Marx mette a nudo il paradosso fondamentale del sistema: la contemporanea esistenza di capitale eccedente e di popolazione eccedente. Egli dimostra che la crisi non è la conseguenza di un’eccedenza fisica di beni per l’umanità, bensì un vicolo cieco matematico, in cui masse gigantesche di lavoro oggettivato perdono la capacità di produrre un saggio di profitto sufficiente, spingendo l’economia verso avventure speculative e bolle creditizie.
 
