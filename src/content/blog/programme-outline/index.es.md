@@ -5,6 +5,7 @@ category: programme
 pubDate: 2026-04-30
 published: true
 lang: es
+topic: translation
 publishDate: 2026-05-01
 magazine: magazine-1-mai-2026
 ---
@@ -858,4 +859,3 @@ de sus intereses económicos.
     véase:
 
     https://www.leftcom.org/it/articles/2021-01-05/st07-la-scissione-internazionalista-del-1952
-
