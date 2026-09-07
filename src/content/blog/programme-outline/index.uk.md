@@ -15,6 +15,7 @@ category: history
 pubDate: 2026-04-30
 published: true
 lang: uk
+topic: translation
 magazine: magazine-1-mai-2026
 publishDate: 2026-05-07
 ---

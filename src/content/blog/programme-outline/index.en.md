@@ -5,6 +5,7 @@ category: programme
 pubDate: 2026-04-30
 published: true
 lang: en
+topic: translation
 publishDate: 2026-05-01
 ---
 
