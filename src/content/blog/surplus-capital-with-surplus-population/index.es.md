@@ -1,6 +1,7 @@
 ---
 title: Exceso de capital y exceso de población
 lang: es
+topic: likbez
 category: programme
 description: |-
   En una época en la que se propaga la ilusión sobre el dominio de las redes neuronales y las transacciones financieras se realizan en fracciones de segundo, el fragmento publicado a continuación, extraído del tomo III de “El capital”, se presenta no como un artefacto histórico, sino como un corte anatómico aterradoramente exacto de la actualidad. Mientras el pensamiento burgués atribuye las crisis a “choques externos”, Marx deja al descubierto la paradoja fundamental del sistema: la existencia simultánea de capital excedente y de población excedente. Él demuestra que la crisis no es consecuencia de un exceso físico de bienes para la humanidad, sino un callejón sin salida matemático en el cual gigantescas masas de trabajo objetivado pierden la capacidad de generar una tasa de ganancia suficiente, empujando a la economía hacia aventuras especulativas y burbujas crediticias.

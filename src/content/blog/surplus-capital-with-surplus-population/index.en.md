@@ -1,6 +1,7 @@
 ---
 title: Excess Capital And Excess Population
 lang: en
+topic: likbez
 
 description: |-
   In an era when the illusion of neural network dominance proliferates, and financial transactions are executed in fractions of a second, the excerpt from Volume III of Capital published below emerges not as a historical artefact, but as a chillingly accurate anatomical cross-section of the present day. While bourgeois thought writes off crises as “external shocks”, Marx exposes the fundamental paradox of the system: the simultaneous existence of surplus capital and surplus population. He proves that a crisis is not the consequence of a physical overabundance of wealth for humanity, but a mathematical dead end in which gigantic masses of objectified labour lose the ability to yield a sufficient rate of profit, driving the economy into speculative adventures and credit bubbles.
@@ -10,7 +11,6 @@ category: programme
 published: true
 publishDate: 2026-09-05
 ---
-
 
 # Karl Marx[^1]
 
