@@ -1,5 +1,5 @@
 ---
-title: "The Anatomy of Global Alienation:Political Economy of the Structural Crisis and the Myth of Post-Industrialism"
+title: "The Anatomy of Global Alienation: Political Economy of the Structural Crisis and the Myth of Post-Industrialism"
 lang: en
 pubDate: 2026-09-07
 magazine: magazine-2-avgust-2026
