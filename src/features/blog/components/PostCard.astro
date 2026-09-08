@@ -4,7 +4,7 @@ import CpCard from '@/components/cp/CpCard.astro';
 import type { Language } from '@/config/i18n';
 import BlogPicture from '@/features/blog/components/BlogPicture.astro';
 import { getCategoryLabel } from '@/features/content/helpers/getCategoryLabel';
-import { getTopic } from '@/features/content/helpers/getTopic';
+import { getArticleTopics } from '@/features/content/helpers/getTopic';
 
 interface Props {
   title: string;
@@ -13,6 +13,10 @@ interface Props {
   category?: string | undefined;
   /** Optional editorial topic key — colours the card border and adds a subtitle tag. */
   topic?: string | undefined;
+  /** Material-level topics, the same in every language. */
+  topics?: readonly string[] | undefined;
+  /** Topics of this translation only; they add to the material's. */
+  languageTopics?: readonly string[] | undefined;
   slug: string;
   image?: ImageMetadata | undefined;
   lang: Language;
@@ -31,11 +35,22 @@ interface Props {
   readMoreLabel?: string;
 }
 
-const { title, description, category, topic, slug, image, lang, headingLevel = 3 } = Astro.props;
+const {
+  title,
+  description,
+  category,
+  topic,
+  topics,
+  languageTopics,
+  slug,
+  image,
+  lang,
+  headingLevel = 3,
+} = Astro.props;
 const href = Astro.props.href ?? `/${lang}/blog/${slug}`;
-const resolvedTopic = getTopic(topic, lang);
-/* The topic colour cascades to the border and tag via this CSS var. */
-const cardStyle = resolvedTopic ? `--topic-color: ${resolvedTopic.color}` : undefined;
+const resolvedTopics = getArticleTopics({ topic, topics, languageTopics }, lang);
+/* The card border takes the first topic's colour; each tag carries its own. */
+const cardStyle = resolvedTopics[0] ? `--topic-color: ${resolvedTopics[0].color}` : undefined;
 ---
 
 <CpCard hoverable elevated class="post-card" style={cardStyle}>
@@ -43,7 +58,9 @@ const cardStyle = resolvedTopic ? `--topic-color: ${resolvedTopic.color}` : unde
   <div class="post-content">
     <span class="badges">
       {category && <span class="category">{getCategoryLabel(category, lang)}</span>}
-      {resolvedTopic?.subtitle && <span class="topic-tag" data-topic={resolvedTopic.key}>{resolvedTopic.subtitle}</span>}
+      {resolvedTopics.map((t) => t.subtitle && (
+        <span class="topic-tag" data-topic={t.key} style={`--topic-color: ${t.color}`}>{t.subtitle}</span>
+      ))}
     </span>
     {/*
       The heading anchor + `::before` overlay pattern: the link is
