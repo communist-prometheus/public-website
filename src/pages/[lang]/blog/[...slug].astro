@@ -13,7 +13,7 @@ import ArticleTocSidebar from '@/features/content/components/ArticleTocSidebar.a
 import SuggestChangesLink from '@/features/content/components/SuggestChangesLink.astro';
 import { deriveDescription } from '@/features/content/helpers/deriveDescription';
 import { getCategoryLabel } from '@/features/content/helpers/getCategoryLabel';
-import { getTopic } from '@/features/content/helpers/getTopic';
+import { getArticleTopics } from '@/features/content/helpers/getTopic';
 import { formatArticleDate } from '@/features/i18n/format-date';
 import MissingTranslation from '@/features/i18n/MissingTranslation.astro';
 import { getAllIssues } from '@/features/magazine/helpers/getMagazineItems';
@@ -86,7 +86,7 @@ const isoDate = publishedDate?.toISOString();
  * article has no topic or an unknown key, so the header degrades to the
  * plain category badge it always had.
  */
-const topic = post ? getTopic(post.data.topic, lang) : undefined;
+const articleTopics = post ? getArticleTopics(post.data, lang) : [];
 
 /*
  * Article-level JSON-LD triggers Google's "Article" rich result and
@@ -149,12 +149,12 @@ const magazineRef = await (async () => {
       <ArticleTocSidebar headings={headings} label={tocLabel} articleTitle={post.data.title} />
       <div class="container">
         <header class="post-header" id="article-top">
-          {topic && (
+          {articleTopics.map((topic) => (
             <aside class="topic-banner" style={`--topic-color: ${topic.color}`} data-topic={topic.key}>
               <span class="topic-name">{topic.name}</span>
               {topic.description && <span class="topic-subtitle">{topic.description}</span>}
             </aside>
-          )}
+          ))}
           <span class="category">{getCategoryLabel(post.data.category, lang)}</span>
           <h1 itemprop="name">{post.data.title}</h1>
           <p class="post-meta">
