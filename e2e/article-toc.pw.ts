@@ -110,7 +110,23 @@ test.describe('Article TOC — desktop rail', () => {
     await page.evaluate(
       () =>
         new Promise<void>((resolve) => {
-          window.scrollTo(0, 1500);
+          /*
+           * Scroll PAST the first real section rather than to a fixed
+           * offset: how far down it sits depends on the article, the
+           * fonts and the viewport, and a fixed 1500px stopped reaching
+           * it once the site's header grew.
+           */
+          const firstSection = [
+            ...document.querySelectorAll('[data-testid="article-toc-sidebar"] .article-toc-link'),
+          ]
+            .map((link) => (link.getAttribute('href') ?? '').slice(1))
+            .filter((id) => id !== '' && id !== 'article-top')
+            .map((id) => document.getElementById(id))
+            .find((el): el is HTMLElement => el !== null);
+          const target = firstSection
+            ? firstSection.getBoundingClientRect().top + window.scrollY + 200
+            : 1500;
+          window.scrollTo(0, target);
           const start = performance.now();
           const tick = (): void => {
             const active = document.querySelector(

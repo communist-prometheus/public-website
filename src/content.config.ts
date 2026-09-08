@@ -44,6 +44,14 @@ const blogCollection = defineCollection({
        */
       topic: z.string().optional(),
       /*
+       * Topics come at two levels and add up when both are present:
+       * `topics` belongs to the material (the admin writes it into every
+       * language of it), `languageTopics` to this translation alone. Both
+       * optional; `topic` above is the single-key form earlier content uses.
+       */
+      topics: z.array(z.string()).optional(),
+      languageTopics: z.array(z.string()).optional(),
+      /*
        * Optional magazine-issue slug this article appeared in. The blog
        * detail page renders "Published in: <issue>" linking back to
        * /<lang>/magazine/<slug> when present. `newspaper` is the

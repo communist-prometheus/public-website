@@ -171,7 +171,15 @@ const visible: readonly Heading[] =
       linksBySlug.set(id, bucket);
       if (!slugs.includes(id)) slugs.push(id);
     }
+    /*
+     * `article-top` is the "back to the top" anchor, not a section of the
+     * text. It sits just under the site header, so once the header grew it
+     * fell under the scroll-spy's trigger line and lit up while the reader
+     * was still at the very top, marking the whole article as "passed".
+     * The spy tracks real sections only.
+     */
     const headings = slugs
+      .filter((slug) => slug !== 'article-top')
       .map((slug) => document.getElementById(slug))
       .filter((el): el is HTMLElement => el !== null);
 
@@ -255,6 +263,21 @@ const visible: readonly Heading[] =
     cleanups.push(() =>
       globalThis.removeEventListener('scroll', onSpyScroll),
     );
+
+    /*
+     * The first pass runs before the page has settled — web fonts and
+     * images still move headings by tens of pixels — so a heading that
+     * is really below the trigger line could be measured above it and
+     * light up while the reader is still at the top. Re-measure once
+     * everything has loaded, and whenever the article box changes size.
+     */
+    globalThis.addEventListener('load', computeActive, { once: true });
+    const article = document.querySelector('article');
+    if (article && 'ResizeObserver' in globalThis) {
+      const resize = new ResizeObserver(onSpyScroll);
+      resize.observe(article);
+      cleanups.push(() => resize.disconnect());
+    }
   };
 
   init();

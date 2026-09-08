@@ -1,5 +1,6 @@
 import { DEFAULT_LANGUAGE } from '@/config/i18n';
 import topicsData from '@/content/settings/topics.json';
+import { articleTopicKeys, type TopicSource } from './article-topics';
 import { type ResolvedTopic, resolveTopic, type TopicEntry } from './topic-resolve';
 
 export type { ResolvedTopic } from './topic-resolve';
@@ -18,3 +19,16 @@ const topics = topicsData as readonly TopicEntry[];
  */
 export const getTopic = (key: string | undefined, lang: string): ResolvedTopic | undefined =>
   resolveTopic(topics, key, lang, DEFAULT_LANGUAGE);
+
+/**
+ * Resolve every topic an article carries — material level first, then the
+ * translation's own — skipping keys that no longer exist in the topic set.
+ *
+ * @param source - The article's topic-bearing frontmatter
+ * @param lang - Current page language code
+ * @returns The resolved topics, in display order
+ */
+export const getArticleTopics = (source: TopicSource, lang: string): readonly ResolvedTopic[] =>
+  articleTopicKeys(source)
+    .map((key) => resolveTopic(topics, key, lang, DEFAULT_LANGUAGE))
+    .filter((topic): topic is ResolvedTopic => topic !== undefined);
