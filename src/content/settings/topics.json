@@ -67,12 +67,12 @@
     },
     "subtitle": {
       "ru": "Подборка из работ классиков",
-      "it": "Una raccolta dai classici",
       "es": "Una selección de los clásicos",
       "bl": "Подборка от класиците",
       "pl": "Wybór z klasyków",
       "uk": "Добірка з праць класиків",
-      "en": "Extracts from the classics"
+      "en": "Extracts from the classics",
+      "it": "Estratti dai classici"
     },
     "description": {}
   }
