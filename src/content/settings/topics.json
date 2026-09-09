@@ -66,13 +66,13 @@
       "uk": "Лікнеп"
     },
     "subtitle": {
-      "en": "A reader from the classics",
       "ru": "Подборка из работ классиков",
       "it": "Una raccolta dai classici",
       "es": "Una selección de los clásicos",
       "bl": "Подборка от класиците",
       "pl": "Wybór z klasyków",
-      "uk": "Добірка з праць класиків"
+      "uk": "Добірка з праць класиків",
+      "en": "Extracts from the classics"
     },
     "description": {}
   }
