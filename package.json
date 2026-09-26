@@ -46,7 +46,7 @@
     "@web-file-reader/viewer": "workspace:*",
     "astro": "^5.17.1",
     "esbuild": "^0.25.0",
-    "js-yaml": "^4.1.0",
+    "js-yaml": "^5.2.1",
     "sharp": "^0.34.0",
     "vite": "^6.4.1"
   },
