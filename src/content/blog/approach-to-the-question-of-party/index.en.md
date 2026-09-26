@@ -9,7 +9,7 @@ description: |-
   The “Communist Prometheus” group does not consider itself the world communist “party”, or even its sole embryo, and views its activities “as part of the practical movement towards communism, as a struggle to create this party”. On this basis, we consider it important to exchange experiences and engage in discussions with other internationalist communist organisations. In this connection, we publish our translations of documents, articles and materials produced by other communist organisations, which we consider to form part of the theoretical heritage of Marxism and an important element in the formation of the class consciousness of the world proletariat.
   We took this translation from the English-language page of the leftcom.org website. We have translated our own introduction, the article author’s introduction, and the concluding section “A Concrete Example”.
 published: true
-publishDate: 2026-07-06
+publishDate: 2026-09-23
 ---
 
 ## Contents

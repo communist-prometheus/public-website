@@ -8,7 +8,7 @@ description: |-
   Drawing upon the rigorous categorical apparatus of Marxist political economy, we undertake a merciless dissection of contemporary imperialism. Step by step, this article demonstrates the structural impasse of the system: from the inexorable tendency of the rate of profit to fall and the tightening of the global debt noose, to capital’s desperate attempts to find salvation in the militarisation of space and in total algorithmic dictates, how the objective laws of accumulation and overproduction, described by Marx and Lenin, operate today – in the era of data centres, central-bank digital currencies (CBDCs), and programmable reality.
   However, this text is not a fatalistic prophecy of the end of the world, but a political guide to action. Found here is not only a diagnosis of the moribund state-monopoly capitalist system, but also a clear answer to the question “What is to be done?”. In an era when opportunists call upon the working class to choose the “lesser evil” among imperialist predators, this review returns the labour movement to its principal historical task – the necessity of forging the revolutionary party created by the vanguard of the working class, capable of smashing the bourgeois state machine and halting the oncoming barbarism.
 published: true
-publishDate: 2026-07-19
+publishDate: 2026-09-22
 ---
 
 ## Contents

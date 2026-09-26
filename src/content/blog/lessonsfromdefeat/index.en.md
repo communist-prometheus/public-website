@@ -1,13 +1,13 @@
 ---
 title: "Lessons of Defeat: Objective Causes of Isolation and Counter-Revolution"
 lang: en
-pubDate: 2026-07-04
+pubDate: 2026-09-23
 magazine: magazine-2-avgust-2026
 category: history
 description: |-
   This material opens a series of articles constituting a brief and, undoubtedly, incomplete historical overview tracing the concrete course of the class struggle in Russia after the October Revolution. In the first part, we will analyse the material conditions in which the isolated revolution found itself. Within this text, we deliberately refrain from a detailed theoretical analysis of the political platforms and programmatic positions of the sides involved in this confrontation. Such a comprehensive Marxist analysis will be the subject of subsequent publications in our journal. For now, let us limit ourselves to a description of the historical reality, which reflects with unequivocal clarity one harsh fact: the world communist revolution that began in October 1917, having been confined within the national borders of a backward country, was objectively doomed to the most severe crisis and counter-revolution.
 published: true
-publishDate: 2026-07-04
+publishDate: 2026-09-23
 ---
 
 ## Contents
