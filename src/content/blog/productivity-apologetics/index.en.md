@@ -2,7 +2,6 @@
 title: "Digression: (On Productive Labour)"
 description: A philosopher produces ideas, a poet poems, a clergyman sermons, a professor compendia and so on. A criminal produces crimes. If we take a closer look at the connection between this latter branch of production and society as a whole, we shall rid ourselves of many prejudices. The criminal produces not only crimes but also criminal law, and with this also the professor who gives lectures on criminal law and in addition to this the inevitable compendium in which this same professor throws his lectures onto the general market as “commodities”. This brings with it augmentation of national wealth, quite apart from the personal enjoyment which — as a competent witness, Professor Roscher, [tells] us (see ... ) — the manuscript of the compendium brings to its originator himself.
 category: critique
-pubDate: 2026-04-30
 published: true
 lang: en
 topic: likbez

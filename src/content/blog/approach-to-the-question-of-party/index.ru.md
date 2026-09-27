@@ -2,7 +2,6 @@
 title: Подход к вопросу о партии
 lang: ru
 topic: translation
-pubDate: 2026-07-06
 magazine: magazine-2-avgust-2026
 category: programme
 description: |-

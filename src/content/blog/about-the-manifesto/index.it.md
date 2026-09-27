@@ -2,7 +2,7 @@
 title: A proposito del “Manifesto”
 description: Il lavoro sul nostro “Manifesto” ha rappresentato un passo importante nell’autodefinizione politica del gruppo e, come prevedibile, ha suscitato un vivo eco tra i compagni. Siamo sempre stati convinti che il marxismo non sia un dogma cristallizzato, ma una guida all’azione che richiede un costante…
 category: programme
-pubDate: 2026-04-30
+publishDate: 2026-04-30
 published: true
 lang: it
 magazine: magazine-1-mai-2026

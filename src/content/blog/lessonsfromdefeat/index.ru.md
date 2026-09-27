@@ -1,7 +1,6 @@
 ---
 title: "Уроки поражения: объективные причины изоляции и контрреволюции"
 lang: ru
-pubDate: 2026-07-04
 magazine: magazine-2-avgust-2026
 category: history
 description: |-

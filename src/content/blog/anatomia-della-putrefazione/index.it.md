@@ -1,7 +1,6 @@
 ---
 title: "Anatomia della putrefazione: Dalla matematica della crisi alla guerra mondiale. Perché il capitalismo non ha futuro"
 lang: it
-pubDate: 2026-07-06
 magazine: magazine-2-avgust-2026
 category: programme
 description: |-

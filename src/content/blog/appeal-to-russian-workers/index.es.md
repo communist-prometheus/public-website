@@ -2,7 +2,6 @@
 title: LLAMAMIENTO A LOS OBREROS DE RUSIA
 description: La historia de nuestra organización no empezó ayer. Gran parte de nuestras publicaciones y declaraciones pasadas son hoy poco conocidas. Por ello, hemos decidido comenzar a publicar en nuestra revista algunos materiales de nuestros archivos. Uno de ellos es la presente declaración, publicada en 1999 en nuestro periódico Komsa.
 category: appeal
-pubDate: 2026-04-30
 published: true
 lang: es
 publishDate: 2026-05-08

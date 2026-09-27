@@ -2,7 +2,6 @@
 title: About the “Manifesto”
 description: "The work on our “Manifesto” marked an important step in the group’s political self-definition and, as we had expected, provoked a lively response among comrades. We have always been convinced that Marxism is not a rigid dogma, but a guide to action, requiring the constant verification of theory through living practice and open, uncompromising discussion among comrades. It is precisely for this reason that we are launching a new column, “Correspondence with a Comrade”, in which we will publish our replies to readers’ questions, criticisms, and comments. In the first instalment of this column, we address the most important theoretical questions raised in the responses to the “Manifesto”: the dialectic of the destruction of the bourgeois state and the withering away of the proletarian semi-state; the falsity of the metaphysical opposition between economic and political struggle; the historical assessment of Stalinism as a consummated bourgeois counter-revolution and of Trotskyism as a tendency that failed to overcome centrism; as well as the material roots of the contemporary proletariat’s passivity in the imperialist metropolises. This polemic is not an academic exercise, but our necessary contribution to the work of preparing the ideological and political foundations of the future world communist party."
 category: programme
-pubDate: 2026-04-30
 published: true
 lang: en
 publishDate: 2026-05-17

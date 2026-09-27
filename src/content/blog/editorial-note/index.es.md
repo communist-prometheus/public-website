@@ -2,7 +2,6 @@
 title: "Nota de la redacción: una nueva etapa"
 description: La publicación del primer número de la revista Prometeo Comunista es el resultado lógico de casi treinta años de labor de nuestro grupo. En unas condiciones de extrema debilidad del movimiento obrero contemporáneo y de dispersión de las fuerzas marxistas, no pretendemos empezar la historia desde cero. Por el contrario, nos apoyamos en la experiencia teórica y política acumulada. Nuestra práctica ha atravesado varias etapas, cada una de las cuales exigió precisar nuestra estrategia y aplicar de forma consecuente el método marxista a las condiciones históricas cambiantes.
 category: editorial
-pubDate: 2026-04-30
 published: true
 lang: es
 publishDate: 2026-05-24

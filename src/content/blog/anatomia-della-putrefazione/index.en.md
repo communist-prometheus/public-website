@@ -1,7 +1,6 @@
 ---
 title: "Анатомия гниения: от математики кризиса к мировой войне. Почему у капитализма нет будущего"
 lang: en
-pubDate: 2026-07-06
 magazine: magazine-2-avgust-2026
 category: programme
 description: |-

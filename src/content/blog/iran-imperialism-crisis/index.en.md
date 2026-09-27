@@ -2,7 +2,6 @@
 title: Iran as the Nexus of the Imperialist Crisis
 description: "This text presents a Marxist analysis of Iran’s role in the contemporary imperialist crisis and the country’s internal class dynamics. Whilst liberal ideologues speak of a struggle between “reformists” and “conservatives”, we argue that all factions of the Iranian bourgeoisie are united in suppressing the workers’ movement, using it merely as a mass base in their internecine struggles over assets. Against the backdrop of the unfolding US–Israeli intervention, we categorically reject both support for foreign invasion and calls for “national unity” around the Islamic regime. The proletariat’s only possible response would be the tactic of revolutionary defeatism: the Iranian proletariat must break free from bourgeois influence, create its own vanguard party, and use the war to smash the bourgeois state and establish the dictatorship of the proletariat through revived workers’ councils."
 category: international
-pubDate: 2026-04-30
 published: true
 lang: en
 publishDate: 2026-05-01

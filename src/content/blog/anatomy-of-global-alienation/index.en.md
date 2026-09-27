@@ -1,13 +1,12 @@
 ---
 title: "The Anatomy of Global Alienation: Political Economy of the Structural Crisis and the Myth of Post-Industrialism"
 lang: en
-pubDate: 2026-09-07
 magazine: magazine-2-avgust-2026
 description: |-
   Modern capitalism has reached a historical threshold, beyond which lies exploitation on an unprecedented scale, disguised as technological progress. In this part of our study, we analyse the political-economic foundations of the global economy. Our aim is to deconstruct bourgeois myths about the “post-industrial society”, the “knowledge economy” and “deindustrialisation”, as well as to examine the mathematical and structural mechanisms through which capital slows the operation of the law of the tendency of the rate of profit to fall by means of spatial expansion and the radical deskilling of labour. Without a rigorous understanding of these objective economic shifts, it is impossible to develop a correct strategy for the class struggle.
 category: programme
 published: true
-publishDate: 2026-07-13
+publishDate: 2026-09-07
 ---
 
 ## Contents

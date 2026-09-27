@@ -2,7 +2,6 @@
 title: "The Approach to the Question of the Party"
 lang: en
 topic: translation
-pubDate: 2026-09-23
 magazine: magazine-2-avgust-2026
 category: programme
 description: |-

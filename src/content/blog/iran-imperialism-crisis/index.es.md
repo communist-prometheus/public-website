@@ -2,7 +2,7 @@
 title: Irán como centro neurálgico de la crisis del imperialismo
 description: "Este texto constituye un análisis marxista del papel de Irán en la actual crisis imperialista y de la dinámica de clases al interior del país. Mientras que los ideólogos liberales discurren sobre la pugna entre “reformistas” y “conservadores”, nosotros demostramos que todas las fracciones de la burguesía iraní se mantienen unidas a la hora de aplastar al movimiento obrero, utilizándolo como un mero ejército de figurantes en sus disputas intestinas por el control de los activos. En el contexto de la intervención estadounidense-israelí en curso, rechazamos categóricamente tanto cualquier apoyo a la invasión extranjera como los llamamientos a la “unidad nacional” en torno al régimen islámico. La única respuesta del proletariado debe ser la táctica del derrotismo revolucionario: la clase obrera iraní tiene que emanciparse de la influencia de la burguesía, forjar su propio partido de vanguardia y aprovechar la guerra para demoler el Estado burgués e instaurar la dictadura del proletariado a través de los consejos obreros renacidos."
 category: international
-pubDate: 2026-04-30
+publishDate: 2026-04-30
 published: true
 lang: es
 magazine: magazine-1-mai-2026
