@@ -10,8 +10,6 @@ lang: es
 magazine: magazine-1-mai-2026
 ---
 
-
-
 # Karl Marx
 
 El filósofo produce ideas, el poeta poemas, el cura sermones, el profesor compendios, etc. El delincuente produce delitos. Fijémonos un poco más de cerca en la conexión que existe entre esta última rama de producción y el conjunto de la sociedad y ello nos ayudará a sobreponernos a muchos prejuicios.

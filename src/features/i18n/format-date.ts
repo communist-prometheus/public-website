@@ -23,6 +23,7 @@ const LOCALE_BY_LANGUAGE: Readonly<Record<string, string>> = {
   bl: 'bg-BG',
   pl: 'pl-PL',
   uk: 'uk-UA',
+  de: 'de-DE',
 };
 
 const FORMAT_OPTIONS: Readonly<Intl.DateTimeFormatOptions> = {

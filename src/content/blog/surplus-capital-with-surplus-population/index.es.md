@@ -1,23 +1,19 @@
 ---
-title: Избыток капитала при избытке населения
+title: Exceso de capital y exceso de población
 lang: es
-pubDate: 2026-07-13
-magazine: magazine-2-avgust-2026
+topic: likbez
+category: programme
 description: |-
   En una época en la que se propaga la ilusión sobre el dominio de las redes neuronales y las transacciones financieras se realizan en fracciones de segundo, el fragmento publicado a continuación, extraído del tomo III de “El capital”, se presenta no como un artefacto histórico, sino como un corte anatómico aterradoramente exacto de la actualidad. Mientras el pensamiento burgués atribuye las crisis a “choques externos”, Marx deja al descubierto la paradoja fundamental del sistema: la existencia simultánea de capital excedente y de población excedente. Él demuestra que la crisis no es consecuencia de un exceso físico de bienes para la humanidad, sino un callejón sin salida matemático en el cual gigantescas masas de trabajo objetivado pierden la capacidad de generar una tasa de ganancia suficiente, empujando a la economía hacia aventuras especulativas y burbujas crediticias.
-  «Sin teoría revolucionaria, no hay movimiento revolucionario»_, reza el axioma del primer marxista ruso, Plejánov. Si se reduce la contradicción principal del capitalismo a problemas de “distribución injusta”, la respuesta será un reformismo sin salida. Sin embargo, la ciencia objetiva de Marx no deja lugar a ilusiones: el capitalismo es capaz de restaurar su tasa de ganancia únicamente a través de la destrucción bárbara de los valores acumulados — quiebras masivas, desvalorización del trabajo y guerras imperialistas.
+  «Sin teoría revolucionaria, no hay movimiento revolucionario»_, reza el axioma del primer marxista ruso, Plejánov. Si se reduce la contradicción principal del capitalismo a problemas de “distribución injusta”, la respuesta será un reformismo sin salida. Sin embargo, la ciencia objetiva de Marx no deja lugar a ilusiones: el capitalismo es capaz de restaurar su tasa de ganancia únicamente a través de la destrucción bárbara de los valores acumulados —quiebras masivas, desvalorización del trabajo y guerras imperialistas.
   Es necesario recurrir a la fuente original para luego observar cómo la lógica de hierro de Marx se abre paso a través de las contradicciones tecnológicas y sociales del siglo XXI.
-
-  «Без революционной теории нет революционного движения», – гласит аксиома первого русского марксиста Плеханова. Если сводить основное противоречие капитализма к проблемам “несправедливого распределения”, ответом станет тупиковый реформизм. Однако объективная наука Маркса не оставляет иллюзий: капитализм способен восстанавливать свою норму прибыли только через варварское уничтожение накопленных стоимостей – массовые банкротства, обесценивание труда и империалистические войны.
-
-  Следует обратиться к первоисточнику, чтобы затем проследить, как железная логика Маркса прокладывает себе путь сквозь технологические и социальные противоречия XXI века."
-category: programme
 published: true
-publishDate: 2026-07-13
+publishDate: 2026-07-19
 ---
 
-# Karl Marx[^1]
+**Exceso de capital y exceso de población[^1]**
 
+# Karl Marx
 
 Al disminuir la cuota de ganancia, aumenta el mínimo de capital que cada capitalista necesita manejar para poder dar un empleo a su trabajo; es decir, tanto para su explotación en general como para que el tiempo de trabajo empleado sea precisamente el tiempo de trabajo necesario para la producción de las mercancías, para que no exceda de la media del tiempo de trabajo socialmente necesario para su producción. Y, al mismo tiempo, un capital grande con una cuota de ganancia pequeña acumula más rápidamente que un capital pequeño con una cuota de ganancia grande. Y esta creciente concentración provoca, a su vez, al llegar a un cierto nivel, un nuevo descenso de la cuota de ganancia. La masa de los pequeños capitales desperdigados se ve empujada de este modo a los caminos de la aventura: especulación, combinaciones turbias a base de crédito, manejos especulativos con acciones, crisis. La llamada plétora de capital se refiere siempre, esencialmente, a la plétora del capital en el que la baja de la cuota de ganancia no se ve compensada por su masa – y éstos son siempre los exponentes del capital recientes, de nueva creación – o a la plétora que estos capitales incapaces de desarrollar una acción propia ponen, en forma de crédito, a disposición de los dirigentes de las grandes ramas comerciales. Esta plétora de capital responde a las mismas causas que provocan una superpoblación relativa y constituye, por tanto, un fenómeno complementario de ésta, aunque se mueven en polos contrarios: uno, el del capital ocioso y otro el de la población obrera desocupada.
 

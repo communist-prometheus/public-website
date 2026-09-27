@@ -1,12 +1,13 @@
 ---
-title: "The Anatomy of Global Alienation:Political Economy of the Structural Crisis and the Myth of Post-Industrialism"
+title: "The Anatomy of Global Alienation: Political Economy of the Structural Crisis and the Myth of Post-Industrialism"
 lang: en
+pubDate: 2026-09-07
 magazine: magazine-2-avgust-2026
 description: |-
   Modern capitalism has reached a historical threshold, beyond which lies exploitation on an unprecedented scale, disguised as technological progress. In this part of our study, we analyse the political-economic foundations of the global economy. Our aim is to deconstruct bourgeois myths about the “post-industrial society”, the “knowledge economy” and “deindustrialisation”, as well as to examine the mathematical and structural mechanisms through which capital slows the operation of the law of the tendency of the rate of profit to fall by means of spatial expansion and the radical deskilling of labour. Without a rigorous understanding of these objective economic shifts, it is impossible to develop a correct strategy for the class struggle.
 category: programme
 published: true
-publishDate: 2026-09-07
+publishDate: 2026-07-13
 ---
 
 ## Contents
@@ -14,6 +15,7 @@ publishDate: 2026-09-07
 - [Theoretical Foundation: Variable Capital and the War of All Against All](#theoretical-foundation-variable-capital-and-the-war-of-all-against-all)
 - [Anatomy of Structural Shifts: From the Myth of “De-industrialization” to Tertiarization](#anatomy-of-structural-shifts-from-the-myth-of-de-industrialization-to-tertiarization)
 - [The Illusion of Wealth and the Falling Share of Labour](#the-illusion-of-wealth-and-the-falling-share-of-labour)
+
 
 
 Contemporary global capitalism hasn’t overcome the contradictions that characterised its earlier stages of development. As we argued in the inaugural issue of this journal in the article _“From Engels’ Manchester to the Global Manchester”,_ capital hasn’t changed its predatory nature; it has merely extended the infernal conditions of nineteenth-century industrial Manchester to the entire globe. Confronted with the inexorable operation of the law of the tendency of the rate of profit to fall, the system has carried out a tectonic spatial reconfiguration. A substantial share of material production has been relocated to regions offering cheap labour, while the system has subordinated the proletariat of the old imperialist metropolises to digital Taylorism, contemporary forms of piece-rate labour embodied in the so-called gig economy, and the exhausting culture of hyper-exploitation exemplified by the “996” work regime. Bourgeois statistics and reformist institutions seek to conceal this global sweatshop behind the myths of the “post-industrial society” and the “knowledge economy”, employing sterile terminology to obscure the reality of both the absolute and relative immiseration of the masses.
