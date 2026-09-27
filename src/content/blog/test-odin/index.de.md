@@ -1,11 +1,11 @@
 ---
-title: "новая статья"
+title: "neuer artikle"
 lang: de
 publishDate: 2026-09-27
 description: |-
-  проверка публикации новой статьи
+  probiere auf publische eine neuer tekst im deutsch
 category: theory
-published: false
+published: true
 ---
 
-проверка
+eine probe
