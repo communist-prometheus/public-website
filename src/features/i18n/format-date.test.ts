@@ -14,6 +14,12 @@ describe('formatArticleDate', () => {
     expect(out).toContain('2026');
   });
 
+  it('formats German with localised month', () => {
+    const out = formatArticleDate(SAMPLE, 'de');
+    expect(out.toLowerCase()).toContain('mai');
+    expect(out).toContain('2026');
+  });
+
   it('formats Italian with localised month', () => {
     const out = formatArticleDate(SAMPLE, 'it');
     expect(out.toLowerCase()).toContain('maggio');
