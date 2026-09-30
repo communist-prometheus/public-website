@@ -54,7 +54,7 @@ Ridurre l’accumulazione prevalentemente all’espansione violenta riporta l’
 
 In cosa consisteva dunque il vero errore teorico di Luxemburg sulla questione della realizzazione? A lungo, nella letteratura marxista (e ancor più in quella stalinista) ha dominato l’opinione semplicistica secondo cui il difetto principale di Luxemburg fosse quello di essere prigioniera del “dogma di Smith”, trasferendo meccanicamente il problema della realizzazione dei beni di consumo (II sezione) sull’intera massa dei valori prodotti. In altre parole, le si attribuiva di aver ignorato il primato del consumo produttivo su quello personale e di non aver compreso che il capitale crea da sé il proprio mercato, assorbendo elementi di capitale costante (mezzi di produzione) indipendentemente dai limiti del potere d’acquisto dei consumatori finali.
 
-Questa lettura, che circolava nei manuali stalinisti di economia politica, si appoggiava formalmente sulla polemica di Lenin e Bucharin contro Luxemburg. Così, nel marzo 1913, subito dopo l’uscita del libro, Lenin emise un verdetto durissimo in una lettera privata a Šljapnikov:
+Questa lettura, che circolava nei manuali stalinisti di economia politica, si appoggiava formalmente sulla polemica di Lenin e Bucharin contro Luxemburg. Così, nel marzo 1913, subito dopo l’uscita del libro, Lenin emise un verdetto durissimo in una lettera privata a Kamenev:
 
 *«Ho letto il nuovo libro di Rosa *Die Akkumulation des Kapitals*. Ne dice di grosse! Ha storpiato Marx. Sono molto lieto che sia Pannekoek quanto Eckstein e O. Bauer l’abbiano unanimamente biasimata e abbiano detto contro di lei quello che io dicevo nel 1899 contro i populisti».[^4]*
 
@@ -294,7 +294,7 @@ Il capitalismo non morirà mai di morte naturale per “vecchiaia” o per esaur
 [^1]: - R. Luxemburg, *L’accumulazione del capitale*, introduzione di P.M. Sweezy, trad. it. di B. Maffi, Einaudi, Torino 1960, p. 454.
 [^2]: - K. Marx, *Il Capitale*, Libro I, 1867, in CriticaMente. URL: [https://www.criticamente.com/marxismo/capitale/capitale_1/Marx_Karl_-*Il_Capitale*-*Libro_I*-_24.htm](https://www.google.com/search?q=https%3A%2F%2Fwww.criticamente.com%2Fmarxismo%2Fcapitale%2Fcapitale_1%2FMarx_Karl_-_Il_Capitale_-_Libro_I_-_24.htm)
 [^3]: - F. Engels, *Anti-Dühring*, Sezione II, cap. I, 1878, in Marxists Internet Archive. URL: [https://www.marxists.org/italiano/marx-engels/1878/antiduhring/2-1.htm#p3](https://www.marxists.org/italiano/marx-engels/1878/antiduhring/2-1.htm#p3)
-[^4]: - Lenin V. I. Alla redazione del “Social-Democrat” // Opere complete. Vol. 35. Roma: Editori Riuniti, 1956. P. 56.
+[^4]: - Lenin V. I. Lettera a Kamenev // Opere complete. Vol. 35. Roma: Editori Riuniti, 1956. P. 56.
 [^5]: - Lenin V. I. Lo sviluppo del capitalismo in Russia // Opere complete. Vol. 3. Roma: Editori Riuniti, 1956. P. 33.
 [^6]: - V. I. Lenin, *Leninskij Sbornik XXII*, a cura di M. A. Savel’ev e V. G. Sorin, Mosca, Edizioni del Partito, 1933, p. 381 (*nostra traduzione dall’originale russo*).
 [^7]: - R. Luxemburg, *L’accumulazione del capitale*, introduzione di P.M. Sweezy, trad. it. di B. Maffi, Einaudi, Torino 1960, p. 360.
