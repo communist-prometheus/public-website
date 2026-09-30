@@ -294,7 +294,7 @@ Il capitalismo non morirà mai di morte naturale per “vecchiaia” o per esaur
 [^1]: - R. Luxemburg, *L’accumulazione del capitale*, introduzione di P.M. Sweezy, trad. it. di B. Maffi, Einaudi, Torino 1960, p. 454.
 [^2]: - K. Marx, *Il Capitale*, Libro I, 1867, in CriticaMente. URL: [https://www.criticamente.com/marxismo/capitale/capitale_1/Marx_Karl_-*Il_Capitale*-*Libro_I*-_24.htm](https://www.google.com/search?q=https%3A%2F%2Fwww.criticamente.com%2Fmarxismo%2Fcapitale%2Fcapitale_1%2FMarx_Karl_-_Il_Capitale_-_Libro_I_-_24.htm)
 [^3]: - F. Engels, *Anti-Dühring*, Sezione II, cap. I, 1878, in Marxists Internet Archive. URL: [https://www.marxists.org/italiano/marx-engels/1878/antiduhring/2-1.htm#p3](https://www.marxists.org/italiano/marx-engels/1878/antiduhring/2-1.htm#p3)
-[^4]: - Lenin V. I. Lettera a Kamenev // Opere complete. Vol. 35. Roma: Editori Riuniti, 1956. P. 56.
+[^4]: - Lenin V. I. Alla redazione del “Social-Democrat” // Opere complete. Vol. 35. Roma: Editori Riuniti, 1956. P. 56.
 [^5]: - Lenin V. I. Lo sviluppo del capitalismo in Russia // Opere complete. Vol. 3. Roma: Editori Riuniti, 1956. P. 33.
 [^6]: - V. I. Lenin, *Leninskij Sbornik XXII*, a cura di M. A. Savel’ev e V. G. Sorin, Mosca, Edizioni del Partito, 1933, p. 381 (*nostra traduzione dall’originale russo*).
 [^7]: - R. Luxemburg, *L’accumulazione del capitale*, introduzione di P.M. Sweezy, trad. it. di B. Maffi, Einaudi, Torino 1960, p. 360.
