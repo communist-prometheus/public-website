@@ -13,7 +13,7 @@ articles:
   - lessonsfromdefeat
   - mirror-for-hero
   - approach-to-the-question-of-party
-image: ./assets/cover.it.png
+image: ./assets/cover.en.png
 ---
 
 
