@@ -1,7 +1,7 @@
 ---
-title: La rivista «Prometeo comunista» №2 — Agosto 2026
+title: The magazine «Communist Prometheus» №2 — September 2026
 lang: en
-published: false
+published: true
 publishDate: 2026-09-29
 articles:
   - international-review-july-2026
