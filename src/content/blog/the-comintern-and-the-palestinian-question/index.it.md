@@ -1,6 +1,6 @@
 ---
 title: "The Comintern and the Palestinian Question"
-lang: en
+lang: it
 publishDate: 2026-10-07
 description: |-
   This article was written three years ago, in the immediate aftermath of the tragic events of October 7, 2023. It was precisely that unprecedented escalation of violence in the Middle East that served as the impetus to turn to the historical roots of the conflict and analyse the Palestinian question from the standpoint of proletarian internationalism.
@@ -11,7 +11,7 @@ languageTopics:
 topics:
   - comment
 category: international
-published: true
+published: false
 ---
 
 ## Contents
