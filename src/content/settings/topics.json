@@ -83,13 +83,15 @@
       "ru": "Комментарий",
       "en": "Comment",
       "it": "Commento",
-      "es": "Comentario"
+      "es": "Comentario",
+      "uk": "Коментар"
     },
     "subtitle": {
       "ru": "Комментарий",
       "en": "Comment",
       "it": "Commento",
-      "es": "Comentario"
+      "es": "Comentario",
+      "uk": "Коментар"
     },
     "description": {}
   }
