@@ -84,14 +84,18 @@
       "en": "Comment",
       "it": "Commento",
       "es": "Comentario",
-      "uk": "Коментар"
+      "uk": "Коментар",
+      "pl": "Komentarz",
+      "bl": "Коментар"
     },
     "subtitle": {
       "ru": "Комментарий",
       "en": "Comment",
       "it": "Commento",
       "es": "Comentario",
-      "uk": "Коментар"
+      "uk": "Коментар",
+      "pl": "Komentarz",
+      "bl": "Коментар"
     },
     "description": {}
   }
