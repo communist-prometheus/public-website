@@ -111,7 +111,8 @@
   {
     "key": "comment",
     "translations": {
-      "ru": "Комментарий"
+      "ru": "Комментарий",
+      "it": "Сommento"
     }
   }
 ]
