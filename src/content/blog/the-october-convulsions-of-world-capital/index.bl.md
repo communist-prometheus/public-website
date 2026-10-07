@@ -1,13 +1,13 @@
 ---
 title: "Die Oktoberkonvulsionen des Weltkapitals"
-lang: de
+lang: bl
 publishDate: 2026-10-07
 languageTopics:
   - comment
 topics:
   - comment
 category: international
-published: true
+published: false
 ---
 
 **_Kommentar_**
