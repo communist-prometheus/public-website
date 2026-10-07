@@ -80,10 +80,16 @@
     "key": "comment",
     "color": "#241f31",
     "name": {
-      "ru": "Комментарий"
+      "ru": "Комментарий",
+      "en": "Comment",
+      "it": "Commento",
+      "es": "Comentario"
     },
     "subtitle": {
-      "ru": "Комментарий"
+      "ru": "Комментарий",
+      "en": "Comment",
+      "it": "Commento",
+      "es": "Comentario"
     },
     "description": {}
   }
