@@ -10,7 +10,7 @@ languageTopics:
   - comment
 topics:
   - comment
-category: international
+category: history
 published: true
 ---
 
@@ -57,6 +57,6 @@ In the SWPP–PZ’s appeal to the First Congress of the Peoples of the East, pa
 
 At the Congress in Baku, the appeal “To the Peoples of the East" was adopted, which, in essence, was the strategic programme of the Comintern’s anti-imperialist policy. Its cornerstone was the call for an anti-colonial struggle against the British and French oppressors. In the section dedicated to the Palestinian question, the Arab and Jewish toilers of Palestine were called upon to wage a joint struggle against a common enemy – Great Britain, which _«drove the Arabs from the land to give these lands to Jewish settlers_ \[...\]_, and then_ \[to suppress\] _the indignation of the Arabs, incited them against the very Jewish settlers it had planted, sowing discord, enmity, and hatred_ \[...\], _weakening both sides so that it could itself rule and command»_ (First Congress of the Peoples of the East. Stenographic Report. Petrograd, 1920).
 
-Thus, the main task of organizing the revolutionary movement in Palestine was, according to the ECCI-s definition, the achievement of the internationalist unity of Arab and Jewish toilers in the struggle against imperialism.
+Thus, the main task of organizing the revolutionary movement in Palestine was, according to the ECCI's definition, the achievement of the internationalist unity of Arab and Jewish toilers in the struggle against imperialism.
 
 _November 2023_
