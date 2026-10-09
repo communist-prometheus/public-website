@@ -6,10 +6,9 @@ languageTopics:
   - comment
 topics:
   - comment
-category: international
+category: history
 published: true
 ---
-
 
 A través del ruido informativo de octubre de 2026, el pensamiento burgués solo es capaz de vislumbrar el caos. Pero este caos no es más que una apariencia: tras las maniobras diplomáticas, las crisis gubernamentales y las represiones policiales se oculta una misma fisiología de la crisis estructural del capitalismo.
 
