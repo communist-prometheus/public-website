@@ -18,7 +18,7 @@ publishDate: 2026-09-05
 - [The Second Trick: Ignoring the Size of the Proletariat](#the-second-trick-ignoring-the-size-of-the-proletariat)
 
 
-
+**_Class struggle in the world_**
 
 The late 1960s marked the exhaustion of the potential of the cycle of capitalist accumulation that had begun following the destruction of capital during the Second World War. The events of 1968–1969 – above all, the French “May” and the Italian “Hot Autumn” – were not reducible to student riots or isolated political outbursts: they coincided with a broad workers’ movement and laid bare the accumulated contradictions of the post-war model of state-monopoly capitalism.
 
