@@ -2,7 +2,6 @@
 title: "From the editorial board: A new stage"
 description: The publication of the first issue of “Communist Prometheus” is a natural result of nearly thirty years of work done by our group. In conditions of extreme weakness on the part of the contemporary workers’ movement and fragmentation of Marxist forces, we are not trying to start all over. On the contrary, we draw upon accumulated political and theoretical experience. Our praxis has passed through several stages, each one required a refinement of strategy and the consistent application of the Marxist method to changing historical conditions.
 category: editorial
-pubDate: 2026-04-30
 published: true
 lang: en
 publishDate: 2026-05-24

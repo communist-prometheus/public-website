@@ -2,7 +2,6 @@
 title: A propósito del “Manifiesto”
 description: "El trabajo en nuestro “Manifiesto” se convirtió en un paso importante en la autodeterminación política del grupo y, como esperábamos, suscitó una viva respuesta entre los compañeros. Siempre hemos estado convencidos de que el marxismo no es un dogma anquilosado, sino una guía para la acción, que exige una constante contrastación de la teoría con la práctica viva y un debate de compañeros abierto e intransigente. Precisamente por eso inauguramos la nueva sección “Correspondencia con el compañero”, en la que publicaremos nuestras respuestas a las preguntas, críticas y comentarios de los lectores. En la primera entrega de esta sección, analizamos los nudos teóricos más importantes abordados en las respuestas al “Manifiesto”: la dialéctica de la destrucción del Estado burgués y la extinción del semiestado proletario; la falsedad de la contraposición metafísica entre la lucha económica y la política; la valoración histórica del estalinismo como contrarrevolución burguesa consumada y del trotskismo como una corriente que no superó el centrismo; así como las raíces materiales de la pasividad del proletariado contemporáneo en las metrópolis imperialistas. Esta polémica no es un ejercicio académico, sino nuestra contribución necesaria a la labor de preparación de los cimientos ideológicos y políticos del futuro partido comunista mundial."
 category: programme
-pubDate: 2026-04-30
 published: true
 lang: es
 magazine: magazine-1-mai-2026

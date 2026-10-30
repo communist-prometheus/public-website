@@ -2,7 +2,6 @@
 title: Introducción y el “Esquema de programa” del Partido Comunista Internacionalista
 description: El grupo "Prometeo Comunista" no se considera un* «partido comunista mundial ni siquiera su único embrione» y ve su propia actividad «como una parte del movimiento práctico hacia el comunismo, como una lucha por la creación de este partido». *Partiendo de este presupuesto, consideramos fundamental intercambiar experiencias y mantener discusiones con otras organizaciones comunistas internacionalistas. "El esquema de programa del Partido Comunista Internacionalista" y la correspondiente introducción al mismo, escrita expresamente por los camaradas de Battaglia Comunista, constituyen la primera de una serie de publicaciones de documentos, artículos y materiales de otras organizaciones comunistas. Consideramos el estudio profundo de estos textos como parte integrante del patrimonio teórico del marxismo y un elemento crucial en la formación de la conciencia de clase del proletariado mundial.
 category: programme
-pubDate: 2026-04-30
 published: true
 lang: es
 topic: translation

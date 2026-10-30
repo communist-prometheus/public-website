@@ -1,7 +1,6 @@
 ---
 title: "Lessons of Defeat: Objective Causes of Isolation and Counter-Revolution"
 lang: en
-pubDate: 2026-09-23
 magazine: magazine-2-avgust-2026
 category: history
 description: |-

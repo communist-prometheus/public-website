@@ -9,7 +9,8 @@
       "es": "De la redacción",
       "bl": "От редакцията",
       "pl": "Od redakcji",
-      "uk": "Від редакції"
+      "uk": "Від редакції",
+      "de": "Von der Redaktion"
     },
     "subtitle": {
       "en": "The editorial board's own position",
@@ -32,7 +33,8 @@
       "es": "Nuestra traducción",
       "bl": "Наш превод",
       "pl": "Nasze tłumaczenie",
-      "uk": "Наш переклад"
+      "uk": "Наш переклад",
+      "de": "Unsere Übersetzung"
     },
     "subtitle": {
       "en": "Our translation",
@@ -63,7 +65,8 @@
       "es": "Likbez",
       "bl": "Ликбез",
       "pl": "Likbez",
-      "uk": "Лікнеп"
+      "uk": "Лікнеп",
+      "de": "Likbez"
     },
     "subtitle": {
       "es": "Una selección de los clásicos",
@@ -73,6 +76,30 @@
       "en": "Extracts from the classics",
       "it": "Estratti dai classici",
       "ru": "Выдержки из работ классиков"
+    },
+    "description": {}
+  },
+  {
+    "key": "comment",
+    "color": "#241f31",
+    "name": {
+      "ru": "Комментарий",
+      "en": "Comment",
+      "it": "Commento",
+      "es": "Comentario",
+      "uk": "Коментар",
+      "pl": "Komentarz",
+      "bl": "Коментар",
+      "de": "Kommentar"
+    },
+    "subtitle": {
+      "ru": "Комментарий",
+      "en": "Comment",
+      "it": "Commento",
+      "es": "Comentario",
+      "uk": "Коментар",
+      "pl": "Komentarz",
+      "bl": "Коментар"
     },
     "description": {}
   }

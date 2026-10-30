@@ -1,7 +1,6 @@
 ---
 title: Журнал «Коммунистический Прометей» №2 — август 2026
 lang: ru
-pubDate: 2026-08-01
 published: true
 publishDate: 2026-08-01
 articles:

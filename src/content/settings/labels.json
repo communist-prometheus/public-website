@@ -6,22 +6,23 @@
       "ru": "Технологии",
       "it": "Tecnologia",
       "es": "Tecnología",
-      "pu": "Технология",
       "bl": "Технология",
       "pl": "Technologia",
-      "uk": "Технології"
+      "uk": "Технології",
+      "de": "Technik"
     }
   },
   {
     "key": "announcement",
     "translations": {
-      "en": "Anouncement",
+      "en": "Announcement",
       "ru": "Объявление",
       "it": "Annuncio",
       "es": "Anuncio",
       "bl": "Съобщение",
+      "pl": "Ogłoszenie",
       "uk": "Оголошення",
-      "pl": "Ogłoszenie"
+      "de": "Ankündigung"
     }
   },
   {
@@ -33,7 +34,8 @@
       "es": "Comunidad",
       "bl": "Общност",
       "pl": "Społeczność",
-      "uk": "Спільнота"
+      "uk": "Спільнота",
+      "de": "Gemeinschaft"
     }
   },
   {
@@ -43,9 +45,10 @@
       "ru": "Редакционная статья",
       "it": "Editoriale",
       "es": "Editorial",
-      "uk": "Редакційна стаття",
       "bl": "Редакционна статия",
-      "pl": "Artykuł redakcyjny"
+      "pl": "Artykuł redakcyjny",
+      "uk": "Редакційна стаття",
+      "de": "Leitartikel"
     }
   },
   {
@@ -55,9 +58,10 @@
       "ru": "Международная политика",
       "it": "Politica internazionale",
       "es": "Política internacional",
-      "uk": "Міжнародна політика",
       "bl": "Международна политика",
-      "pl": "Polityka międzynarodowa"
+      "pl": "Polityka międzynarodowa",
+      "uk": "Міжнародна політика",
+      "de": "Internationale Politik"
     }
   },
   {
@@ -67,9 +71,10 @@
       "ru": "Программа",
       "it": "Programma",
       "es": "Programa",
-      "uk": "програма",
       "bl": "Програма",
-      "pl": "Program"
+      "pl": "Program",
+      "uk": "Програма",
+      "de": "Programm"
     }
   },
   {
@@ -79,9 +84,10 @@
       "ru": "История",
       "it": "Storia",
       "es": "Historia",
-      "uk": "Історія",
       "bl": "История",
-      "pl": "Historia"
+      "pl": "Historia",
+      "uk": "Історія",
+      "de": "Geschichte"
     }
   },
   {
@@ -91,9 +97,10 @@
       "ru": "Критика",
       "it": "Critica",
       "es": "Crítica",
-      "uk": "Критика",
       "bl": "Критика",
-      "pl": "Krytyka"
+      "pl": "Krytyka",
+      "uk": "Критика",
+      "de": "Kritik"
     }
   },
   {
@@ -103,9 +110,49 @@
       "ru": "Обращения",
       "it": "Appello",
       "es": "Llamamiento",
-      "uk": "Звернення",
       "bl": "Обръщение",
-      "pl": "Apel"
+      "pl": "Apel",
+      "uk": "Звернення",
+      "de": "Aufruf"
+    }
+  },
+  {
+    "key": "comment",
+    "translations": {
+      "en": "Comment",
+      "ru": "Комментарий",
+      "it": "Commento",
+      "es": "Comentario",
+      "bl": "Коментар",
+      "pl": "Komentarz",
+      "uk": "Коментар",
+      "de": "Kommentar"
+    }
+  },
+  {
+    "key": "struggle",
+    "translations": {
+      "en": "Class struggle worldwide",
+      "ru": "Классовая борьба в мире",
+      "it": "Lotta di classe nel mondo",
+      "es": "Lucha de clases en el mundo",
+      "bl": "Класова борба по света",
+      "pl": "Walka klas na świecie",
+      "uk": "Класова боротьба у світі",
+      "de": "Klassenkampf weltweit"
+    }
+  },
+  {
+    "key": "theory",
+    "translations": {
+      "en": "Theory",
+      "ru": "Теория",
+      "it": "Teoria",
+      "es": "Teoría",
+      "bl": "Теория",
+      "pl": "Teoria",
+      "uk": "Теорія",
+      "de": "Theorie"
     }
   }
 ]

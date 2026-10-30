@@ -2,7 +2,7 @@
 title: Introduzione allo “Schema di programma” del Partito comunista internazionalista
 description: Per comprendere il contesto in cui nacque lo “Schema di programma” del Partito comunista internazionalista, redatto e reso pubblico (nei limiti della forzata clandestinità) nel 1944, pensiamo che sia utile tracciare una…
 category: programme
-pubDate: 2026-04-30
+publishDate: 2026-04-30
 published: false
 lang: it
 magazine: magazine-1-mai-2026

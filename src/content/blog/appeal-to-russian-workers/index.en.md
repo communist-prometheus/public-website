@@ -2,7 +2,6 @@
 title: APPEAL TO THE WORKERS OF RUSSIA
 description: Our group’s history did not start yesterday. Most of our past publications and declarations are not widely known today. That is why we decided to start publishing in our magazine some materials from our archives. One of them is this call to action, published in 1999 in our paper “Komsa”.
 category: appeal
-pubDate: 2026-04-30
 published: true
 lang: en
 publishDate: 2026-05-08

@@ -2,11 +2,10 @@
 title: "The Approach to the Question of the Party"
 lang: en
 topic: translation
-pubDate: 2026-09-23
 magazine: magazine-2-avgust-2026
 category: programme
 description: |-
-  The “Communist Prometheus” group does not consider itself the world communist “party”, or even its sole embryo, and views its activities “as part of the practical movement towards communism, as a struggle to create this party”. On this basis, we consider it important to exchange experiences and engage in discussions with other internationalist communist organisations. In this connection, we publish our translations of documents, articles and materials produced by other communist organisations, which we consider to form part of the theoretical heritage of Marxism and an important element in the formation of the class consciousness of the world proletariat.
+  The “Communist Prometheus” group does not consider itself the “world communist party, or even its sole embryo”, and views its activities “as part of the practical movement towards communism, as a struggle to create this party”. On this basis, we consider it important to exchange experiences and engage in discussions with other internationalist communist organisations. In this connection, we publish our translations of documents, articles and materials produced by other communist organisations, which we consider to form part of the theoretical heritage of Marxism and an important element in the formation of the class consciousness of the world proletariat.
   We took this translation from the English-language page of the leftcom.org website. We have translated our own introduction, the article author’s introduction, and the concluding section “A Concrete Example”.
 published: true
 publishDate: 2026-09-23
@@ -342,7 +341,7 @@ And this for the simple reason that the working class is present and active with
 Unless, that is, for these reformists in retreat, their approach to the trade-union question and their tailend-ism are the practical premises for a complete political revision of the role of the party, the function of neo-social democracy, the relationship between the party and bourgeois strata and, why not, a more flexible reinterpretation of the United Front, of “revolutionary reformism”, with all the associated implications.
 
 _FD  
-Prometeo, 1985_
+Prometeo, No. 9, Series IV, 1985_
 
 [^1]: \- A. Bordiga, Partito e classe, in Rassegna Comunista, anno 1, n. 2, 15 aprile 1921.
 [^2]: \- Ibid.

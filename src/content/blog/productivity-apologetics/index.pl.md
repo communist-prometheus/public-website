@@ -2,7 +2,6 @@
 title: Apologetyczna koncepcja produkcyjności wszystkich zawodów
 description: Filozof wytwarza idee, poeta – wiersze, pastor – kazania, profesor – kompendia itd. Przestępca wytwarza przestc; pstwa. Jeśli przyjrzymy się bliżej powiązaniom tej ostatniet gałęzi produkcji z całością społeczeństwa, uwolnimy się od wielu przesądów. Przestępca wytwarza nic tylko przestępstwo, ale również prawo karne, a tym samym profesora, wygłaszającego wykłady z prawa karnego, oraz niezbędne kompendium, w formie którego tenże profesor rzuca swoje wykłady jako „towary" na ogólny rynek. Od tego zwiększa się bogactwo narodowe, nie mówiąc już o osobistej przyjemności, jaką, zgodnie z zapewnieniem kompetentnego świadka, Profesora Roschera, rękopis kompendium sprawia swemu twórcy.
 category: critique
-pubDate: 2026-04-30
 published: true
 lang: pl
 topic: likbez

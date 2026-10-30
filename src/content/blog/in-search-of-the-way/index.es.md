@@ -2,7 +2,7 @@
 title: En busca del camino
 description: "Este texto es un ensayo histórico-político que describe el largo camino de formación y la evolución ideológica de un grupo: desde su origen a finales de la década de 1990 hasta la transición a nuevas formas de trabajo en la actualidad. El material narra los primeros pasos de la organización en la* «tierra arrasada» de la Rusia postsoviética, el maximalismo espontáneo de los primeros años de publicación del periódico Komsa y los intentos de reconstruir los principios comunistas del trabajo de partido. En las condiciones actuales de extrema pasividad de la clase obrera, perseguir indicadores cuantitativos resulta destructivo: la tarea primordial de los comunistas de hoy no debe ser la compilación mecánica de la prensa burguesa ni la imitación de un carácter de masas, sino una selección intransigente, una profunda preparación teórica de una reducida capa de cuadros revolucionarios y el desarrollo del pensamiento marxista aplicado a las realidades contemporáneas."
 category: history
-pubDate: 2026-04-30
+publishDate: 2026-04-30
 published: true
 lang: es
 magazine: magazine-1-mai-2026

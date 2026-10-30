@@ -2,7 +2,7 @@
 title: La concezione apologetica della produttività di tutte le professioni
 description: Un filosofo produce idee, un poeta poesie, un pastore prediche, un professore manuali ecc. Un delinquente produce delitti. Se si esamina più da vicino la connessione che esiste tra quest’ultima branca di produzione e l’…
 category: critique
-pubDate: 2026-04-30
+publishDate: 2026-04-30
 published: true
 lang: it
 topic: likbez

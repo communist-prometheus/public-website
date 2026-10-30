@@ -1,15 +1,11 @@
 ---
 title: "Anatomia della putrefazione: Dalla matematica della crisi alla guerra mondiale. Perché il capitalismo non ha futuro"
 lang: it
-pubDate: 2026-07-06
 magazine: magazine-2-avgust-2026
 category: programme
 description: |-
   Il presente articolo costituisce un’analisi marxista dell’attuale fase di putrefazione del sistema capitalistico globale. Sullo sfondo del trionfo illusorio delle tecnologie digitali, dell’intelligenza artificiale e della logistica algoritmica, l’economia mondiale sprofonda in un abisso di debiti, stagnazione e crescenti conflitti interimperialistici. Per mettere a nudo le vere radici di questo paradosso – in cui uno sviluppo mai visto delle forze produttive genera una catastrofe sociale – occorre respingere le spiegazioni superficiali dell’economia politica borghese e rivolgersi al nucleo fondamentale del marxismo: la legge della caduta tendenziale del saggio di profitto.
   Ripercorrendo lo sviluppo del pensiero marxista attraverso il prisma delle aspre discussioni teoriche del Novecento – dall’analisi della critica leniniana-buchariniana alle teorie del sottoconsumo di Rosa Luxemburg, fino alla matematica del crollo di Henryk Grossman – il testo dischiude la dialettica oggettiva del capitale. L’articolo dimostra in modo sistematico che la finanziarizzazione totale, il sovrasfruttamento delle piattaforme e l’attuale escalation militarista non sono deviazioni casuali dalla norma, bensì meccanismi convulsivi e barbarici di salvataggio del sistema dalla sovraccumulazione assoluta. Il capitalismo non crollerà automaticamente per mancanza di mercati, ma la sua matematica interna pone l’umanità di fronte a un ultimatum storico ineludibile: o la distruzione rivoluzionaria e cosciente del capitalismo, oppure lo sprofondamento del mondo in una carneficina globale.
-
-
-  Ripercorrendo lo sviluppo del pensiero marxista attraverso il prisma delle aspre discussioni teoriche del Novecento – dall’analisi della critica leninista-bucharinista alle teorie del sottoconsumo di Rosa Luxemburg, fino alla matematica del crollo di Henryk Grossman – il testo dischiude la dialettica oggettiva del capitale. L’articolo dimostra in modo sistematico che la finanziarizzazione totale, la sovrasfruttamento delle piattaforme e l’attuale escalation militarista non sono deviazioni casuali dalla norma, bensì meccanismi convulsivi e barbarici di salvataggio del sistema dalla sovraccumulazione assoluta. Il capitalismo non crollerà automaticamente per mancanza di mercati, ma la sua matematica interna pone l’umanità di fronte a un ultimatum storico ineludibile: o la distruzione rivoluzionaria e cosciente del capitalismo, oppure lo sprofondamento del mondo in una carneficina globale."
 published: true
 publishDate: 2026-07-06
 ---
@@ -58,7 +54,7 @@ Ridurre l’accumulazione prevalentemente all’espansione violenta riporta l’
 
 In cosa consisteva dunque il vero errore teorico di Luxemburg sulla questione della realizzazione? A lungo, nella letteratura marxista (e ancor più in quella stalinista) ha dominato l’opinione semplicistica secondo cui il difetto principale di Luxemburg fosse quello di essere prigioniera del “dogma di Smith”, trasferendo meccanicamente il problema della realizzazione dei beni di consumo (II sezione) sull’intera massa dei valori prodotti. In altre parole, le si attribuiva di aver ignorato il primato del consumo produttivo su quello personale e di non aver compreso che il capitale crea da sé il proprio mercato, assorbendo elementi di capitale costante (mezzi di produzione) indipendentemente dai limiti del potere d’acquisto dei consumatori finali.
 
-Questa lettura, che circolava nei manuali stalinisti di economia politica, si appoggiava formalmente sulla polemica di Lenin e Bucharin contro Luxemburg. Così, nel marzo 1913, subito dopo l’uscita del libro, Lenin emise un verdetto durissimo in una lettera privata a Šljapnikov:
+Questa lettura, che circolava nei manuali stalinisti di economia politica, si appoggiava formalmente sulla polemica di Lenin e Bucharin contro Luxemburg. Così, nel marzo 1913, subito dopo l’uscita del libro, Lenin emise un verdetto durissimo in una lettera privata a Kamenev:
 
 *«Ho letto il nuovo libro di Rosa *Die Akkumulation des Kapitals*. Ne dice di grosse! Ha storpiato Marx. Sono molto lieto che sia Pannekoek quanto Eckstein e O. Bauer l’abbiano unanimamente biasimata e abbiano detto contro di lei quello che io dicevo nel 1899 contro i populisti».[^4]*
 
