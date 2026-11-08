@@ -1,7 +1,7 @@
 ---
 title: "Журнал «Коммунистический Прометей» №3 — ноябрь 2026"
 lang: it
-image: ./assets/cover.ru.png
+image: ./assets/cover.it.png
 published: false
 publishDate: 2026-11-08
 articles:
