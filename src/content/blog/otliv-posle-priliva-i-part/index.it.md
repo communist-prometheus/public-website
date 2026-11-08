@@ -1,5 +1,5 @@
 ---
-title: "La lotta di classe nel mondoIl riflusso dopo l’alta marea: il movimento operaio tra le due guerre mondiali (1921–1939) - Parte I"
+title: "Il riflusso dopo l’alta marea: il movimento operaio tra le due guerre mondiali (1921–1939) - Parte I"
 lang: it
 magazine: magazine-3-november-2026
 publishDate: 2026-11-08
