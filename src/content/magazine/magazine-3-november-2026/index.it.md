@@ -1,8 +1,8 @@
 ---
-title: "Журнал «Коммунистический Прометей» №3 — ноябрь 2026"
+title: "La rivista «Prometeo comunista» №3 — Novembre 2026"
 lang: it
 image: ./assets/cover.it.png
-published: false
+published: true
 publishDate: 2026-11-08
 articles:
   - international-review-october-2026
