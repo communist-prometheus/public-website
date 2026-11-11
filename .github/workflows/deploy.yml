@@ -30,7 +30,9 @@ permissions:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest moved to 26.04, where `playwright install --with-deps`
+    # fails ("Playwright does not support chromium on ubuntu26.04-x64").
+    runs-on: ubuntu-24.04
     # CONTENT_BRANCH mirrors github.ref_name 1:1 — master deploys
     # build with content/master, develop deploys with content/develop.
     # WRANGLER_COMMAND is resolved by the "Resolve branch env" step
