@@ -1,0 +1,19 @@
+---
+title: "La rivista «Prometeo comunista» №3 — Novembre 2026"
+lang: it
+image: ./assets/cover.it.png
+published: true
+publishDate: 2026-11-08
+articles:
+  - international-review-october-2026
+  - political-shells-of-capitalism
+  - physiological-limit-of-capital
+  - otliv-posle-priliva-i-part
+  - the-national-question-imperialism-and-the-communist-revolution-part-i
+  - the-nature-of-the-agrarian-revolution-and-its-role-in-the-proletariats-strategy
+  - analiz-razvitiya-kapitalizma-i-revolyucionnaya-strategiya
+  - lessonsfromdefeatii
+  - pisma-fridriha-engelsa-ob-istoricheskom-materializme
+---
+
+
