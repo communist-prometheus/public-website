@@ -59,8 +59,18 @@ jobs:
           fi
 
       - name: Installing tools and dependencies
+        id: setup-bun
+        continue-on-error: true
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
-      - run: bun install --frozen-lockfile
+      # setup-bun downloads from GitHub release assets, which can 504 for
+      # hours (seen 2026-11-08) and then block every content publish. The npm
+      # registry carries the same binaries, so fall back to it.
+      - name: Installing Bun from npm (fallback)
+        if: steps.setup-bun.outcome == 'failure'
+        run: |
+          npm install --global bun
+          echo "$(npm prefix --global)/bin" >> "$GITHUB_PATH"
+      - run: bun --version && bun install --frozen-lockfile
 
       # Content-only redeploys can't break a unit test, but they cost
       # seconds to check and a deploy is the last gate before prod.
