@@ -17,7 +17,9 @@ permissions:
 
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest moved to 26.04, where `playwright install --with-deps`
+    # fails ("Playwright does not support chromium on ubuntu26.04-x64").
+    runs-on: ubuntu-24.04
     # Content is fetched by `prebuild`. Pin it to master so a PR is
     # always checked against the content shape production actually has —
     # which is what the e2e assertions below are written against.
