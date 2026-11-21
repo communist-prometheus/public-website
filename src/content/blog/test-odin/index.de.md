@@ -5,7 +5,7 @@ publishDate: 2026-09-27
 description: |-
   probiere auf publische eine neuer tekst im deutsch
 category: theory
-published: true
+published: false
 ---
 
 eine probe
